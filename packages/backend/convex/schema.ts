@@ -9,5 +9,5 @@ export default defineSchema({
     description: v.string(),
     voicePrompt: v.string(),
     firstMessagePrompt: v.string(),
-  }),
+  }).index("by_creator_id", ["creatorId"]),
 });

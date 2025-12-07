@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "motion/react";
-import { internal } from "@daimo/backend";
+import { api } from "@daimo/backend";
 import {
   Sidebar,
   SidebarContent,
@@ -17,8 +18,6 @@ import { NavUser } from "./nav-user";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
@@ -48,16 +47,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
-import { Field, FieldDescription } from "@/components/ui/field";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Field } from "@/components/ui/field";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupTextarea,
 } from "@/components/ui/input-group";
-import { useAction, useMutation } from "convex/react";
+import { useAction } from "convex/react";
+import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function HomeSidebar({ session }: { session: Session }) {
   const pathname = usePathname();
@@ -139,9 +138,31 @@ export default function HomeSidebar({ session }: { session: Session }) {
 }
 
 function CreateCharacter() {
-  const mutation = useAction(internal);
+  const createCharacter = useAction(api.charactersActions.create);
+  const [description, setDescription] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!description.trim()) return;
+    setIsSubmitting(true);
+    try {
+      await createCharacter({ description });
+      setDescription("");
+      toast.success("El personaje ha sido creado correctamente");
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Failed to create character:", error);
+      toast.error(
+        "Hubo un error intentando crear el personaje, intente de nuevo más tarde.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button
           className="items-center justify-start"
@@ -171,18 +192,29 @@ function CreateCharacter() {
           transition={{ delay: 0.2 }}
         >
           <Field>
-            <InputGroup className="md:text-base rounded-2xl resize-none h-24 focus-visible:outline-0 focus-visible:ring-0">
+            <InputGroup className="md:text-base rounded-2xl resize-none h-24 focus-visible:outline-0 focus-visible:ring-0  border-border">
               <InputGroupTextarea
                 placeholder="Describe o referencia al personaje que quisieras crear"
-                className="md:text-base h-24 focus-visible:outline-0 ring-0 focus-visible:ring-0  bg-secondary "
+                className="md:text-base h-24 focus-visible:outline-0 ring-0 focus-visible:ring-0  bg-secondary"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmit();
+                  }
+                }}
+                disabled={isSubmitting}
               />
               <InputGroupAddon align="block-end">
                 <InputGroupButton
                   variant="default"
                   className="rounded-full ml-auto"
                   size="icon-sm"
+                  onClick={handleSubmit}
+                  disabled={isSubmitting || !description.trim()}
                 >
-                  <ArrowUp />
+                  {isSubmitting ? <Spinner /> : <ArrowUp />}
                 </InputGroupButton>
               </InputGroupAddon>
             </InputGroup>

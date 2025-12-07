@@ -3,6 +3,7 @@ import { Geist_Mono, Inter_Tight } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/context/theme-provider";
 import { ConvexClientProvider } from "@/components/context/convex-client-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Inter_Tight({
   variable: "--font-inter-tight",
@@ -35,7 +36,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <ConvexClientProvider>{children}</ConvexClientProvider>
+          <ConvexClientProvider>
+            {children}
+            <Toaster />
+          </ConvexClientProvider>
         </ThemeProvider>
       </body>
     </html>

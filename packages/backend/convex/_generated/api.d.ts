@@ -10,7 +10,9 @@
 
 import type * as auth from "../auth.js";
 import type * as characters from "../characters.js";
+import type * as charactersActions from "../charactersActions.js";
 import type * as http from "../http.js";
+import type * as internalCharacters from "../internalCharacters.js";
 
 import type {
   ApiFromModules,
@@ -21,7 +23,9 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   characters: typeof characters;
+  charactersActions: typeof charactersActions;
   http: typeof http;
+  internalCharacters: typeof internalCharacters;
 }>;
 
 /**
