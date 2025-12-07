@@ -1,0 +1,48 @@
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+
+export default function Home() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background font-sans dark:bg-black">
+      <section className="flex flex-col gap-16 items-center">
+        <svg
+          viewBox="0 0 64 64"
+          fill="currentColor"
+          className="text-primary size-24"
+        >
+          <path
+            d="M32 0C38.329 7.54726e-08 44.5159 1.87677 49.7782 5.39297C55.0406 8.90918 59.1421 13.9069 61.5641 19.7541C63.9861 25.6014 64.6199 32.0355 63.3851 38.2429C62.1504 44.4503 59.1027 50.1521 54.6274 54.6274C50.1521 59.1027 44.4503 62.1504 38.2429 63.3851C32.0355 64.6199 25.6014 63.9861 19.7541 61.5641C13.9069 59.1421 8.90918 55.0406 5.39297 49.7782C1.87677 44.5159 -1.50945e-07 38.329 0 32L6.4 32C6.4 37.0632 7.90141 42.0127 10.7144 46.2226C13.5273 50.4325 17.5255 53.7137 22.2033 55.6513C26.8811 57.5889 32.0284 58.0959 36.9943 57.1081C41.9602 56.1203 46.5217 53.6822 50.1019 50.1019C53.6822 46.5217 56.1203 41.9602 57.1081 36.9943C58.0959 32.0284 57.5889 26.8811 55.6513 22.2033C53.7137 17.5255 50.4325 13.5273 46.2226 10.7144C42.0127 7.90141 37.0632 6.4 32 6.4L32 0Z"
+            fill="currentColor"
+          />
+          <path
+            d="M46.6911 42.4006C45.0498 44.719 42.883 46.616 40.3681 47.9366C37.8531 49.2572 35.0613 49.9638 32.221 49.9986C29.3806 50.0335 26.5723 49.3957 24.0257 48.1372C21.479 46.8788 19.2664 45.0355 17.5687 42.7581L20.4549 40.6065C21.8131 42.4284 23.5832 43.903 25.6205 44.9098C27.6578 45.9165 29.9045 46.4268 32.1768 46.3989C34.4491 46.371 36.6825 45.8057 38.6945 44.7493C40.7064 43.6928 42.4398 42.1752 43.7529 40.3205L46.6911 42.4006Z"
+            fill="currentColor"
+          />
+          <rect width="6.4" height="26" fill="currentColor" />
+          <rect y="32" width="6.4" height="32" fill="currentColor" />
+          <rect
+            y="6.4"
+            width="6.4"
+            height="32"
+            transform="rotate(-90 0 6.4)"
+            fill="currentColor"
+          />
+        </svg>
+
+        <div className="flex items-center gap-3">
+          <Button
+            className="text-base rounded-full"
+            size="lg"
+            variant="secondary"
+            asChild
+          >
+            <Link href="/sign-in">Iniciar sesión</Link>
+          </Button>
+          <Button className="text-base rounded-full" size="lg">
+            <Link href="/sign-up">Empezar a conversar</Link>
+          </Button>
+        </div>
+      </section>
+    </div>
+  );
+}
