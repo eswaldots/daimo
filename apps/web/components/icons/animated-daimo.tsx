@@ -1,0 +1,111 @@
+import { motion, Variants } from "motion/react";
+
+export function AnimatedDaimo() {
+  const easePremium = [0.22, 1, 0.36, 1];
+
+  const duration = 1.2; // Duración total elegante
+
+  // Variantes unificadas para mantener consistencia visual
+  const shapeVariants: Variants = {
+    hidden: {
+      pathLength: 0,
+      fillOpacity: 0,
+      opacity: 0,
+    },
+    // @ts-expect-error
+    visible: (i: number) => ({
+      pathLength: 1,
+      fillOpacity: 1,
+      opacity: 1,
+      transition: {
+        // El trazo (dibujo)
+        pathLength: {
+          duration: duration,
+          ease: easePremium,
+          delay: i * 0.1, // Pequeño escalonado entre partes
+        },
+        // La opacidad general
+        opacity: {
+          duration: 0.4,
+          delay: i * 0.1,
+          ease: "linear",
+        },
+        // El relleno aparece suavemente a mitad del dibujo
+        fillOpacity: {
+          duration: 0.6,
+          ease: "easeOut",
+          delay: i * 0.1 + duration * 0.4, // Sincronización precisa
+        },
+      },
+    }),
+  };
+
+  return (
+    <div className="flex items-center justify-center p-8">
+      <svg
+        viewBox="0 0 64 64"
+        fill="currentColor"
+        className="text-primary size-24 overflow-visible"
+      >
+        {/* Usamos 'g' para agrupar estilos comunes de trazo */}
+        <g
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          {/* Parte 1: Forma Curva Superior */}
+          <motion.path
+            d="M32 0C38.329 7.54726e-08 44.5159 1.87677 49.7782 5.39297C55.0406 8.90918 59.1421 13.9069 61.5641 19.7541C63.9861 25.6014 64.6199 32.0355 63.3851 38.2429C62.1504 44.4503 59.1027 50.1521 54.6274 54.6274C50.1521 59.1027 44.4503 62.1504 38.2429 63.3851C32.0355 64.6199 25.6014 63.9861 19.7541 61.5641C13.9069 59.1421 8.90918 55.0406 5.39297 49.7782C1.87677 44.5159 -1.50945e-07 38.329 0 32L6.4 32C6.4 37.0632 7.90141 42.0127 10.7144 46.2226C13.5273 50.4325 17.5255 53.7137 22.2033 55.6513C26.8811 57.5889 32.0284 58.0959 36.9943 57.1081C41.9602 56.1203 46.5217 53.6822 50.1019 50.1019C53.6822 46.5217 56.1203 41.9602 57.1081 36.9943C58.0959 32.0284 57.5889 26.8811 55.6513 22.2033C53.7137 17.5255 50.4325 13.5273 46.2226 10.7144C42.0127 7.90141 37.0632 6.4 32 6.4L32 0Z"
+            variants={shapeVariants}
+            custom={0} // Índice de orden
+            initial="hidden"
+            animate="visible"
+          />
+
+          {/* Parte 2: Forma Interior */}
+          <motion.path
+            d="M46.6911 42.4006C45.0498 44.719 42.883 46.616 40.3681 47.9366C37.8531 49.2572 35.0613 49.9638 32.221 49.9986C29.3806 50.0335 26.5723 49.3957 24.0257 48.1372C21.479 46.8788 19.2664 45.0355 17.5687 42.7581L20.4549 40.6065C21.8131 42.4284 23.5832 43.903 25.6205 44.9098C27.6578 45.9165 29.9045 46.4268 32.1768 46.3989C34.4491 46.371 36.6825 45.8057 38.6945 44.7493C40.7064 43.6928 42.4398 42.1752 43.7529 40.3205L46.6911 42.4006Z"
+            variants={shapeVariants}
+            custom={1}
+            initial="hidden"
+            animate="visible"
+          />
+
+          {/* Parte 3: Rectángulos */}
+          {/* Nota: Convertimos rects a motion.rect pero usamos la misma lógica de pathLength para uniformidad visual */}
+
+          <motion.rect
+            width="6.4"
+            height="26"
+            variants={shapeVariants}
+            custom={2}
+            initial="hidden"
+            animate="visible"
+          />
+
+          <motion.rect
+            y="32"
+            width="6.4"
+            height="32"
+            variants={shapeVariants}
+            custom={2.2}
+            initial="hidden"
+            animate="visible"
+          />
+
+          <motion.rect
+            y="6.4"
+            width="6.4"
+            height="32"
+            transform="rotate(-90 0 6.4)"
+            variants={shapeVariants}
+            custom={2.4}
+            initial="hidden"
+            animate="visible"
+          />
+        </g>
+      </svg>
+    </div>
+  );
+}

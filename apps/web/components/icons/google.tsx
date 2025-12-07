@@ -9,7 +9,7 @@ export default function GoogleIcon() {
       className="shrink-0"
     >
       <g
-        clip-path="url(#clip0_9_516)"
+        clipPath="url(#clip0_9_516)"
         data-sentry-element="g"
         data-sentry-source-file="GoogleIcon.tsx"
       >
