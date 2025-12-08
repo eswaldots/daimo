@@ -79,7 +79,7 @@ export const create = action({
       
       Respond ONLY with a valid JSON object. Do not write markdown, do not write "Here is the JSON".
 
-      WRITE ALL THE DATA ON SPANISH LANGUAGE.
+      WRITE ALL THE DATA VALUES ON SPANISH LANGUAGE KEEP THE JSON KEYS ON ENGLISH LANGUAGE.
       
       JSON Format:
       {
@@ -127,5 +127,31 @@ export const create = action({
       storageId,
       creatorId: user.subject,
     });
+
+    // someday will use you
+    // const result = await generateText({
+    //   model: workersai("@cf/bytedance/stable-diffusion-xl-lightning"),
+    //   prompt: `Portrait of ${character.name}, ${character.description}, transparent background`,
+    // });
+    //
+    // for (const file of result.files) {
+    //   if (file.mediaType.startsWith("image/")) {
+    //     // The file object provides multiple data formats:
+    //     // Access images as base64 string, Uint8Array binary data, or check type
+    //     // - file.base64: string (data URL format)
+    //     // - file.uint8Array: Uint8Array (binary data)
+    //     // - file.mediaType: string (e.g. "image/png")
+    //     //
+    //     const imageBlob = b64toBlob(file.base64);
+    //
+    //     const storageId = await ctx.storage.store(imageBlob);
+    //
+    //     await ctx.runMutation(internal.internalCharacters.internalCreate, {
+    //       ...character,
+    //       storageId,
+    //       creatorId: user.subject,
+    //     });
+    //   }
+    // }
   },
 });

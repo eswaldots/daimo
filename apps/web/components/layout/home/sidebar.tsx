@@ -31,6 +31,7 @@ import {
   PlusIcon,
   Settings,
   SunIcon,
+  User2Icon,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -75,12 +76,22 @@ export default function HomeSidebar({ session }: { session: Session }) {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupContent className="flex flex-col gap-2">
+          <SidebarGroupContent className="flex flex-col gap-1">
             <CreateCharacter />
             <SidebarMenuItem className="flex items-center gap-2">
-              <SidebarMenuButton isActive={pathname === "/home"}>
-                <Compass />
-                Inicio
+              <SidebarMenuButton isActive={pathname === "/home"} asChild>
+                <Link href="/home">
+                  <Compass />
+                  Inicio
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem className="flex items-center gap-2">
+              <SidebarMenuButton isActive={pathname === "/characters"} asChild>
+                <Link href="/characters">
+                  <User2Icon />
+                  Tus personajes
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarGroupContent>
@@ -165,12 +176,12 @@ function CreateCharacter() {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button
-          className="items-center justify-start"
+          className="items-center justify-start bg-background border border-border"
           size="sm"
           variant="ghost"
         >
           <PlusIcon />
-          Crear personaje
+          Nuevo personaje
         </Button>
       </DialogTrigger>
       <DialogContent className="md:max-w-2xl w-full py-8 gap-6">
@@ -194,7 +205,7 @@ function CreateCharacter() {
           <Field>
             <InputGroup className="md:text-base rounded-2xl resize-none h-24 focus-visible:outline-0 focus-visible:ring-0  border-border">
               <InputGroupTextarea
-                placeholder="Describe o referencia al personaje que quisieras crear"
+                placeholder="Describe al personaje que quisieras crear"
                 className="md:text-base h-24 focus-visible:outline-0 ring-0 focus-visible:ring-0  bg-secondary"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
