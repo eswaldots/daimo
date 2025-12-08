@@ -65,7 +65,7 @@ export function CreateCharacter({ children }: { children: ReactNode }) {
           transition={{ delay: 0.2 }}
         >
           <Field>
-            <InputGroup className="md:text-base rounded-2xl resize-none h-24 focus-visible:outline-0 focus-visible:ring-0  dark:border-border hover:bg-input transition-colors border-border/50 bg-secondary">
+            <InputGroup className="md:text-base rounded-2xl resize-none h-24 focus-visible:outline-0 focus-visible:ring-0  dark:border-border hover:bg-input transition-colors border-none bg-secondary">
               <InputGroupTextarea
                 placeholder="Describe al personaje que quisieras crear"
                 className="md:text-base h-24 focus-visible:outline-0 ring-0 focus-visible:ring-0"
