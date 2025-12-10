@@ -1,0 +1,278 @@
+"use client";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import {
+  Field,
+  FieldGroup,
+  FieldLabel,
+  FieldError,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { ChevronDown, ChevronLeft, PlusIcon, Search } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useMutation } from "convex/react";
+import { api } from "@daimo/backend";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
+import { Voice } from "@/lib/voices";
+import { SelectableVoiceItem, VoiceItem } from "../layout/admin/voice-item";
+import { ItemGroup } from "../ui/item";
+
+const characterSchema = z.object({
+  name: z
+    .string()
+    .min(2, { message: "El nombre debe tener al menos 2 caracteres" }),
+  shortDescription: z
+    .string()
+    .min(10, { message: "La descripción debe tener al menos 10 caracteres" }),
+  prompt: z
+    .string()
+    .min(10, { message: "El prompt debe tener al menos 10 caracteres" }),
+  firstMessagePrompt: z
+    .string()
+    .min(5, { message: "El saludo debe tener al menos 5 caracteres" }),
+});
+
+type CharacterFormValues = z.infer<typeof characterSchema>;
+
+export default function CreateCharacterPage({ voices }: { voices: Voice[] }) {
+  const [image, setImage] = useState<File | null>(null);
+
+  const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setImage(file);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    watch,
+  } = useForm<CharacterFormValues>({
+    resolver: zodResolver(characterSchema),
+  });
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [voice, setVoice] = useState<Voice | null>(null);
+
+  const create = useMutation(api.characters.create);
+  const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
+
+  const onSubmit = async (data: CharacterFormValues) => {
+    console.log("Form data:", data);
+    const voiceId = voice?.id ?? "";
+    // Form submission will be handled later by the user
+
+    if (image) {
+      const postUrl = await generateUploadUrl();
+
+      // Step 2: POST the file to the URL
+      const result = await fetch(postUrl, {
+        method: "POST",
+        headers: { "Content-Type": image.type },
+        body: image,
+      });
+      const { storageId } = await result.json();
+
+      try {
+        await create({ storageId, ...data, voiceId });
+
+        toast.success("Personaje creado exitosamente");
+
+        router.push("/admin/characters");
+
+        return;
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to create character");
+
+        return;
+      }
+    }
+
+    try {
+      await create({ ...data, voiceId });
+
+      toast.success("Personaje creado exitosamente");
+
+      router.push("/admin/characters");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to create character");
+    }
+  };
+
+  const router = useRouter();
+  const title = watch("name");
+
+  return (
+    <>
+      <div className="absolute left-8 top-8 md:block hidden">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="dark:hover:bg-border rounded-full"
+          onClick={() => router.back()}
+        >
+          <ChevronLeft className="size-5" />
+        </Button>
+      </div>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <FieldGroup className="max-w-2xl mx-auto gap-8 mt-8">
+          <div className="w-full flex items-center gap-6">
+            <div className="relative w-fit">
+              <Avatar className="size-24 hover:bg-background transition-colors cursor-pointer z-10">
+                <AvatarImage
+                  src={image ? URL.createObjectURL(image) : ""}
+                  className="object-cover object-center"
+                ></AvatarImage>
+                {!image && (
+                  <AvatarFallback className="text-4xl dark:bg-border z-10">
+                    {title?.charAt(0).toUpperCase() ?? "?"}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+              <Button
+                type="button"
+                className="absolute bottom-0 right-0 z-40 rounded-full dark:bg-accent"
+                variant="outline"
+                size="icon-sm"
+              >
+                <PlusIcon />
+                <input
+                  className="opacity-0 absolute inset-0"
+                  type="file"
+                  name="myImage"
+                  // Event handler to capture file selection and update the state
+                  onChange={handleImage}
+                />
+              </Button>
+            </div>
+            <h1 className="tracking-tight text-4xl font-medium">{title}</h1>
+          </div>
+
+          <Field>
+            <FieldLabel className="text-foreground">Nombre</FieldLabel>
+            <Input
+              placeholder="eg: John Doe"
+              className="rounded-lg bg-secondary dark:bg-border border-border/20 hover:bg-input transition-colors"
+              {...register("name")}
+              aria-invalid={!!errors.name}
+            />
+            <FieldError errors={[errors.name]} />
+          </Field>
+
+          <Field>
+            <FieldLabel className="text-foreground">Descripción</FieldLabel>
+            <Textarea
+              placeholder="Agrega una corta descripción del personaje"
+              className="rounded-lg bg-secondary dark:bg-border border-border/20 hover:bg-input transition-colors resize-none h-27"
+              {...register("shortDescription")}
+              aria-invalid={!!errors.shortDescription}
+            />
+            <FieldError errors={[errors.shortDescription]} />
+          </Field>
+
+          <Field>
+            <FieldLabel className="text-foreground">Prompt</FieldLabel>
+            <Textarea
+              placeholder="Escribe un prompt para el personaje"
+              className="rounded-lg bg-secondary dark:bg-border border-border/20 hover:bg-input transition-colors resize-none h-27"
+              {...register("prompt")}
+              aria-invalid={!!errors.prompt}
+            />
+            <FieldError errors={[errors.prompt]} />
+          </Field>
+
+          <Field>
+            <FieldLabel className="text-foreground">Saludo</FieldLabel>
+            <Textarea
+              placeholder="Escribe un saludo para el personaje, funcionara como un mensaje de bienvenida"
+              className="rounded-lg bg-secondary dark:bg-border border-border/20 hover:bg-input transition-colors resize-none h-27"
+              {...register("firstMessagePrompt")}
+              aria-invalid={!!errors.firstMessagePrompt}
+            />
+            <FieldError errors={[errors.firstMessagePrompt]} />
+          </Field>
+
+          <Field>
+            <FieldLabel className="text-foreground">Voz</FieldLabel>
+            <Dialog open={isOpen} onOpenChange={setIsOpen}>
+              <DialogContent showCloseButton={false}>
+                <DialogTitle>Voces</DialogTitle>
+                <div className="my-2 space-y-4">
+                  <InputGroup className="border-0 shadow-none bg-transparent">
+                    <InputGroupAddon align="inline-start">
+                      <Search className="size-4" />
+                    </InputGroupAddon>
+                    <InputGroupInput placeholder="Busca una voz" />
+                  </InputGroup>
+
+                  <ItemGroup>
+                    {voices.map((voice) => (
+                      <div
+                        key={voice.id}
+                        onClick={() => {
+                          setVoice(voice);
+                          setIsOpen(false);
+                        }}
+                      >
+                        <SelectableVoiceItem {...voice} />
+                      </div>
+                    ))}
+                  </ItemGroup>
+                </div>
+              </DialogContent>
+              <DialogTrigger>
+                <InputGroup className="rounded-lg bg-secondary dark:bg-border border-border/20  hover:bg-input transition-colors cursor-default">
+                  <InputGroupInput
+                    placeholder="Seleccione una voz"
+                    readOnly
+                    value={voice?.name}
+                    className="cursor-default"
+                  />
+                  <InputGroupAddon align="inline-end">
+                    <ChevronDown className="size-4" />
+                  </InputGroupAddon>
+                </InputGroup>
+              </DialogTrigger>
+            </Dialog>
+          </Field>
+
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            variant="default"
+            className="rounded-full w-fit ml-auto shadow-none mt-8"
+          >
+            {isSubmitting ? <Spinner /> : "Crear personaje"}
+          </Button>
+        </FieldGroup>
+      </form>
+    </>
+  );
+}

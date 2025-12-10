@@ -14,6 +14,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { api } from "@daimo/backend";
 import { useAction } from "convex/react";
+import { ConvexError } from "convex/values";
 import { ArrowUp } from "lucide-react";
 import { motion } from "motion/react";
 import { ReactNode, useState } from "react";
@@ -35,9 +36,13 @@ export function CreateCharacter({ children }: { children: ReactNode }) {
       setIsOpen(false);
     } catch (error) {
       console.error("Failed to create character:", error);
-      toast.error(
-        "Hubo un error intentando crear el personaje, intente de nuevo más tarde.",
-      );
+      if (error instanceof ConvexError) {
+        toast.error(error.stack);
+      } else {
+        toast.error(
+          "Hubo un error intentando crear el personaje, intente de nuevo más tarde.",
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }

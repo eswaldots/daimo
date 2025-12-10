@@ -10,6 +10,7 @@ import {
 import { User2Icon, PlusIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { CreateCharacter } from "./create-character";
+import Link from "next/link";
 
 export function EmptyCharacter() {
   return (
@@ -33,12 +34,12 @@ export function EmptyCharacter() {
         </EmptyHeader>
         <EmptyContent>
           <div className="flex gap-2">
-            <CreateCharacter>
-              <Button size="lg" className="rounded-full">
+            <Button size="lg" className="rounded-full" asChild>
+              <Link href="/admin/characters/create">
                 <PlusIcon />
                 Crear personaje
-              </Button>
-            </CreateCharacter>
+              </Link>
+            </Button>
           </div>
         </EmptyContent>
       </Empty>

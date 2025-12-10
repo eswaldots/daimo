@@ -3,11 +3,12 @@ import { v } from "convex/values";
 
 export default defineSchema({
   characters: defineTable({
-    creatorId: v.string(),
-    storageId: v.id("_storage"),
+    creatorId: v.optional(v.string()),
+    storageId: v.optional(v.id("_storage")),
     name: v.string(),
-    description: v.string(),
-    voicePrompt: v.string(),
+    prompt: v.string(),
+    shortDescription: v.string(),
     firstMessagePrompt: v.string(),
+    voiceId: v.string(),
   }).index("by_creator_id", ["creatorId"]),
 });

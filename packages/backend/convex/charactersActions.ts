@@ -1,157 +1,31 @@
-"use node";
-
-import { ConvexError, v } from "convex/values";
-import { createWorkersAI } from "workers-ai-provider"; // <--- Tu librería deseada
-import { z } from "zod/v3";
-import { action, internalMutation } from "./_generated/server";
-import {
-  generateObject,
-  experimental_generateImage as generateImage,
-  generateText,
-  Output,
-} from "ai";
-import { google } from "@ai-sdk/google";
-
-import { createOpenAI } from "@ai-sdk/openai";
-import { deepseek } from "@ai-sdk/deepseek";
+import { v } from "convex/values";
+import { mutation } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { authComponent } from "./auth";
 
-const createCloudflareBinding = () => {
-  return {
-    run: async (model: string, args: any) => {
-      const accountId = "71541f18bf5b3e35c74426b314382f21"; // Tu Account ID
-      const apiToken = "XkxGrCUHSQwhqV-AyxXtqyhgPcV4x_KzLx5PQuk6"; // Tu Token
-
-      // Mapeamos los argumentos al formato REST de Cloudflare
-      // La librería suele enviar { messages, ... }, la API REST lo acepta igual.
-      const response = await fetch(
-        `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${apiToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(args),
-        },
-      );
-
-      const json = await response.json();
-
-      if (!response.ok || !json.success) {
-        console.error("Cloudflare Error:", json);
-        throw new Error(JSON.stringify(json.errors || "Unknown Error"));
-      }
-
-      // La librería espera el resultado directo, la API devuelve { result: ... }
-      return json.result;
-    },
-  };
-};
-
-const workersai = createWorkersAI({
-  // @ts-ignore - Ignoramos el tipado estricto de Cloudflare Workers
-  binding: createCloudflareBinding(),
-});
-
-const cloudflare = createOpenAI({
-  // Esta es la URL mágica para que funcione como OpenAI
-  baseURL: `https://api.cloudflare.com/client/v4/accounts/71541f18bf5b3e35c74426b314382f21/ai/v1`,
-  apiKey: "XkxGrCUHSQwhqV-AyxXtqyhgPcV4x_KzLx5PQuk6",
-});
-
-export const create = action({
+export const create = mutation({
   args: {
-    description: v.string(),
+    storageId: v.optional(v.id("_storage")),
+    name: v.string(),
+    shortDescription: v.string(),
+    firstMessagePrompt: v.string(),
+    prompt: v.string(),
+    voiceId: v.string(),
   },
-  handler: async (ctx, { description }): Promise<void> => {
-    const user = await ctx.auth.getUserIdentity();
+  handler: async (ctx, args) => {
+    const user = await authComponent.getAuthUser(ctx);
 
     if (!user) {
-      throw new ConvexError("Unautorizado. Inicie sesión primero");
+      throw new Error("User not authenticated");
     }
 
-    const { text } = await generateText({
-      model: workersai("@cf/meta/llama-3.1-8b-instruct"),
-      prompt: `
-      You are an API that generates JSON.
-      Generate a character based on this description: "${description}".
-      
-      Respond ONLY with a valid JSON object. Do not write markdown, do not write "Here is the JSON".
-
-      WRITE ALL THE DATA VALUES ON SPANISH LANGUAGE KEEP THE JSON KEYS ON ENGLISH LANGUAGE.
-      
-      JSON Format:
-      {
-        "name": "Character Name",
-        "description": "Short visual description",
-        "voicePrompt": "Voice tone description",
-        "firstMessagePrompt": "First thing they say"
-      }
-      `,
-    });
-
-    // Limpiamos el resultado por si Llama 3 se pone creativo con los bloques de código
-    const jsonStr = text.replace(/```json|```/g, "").trim();
-    let character;
-
-    try {
-      character = JSON.parse(jsonStr);
-    } catch (e) {
-      console.error("Error parseando JSON de Llama:", text);
-      throw new ConvexError("La IA falló al generar el formato JSON.");
+    if (user.role !== "admin") {
+      throw new Error("User not authorized");
     }
-
-    const imageResponse = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/71541f18bf5b3e35c74426b314382f21/ai/run/@cf/bytedance/stable-diffusion-xl-lightning`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer XkxGrCUHSQwhqV-AyxXtqyhgPcV4x_KzLx5PQuk6`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          prompt: `Portrait of ${character.name}, ${character.description}, transparent background`,
-          num_steps: 4,
-          width: 1024,
-          height: 1024,
-        }),
-      },
-    );
-
-    const imageBlob = await imageResponse.blob();
-    const storageId = await ctx.storage.store(imageBlob);
 
     await ctx.runMutation(internal.internalCharacters.internalCreate, {
-      ...character,
-      storageId,
-      creatorId: user.subject,
+      ...args,
+      creatorId: user._id,
     });
-
-    // someday will use you
-    // const result = await generateText({
-    //   model: workersai("@cf/bytedance/stable-diffusion-xl-lightning"),
-    //   prompt: `Portrait of ${character.name}, ${character.description}, transparent background`,
-    // });
-    //
-    // for (const file of result.files) {
-    //   if (file.mediaType.startsWith("image/")) {
-    //     // The file object provides multiple data formats:
-    //     // Access images as base64 string, Uint8Array binary data, or check type
-    //     // - file.base64: string (data URL format)
-    //     // - file.uint8Array: Uint8Array (binary data)
-    //     // - file.mediaType: string (e.g. "image/png")
-    //     //
-    //     const imageBlob = b64toBlob(file.base64);
-    //
-    //     const storageId = await ctx.storage.store(imageBlob);
-    //
-    //     await ctx.runMutation(internal.internalCharacters.internalCreate, {
-    //       ...character,
-    //       storageId,
-    //       creatorId: user.subject,
-    //     });
-    //   }
-    // }
   },
 });

@@ -1,6 +1,23 @@
 "use client";
 
 import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import {
   Card,
   CardContent,
   CardDescription,
@@ -9,13 +26,18 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@daimo/backend";
-import { usePaginatedQuery } from "convex/react";
+import { useMutation, usePaginatedQuery } from "convex/react";
 import { AnimatePresence, motion } from "motion/react";
 import { Doc } from "../../../../../packages/backend/convex/_generated/dataModel";
 import Image from "next/image";
 import { EmptyCharacter } from "@/components/layout/home/empty-character";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
+import { useState } from "react";
+import { toast } from "sonner";
+import { EllipsisVertical, Trash } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
+import { CharacterCard } from "@/components/characters/character-card";
 
 export function CharacterCardSkeleton() {
   return (
@@ -30,37 +52,6 @@ export function CharacterCardSkeleton() {
           <Skeleton className="h-3 w-full bg-background dark:bg-accent" />
           <Skeleton className="h-3 w-full bg-background dark:bg-accent" />
           <Skeleton className="h-3 w-full bg-background dark:bg-accent" />
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-}
-
-export function CharacterCard(
-  props: Doc<"characters"> & { storageUrl?: string | null },
-) {
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ type: "spring" }}
-    >
-      <Card className="h-82 bg-secondary dark:bg-border/80 border-0 shadow-none w-full md:w-74 rounded-2xl py-4 gap-2">
-        <CardHeader className="px-4 rounded-xl">
-          <Image
-            src={props.storageUrl ?? ""}
-            alt="image"
-            width={1028}
-            height={1028}
-            className="rounded-xl h-48 object-cover"
-          />
-        </CardHeader>
-
-        <CardContent className="space-y-2">
-          <CardTitle>{props.name}</CardTitle>
-          <CardDescription className="truncate text-balance">
-            {props.description}
-          </CardDescription>
         </CardContent>
       </Card>
     </motion.div>
@@ -94,9 +85,7 @@ export default function Page() {
         </motion.p>
       </div>
 
-      <Separator />
-
-      <div className="flex items-baseline justify-between">
+      {/*<div className="flex items-baseline justify-between">
         <motion.h1
           className="text-lg md:py-0 py-4"
           initial={{ opacity: 0 }}
@@ -112,7 +101,7 @@ export default function Page() {
         >
           <Link href="/characters">Ver todos los personajes</Link>
         </motion.h1>
-      </div>
+      </div>*/}
 
       <motion.div
         initial={{ opacity: 0 }}
@@ -136,7 +125,7 @@ export default function Page() {
               <CharacterCard {...result} key={result._id} />
             ))
           )}
-          {!isLoading && results.length === 0 && <EmptyCharacter />}
+          {/*{!isLoading && results.length === 0 && <EmptyCharacter />}*/}
         </AnimatePresence>
       </motion.div>
 

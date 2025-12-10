@@ -64,7 +64,7 @@ export default function HomeSidebar({ session }: { session: Session }) {
   const { theme, setTheme } = useTheme();
 
   return (
-    <Sidebar>
+    <Sidebar className="border-input">
       <SidebarHeader className="pt-4">
         <SidebarMenu>
           <SidebarMenuButton className="hover:bg-transparent">
@@ -77,23 +77,23 @@ export default function HomeSidebar({ session }: { session: Session }) {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent className="flex flex-col gap-1">
-            <CreateCharacter />
+            {/*<CreateCharacter />*/}
             <SidebarMenuItem className="flex items-center gap-2">
               <SidebarMenuButton isActive={pathname === "/home"} asChild>
                 <Link href="/home">
-                  <Compass />
+                  <Compass className="text-muted-foreground" />
                   Inicio
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            <SidebarMenuItem className="flex items-center gap-2">
+            {/*<SidebarMenuItem className="flex items-center gap-2">
               <SidebarMenuButton isActive={pathname === "/characters"} asChild>
                 <Link href="/characters">
                   <User2Icon />
                   Tus personajes
                 </Link>
               </SidebarMenuButton>
-            </SidebarMenuItem>
+            </SidebarMenuItem>*/}
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
@@ -206,7 +206,7 @@ function CreateCharacter() {
             <InputGroup className="md:text-base rounded-2xl resize-none h-24 focus-visible:outline-0 focus-visible:ring-0  border-border">
               <InputGroupTextarea
                 placeholder="Describe al personaje que quisieras crear"
-                className="md:text-base h-24 focus-visible:outline-0 ring-0 focus-visible:ring-0  bg-secondary"
+                className="md:text-base h-24 focus-visible:outline-0 ring-0 focus-visible:ring-0  bg-secondary "
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 onKeyDown={(e) => {

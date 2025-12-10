@@ -65,8 +65,8 @@ export default function Page() {
           alt="bg-glass"
           className="object-cover absolute inset-0 rounded-3xl"
         />
-        <DaimoIcon className="z-10 size-24 text-primary-foreground" />
-        <p className="z-10 tracking-tight font-medium text-6xl text-primary-foreground">
+        <DaimoIcon className="z-10 size-24 text-white" />
+        <p className="z-10 tracking-tight font-medium text-6xl text-white">
           daimo
         </p>
       </div>
@@ -94,6 +94,11 @@ export default function Page() {
             size="lg"
             className="rounded-full w-full text-base shadow-none"
             type="button"
+            onClick={async () => {
+              await authClient.signIn.social({
+                provider: "google",
+              });
+            }}
           >
             <GoogleIcon />
             Continuar con google

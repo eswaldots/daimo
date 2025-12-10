@@ -3,12 +3,13 @@ import { internalMutation } from "./_generated/server";
 
 export const internalCreate = internalMutation({
   args: {
-    creatorId: v.string(),
+    creatorId: v.optional(v.string()),
+    storageId: v.optional(v.id("_storage")),
     name: v.string(),
-    description: v.string(),
-    storageId: v.id("_storage"),
-    voicePrompt: v.string(),
+    prompt: v.string(),
+    shortDescription: v.string(),
     firstMessagePrompt: v.string(),
+    voiceId: v.string(),
   },
   returns: v.id("characters"),
   handler: async (ctx, args) => {
