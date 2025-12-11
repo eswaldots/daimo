@@ -11,7 +11,7 @@ export function Trigger() {
   const pathname = usePathname();
 
   return (
-    <header className="w-screen bg-secondary/50 border-b-border border-b backdrop-blur-lg fixed h-12 top-0 left-0 md:hidden px-4 z-50 flex items-center">
+    <header className="w-screen dark:bg-secondary/80 bg-background/50 backdrop-blur-lg fixed h-12 top-0 left-0 md:hidden px-2 z-50 flex items-center">
       <Button
         variant="ghost"
         className="fixed md:hidden flex rounded-full z-50 bg-transparent"

@@ -4,46 +4,14 @@ import {
   CharacterCard,
   CharacterCardSkeleton,
 } from "@/components/characters/character-card";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@daimo/backend";
 import { useMutation, usePaginatedQuery } from "convex/react";
 import { AnimatePresence, motion } from "motion/react";
-import { Doc } from "../../../../../packages/backend/convex/_generated/dataModel";
-import Image from "next/image";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { Button } from "@/components/ui/button";
-import { EllipsisVertical, Trash } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { useState } from "react";
-import { Spinner } from "@/components/ui/spinner";
-import { toast } from "sonner";
-import { CreateCharacter } from "@/components/layout/home/create-character";
 import { EmptyCharacter } from "@/components/layout/home/empty-character";
 
 export default function Page() {

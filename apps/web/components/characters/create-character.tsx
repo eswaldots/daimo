@@ -16,7 +16,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation } from "convex/react";
-import { api } from "@daimo/backend";
+import { api, Doc } from "@daimo/backend";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -33,7 +33,7 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Voice } from "@/lib/voices";
-import { SelectableVoiceItem, VoiceItem } from "../layout/admin/voice-item";
+import { SelectableVoiceItem } from "../layout/admin/voice-item";
 import { ItemGroup } from "../ui/item";
 
 const characterSchema = z.object({
@@ -42,7 +42,18 @@ const characterSchema = z.object({
     .min(2, { message: "El nombre debe tener al menos 2 caracteres" }),
   shortDescription: z
     .string()
-    .min(10, { message: "La descripción debe tener al menos 10 caracteres" }),
+    .min(10, {
+      message: "La descripción corta debe tener al menos 10 caracteres",
+    })
+    .max(40, {
+      message: "La descripción corta no puede tener mas de 80 caracteres",
+    }),
+  description: z
+    .string()
+    .min(10, { message: "La descripción debe tener al menos 10 caracteres" })
+    .max(120, {
+      message: "La descripción no puede tener mas de 120 caracteres",
+    }),
   prompt: z
     .string()
     .min(10, { message: "El prompt debe tener al menos 10 caracteres" }),
@@ -53,17 +64,25 @@ const characterSchema = z.object({
 
 type CharacterFormValues = z.infer<typeof characterSchema>;
 
-export default function CreateCharacterPage({ voices }: { voices: Voice[] }) {
+export default function CreateCharacterPage({
+  voices,
+  defaultValues,
+}: {
+  voices: Voice[];
+  defaultValues?: Doc<"characters">;
+}) {
   const [image, setImage] = useState<File | null>(null);
 
   const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       const reader = new FileReader();
-      reader.onload = (event) => {
-        setImage(file);
-      };
-      reader.readAsDataURL(file);
+      if (file) {
+        reader.onload = (event) => {
+          setImage(file);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -74,6 +93,7 @@ export default function CreateCharacterPage({ voices }: { voices: Voice[] }) {
     watch,
   } = useForm<CharacterFormValues>({
     resolver: zodResolver(characterSchema),
+    defaultValues,
   });
 
   const [isOpen, setIsOpen] = useState(false);
@@ -187,14 +207,27 @@ export default function CreateCharacterPage({ voices }: { voices: Voice[] }) {
           </Field>
 
           <Field>
-            <FieldLabel className="text-foreground">Descripción</FieldLabel>
+            <FieldLabel className="text-foreground">
+              Descripción corta
+            </FieldLabel>
             <Textarea
-              placeholder="Agrega una corta descripción del personaje"
+              placeholder="Agrega una corta descripción del personaje, esta se usara en la presentación del mismo"
               className="rounded-lg bg-secondary dark:bg-border border-border/20 hover:bg-input transition-colors resize-none h-27"
               {...register("shortDescription")}
               aria-invalid={!!errors.shortDescription}
             />
             <FieldError errors={[errors.shortDescription]} />
+          </Field>
+
+          <Field>
+            <FieldLabel className="text-foreground">Descripción</FieldLabel>
+            <Textarea
+              placeholder="Agrega una descripción del personaje"
+              className="rounded-lg bg-secondary dark:bg-border border-border/20 hover:bg-input transition-colors resize-none h-27"
+              {...register("description")}
+              aria-invalid={!!errors.description}
+            />
+            <FieldError errors={[errors.description]} />
           </Field>
 
           <Field>

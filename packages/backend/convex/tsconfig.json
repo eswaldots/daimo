@@ -24,6 +24,6 @@
     "isolatedModules": true,
     "noEmit": true
   },
-  "include": ["./**/*"],
+  "include": ["./**/*", "../index.ts", "../index.js"],
   "exclude": ["./_generated"]
 }

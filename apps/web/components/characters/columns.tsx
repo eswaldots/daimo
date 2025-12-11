@@ -4,17 +4,17 @@ import { Doc } from "@daimo/backend";
 import { ColumnDef } from "@tanstack/react-table";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
-import { Copy, MoreHorizontal } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import Link from "next/link";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -76,7 +76,11 @@ export const charactersColumns: ColumnDef<
               Copiar modelo
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Editar personaje</DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/admin/characters/${payment._id}/edit`}>
+                Editar personaje
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem variant="destructive">
               Eliminar personaje
             </DropdownMenuItem>

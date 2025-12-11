@@ -90,6 +90,7 @@ export const create = mutation({
     name: v.string(),
     prompt: v.string(),
     shortDescription: v.string(),
+    description: v.string(),
     firstMessagePrompt: v.string(),
     voiceId: v.string(),
   },

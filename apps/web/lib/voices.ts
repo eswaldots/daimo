@@ -54,7 +54,7 @@ export const getVoices = async (opts: Options) => {
   return data;
 };
 
-export const playVoice = async (voiceId: string) => {
+export const playVoice = async (voiceId: string, sound?: string) => {
   const options = {
     method: "POST",
     headers: {
@@ -65,6 +65,7 @@ export const playVoice = async (voiceId: string) => {
     body: JSON.stringify({
       model_id: "sonic-3",
       transcript:
+        sound ||
         '<emotion value="positivity">Hola amigo, espero que estes teniendo un buen día!</emotion>',
       voice: { mode: "id", id: voiceId },
       output_format: {

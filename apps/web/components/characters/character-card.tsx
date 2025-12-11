@@ -1,21 +1,5 @@
 "use client";
 
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -25,17 +9,26 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { api } from "@daimo/backend";
-import { useMutation } from "convex/react";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { Doc } from "../../../../packages/backend/convex/_generated/dataModel";
 import Image from "next/image";
-import { useState } from "react";
-import { toast } from "sonner";
-import { AudioLines, EllipsisVertical, Trash } from "lucide-react";
-import { Spinner } from "@/components/ui/spinner";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { AudioLines, Pause, Play } from "lucide-react";
 import Link from "next/link";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTitle,
+  DrawerTrigger,
+} from "../ui/drawer";
+import { useVoicePreview } from "@/hooks/use-voice-preview";
+import { Spinner } from "../ui/spinner";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function CharacterCardSkeleton() {
   return (
@@ -56,30 +49,79 @@ export function CharacterCardSkeleton() {
   );
 }
 
+const playVariants = {
+  initial: {
+    scale: 0,
+  },
+  animate: {
+    scale: 1,
+  },
+  exit: {
+    scale: 0,
+  },
+};
+
 export function CharacterCard(
   props: Doc<"characters"> & { storageUrl?: string | null },
 ) {
-  const deleteCharacter = useMutation(api.characters.deleteCharacter);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const isMobile = useIsMobile();
 
-  const handleClick = async () => {
-    setIsLoading(true);
+  if (!isMobile) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ type: "spring" }}
+      >
+        <Dialog>
+          <DialogTrigger asChild>
+            <Card className="group px-0 bg-transparent duration-300 cursor-pointer transition-colors border-0 shadow-none w-full md:w-74 rounded-2xl py-4 gap-2">
+              <CardHeader className="px-0 rounded-lg relative">
+                <motion.picture>
+                  <Image
+                    src={props.storageUrl ?? ""}
+                    alt="image"
+                    width={1028}
+                    height={1028}
+                    className="rounded-lg h-64 object-cover object-[50%_25%]"
+                  />
+                </motion.picture>
+                <div className="group-hover:opacity-100 opacity-0 transition-all h-64 rounded-lg bg-black/20 absolute inset-0">
+                  <Button
+                    className="backdrop-blur-lg bg-black/50 absolute left-2 bottom-2 text-white rounded-full hover:bg-white hover:text-black cursor-pointer"
+                    size="icon-sm"
+                    asChild
+                  >
+                    <Link href={`/playground/${props._id}/`}>
+                      <AudioLines />
+                    </Link>
+                  </Button>
+                </div>
+              </CardHeader>
 
-    try {
-      await deleteCharacter({
-        characterId: props._id,
-      });
-
-      setIsOpen(false);
-
-      toast.success("Personaje eliminado correctamente");
-    } catch {
-      toast.error("Hubo un error al eliminar el personaje");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+              <CardContent className="space-y-2 truncate px-0">
+                <CardTitle>
+                  <div className="flex items-center w-full justify-between hover:underline">
+                    {props.name}
+                  </div>
+                </CardTitle>
+                <CardDescription className="text-balance max-h-16">
+                  {props.shortDescription}
+                </CardDescription>
+              </CardContent>
+            </Card>
+          </DialogTrigger>
+          <DialogContent
+            className="outline-0 ring-0 border-0 px-0 pt-0 pb-0"
+            showCloseButton={false}
+          >
+            <CharacterContent {...props} />
+          </DialogContent>
+        </Dialog>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
@@ -87,90 +129,189 @@ export function CharacterCard(
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ type: "spring" }}
+      className="w-full"
     >
-      <Link href={`/playground/${props._id}/`}>
-        <Card className="group px-0 dark:bg-border/50 duration-300 dark:hover:bg-foreground/5 cursor-pointer transition-colors border-0 shadow-none w-full md:w-74 rounded-2xl py-4 gap-2">
-          <CardHeader className="px-0 rounded-lg relative">
-            <Image
-              src={props.storageUrl ?? ""}
-              alt="image"
-              width={1028}
-              height={1028}
-              className="rounded-lg h-64 object-cover object-[50%_25%]"
-            />
-            <div className="group-hover:opacity-100 opacity-0 transition-all h-64 rounded-lg bg-black/20 absolute inset-0">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    className="bg-black/50 absolute left-2 bottom-2 text-white rounded-full hover:bg-white hover:text-black cursor-pointer"
-                    size="icon-sm"
-                  >
+      <Drawer>
+        <DrawerTrigger asChild>
+          <Card className="group px-0 bg-transparent duration-300 cursor-pointer transition-colors border-0 shadow-none w-full md:w-74 rounded-2xl py-4 gap-2">
+            <CardHeader className="px-0 rounded-lg relative">
+              <motion.picture>
+                <Image
+                  src={props.storageUrl ?? ""}
+                  alt="image"
+                  width={1028}
+                  height={1028}
+                  className="rounded-xl h-72 object-cover object-[50%_25%]"
+                />
+              </motion.picture>
+              <div className="group-hover:opacity-100 opacity-0 transition-all h-64 rounded-lg bg-black/20 absolute inset-0">
+                <Button
+                  className="backdrop-blur-lg bg-black/50 absolute left-2 bottom-2 text-white rounded-full hover:bg-white hover:text-black cursor-pointer"
+                  size="icon-sm"
+                  asChild
+                >
+                  <Link href={`/playground/${props._id}/`}>
                     <AudioLines />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Empezar a conversar</TooltipContent>
-              </Tooltip>
-            </div>
-          </CardHeader>
-
-          <CardContent className="space-y-2 truncate px-0">
-            <CardTitle>
-              <div className="flex items-center w-full justify-between">
-                {props.name}
-                {/*<Dialog open={isOpen} onOpenChange={setIsOpen}>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild className="-mr-4">
-                    <Button size="icon-sm" variant="ghost">
-                      <EllipsisVertical />
-                    </Button>
-                  </DropdownMenuTrigger>
-
-                  <DropdownMenuContent align="start">
-                    <DialogTrigger asChild>
-                      <DropdownMenuItem variant="destructive">
-                        <Trash />
-                        Eliminar personaje
-                      </DropdownMenuItem>
-                    </DialogTrigger>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <DialogContent showCloseButton={false}>
-                  <DialogHeader>
-                    <DialogTitle>Eliminar a {props.name}</DialogTitle>
-                    <DialogDescription>
-                      Estas seguro de que quieres eliminar al personaje{" "}
-                      <strong>{props.name}</strong>?
-                    </DialogDescription>
-                  </DialogHeader>
-
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button variant="ghost" className="rounded-full">
-                        Atrás
-                      </Button>
-                    </DialogClose>
-
-                    <Button
-                      variant="destructive"
-                      className="rounded-full"
-                      disabled={isLoading}
-                      onClick={handleClick}
-                    >
-                      {isLoading && <Spinner />}
-                      Eliminar
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>*/}
+                  </Link>
+                </Button>
               </div>
-            </CardTitle>
-            <CardDescription className="text-balance max-h-16">
-              {props.shortDescription}
-            </CardDescription>
-          </CardContent>
-        </Card>
-      </Link>
+            </CardHeader>
+
+            <CardContent className="md:space-y-2 truncate px-0">
+              <CardTitle>
+                <div className="flex items-center w-full justify-between hover:underline md:text-base text-lg">
+                  {props.name}
+                </div>
+              </CardTitle>
+              <CardDescription className="text-balance max-h-16 text-sm">
+                {props.shortDescription}
+              </CardDescription>
+            </CardContent>
+          </Card>
+        </DrawerTrigger>
+        <DrawerContent className="outline-0 ring-0 border-0 px-0 pt-0 pb-0 rounded-t-3xl">
+          <CharacterContent {...props} />
+        </DrawerContent>
+      </Drawer>
     </motion.div>
+  );
+}
+
+function CharacterContent(
+  props: Doc<"characters"> & { storageUrl?: string | null },
+) {
+  const { handlePlay, isLoading, isPlaying } = useVoicePreview();
+  const isMobile = useIsMobile();
+
+  return (
+    <>
+      {isMobile ? (
+        <DrawerTitle className="sr-only"></DrawerTitle>
+      ) : (
+        <DialogTitle className="sr-only">{props.name}</DialogTitle>
+      )}
+      {isMobile && (
+        <div className="absolute right-1/2 translate-x-1/2 bg-white/50 backdrop-blur-lg mx-auto mt-4 hidden h-2 w-[100px] shrink-0 rounded-full group-data-[vaul-drawer-direction=bottom]/drawer-content:block" />
+      )}
+      <div className="h-72 w-full">
+        <motion.picture
+          layoutId={`image-${props._id}`}
+          key={`image-${props._id}`}
+        >
+          <Image
+            src={props.storageUrl ?? ""}
+            width={2000}
+            height={2000}
+            alt={props.name}
+            className="object-cover object-[50%_50%] h-96 rounded-t-3xl"
+          />
+        </motion.picture>
+      </div>
+      <div className="my-2 z-10 w-full p-6 rounded-b-3xl h-full relative bg-background space-y-4">
+        <div>
+          <motion.div
+            className="flex items-center gap-3"
+            initial={{
+              opacity: 0,
+            }}
+            animate={{
+              opacity: 1,
+            }}
+            exit={{
+              opacity: 0,
+            }}
+            transition={{
+              delay: 0.2,
+            }}
+          >
+            <motion.h1 className="text-3xl font-medium text-balance tracking-tight text-foreground z-20">
+              {props.name}
+            </motion.h1>
+
+            <Button
+              size="icon-lg"
+              variant="secondary"
+              className="cursor-pointer z-20 rounded-full relative"
+              onClick={async () => {
+                await handlePlay(props.voiceId, props.firstMessagePrompt);
+              }}
+            >
+              <AnimatePresence initial={false}>
+                {isLoading ? (
+                  <motion.div
+                    key="loading"
+                    {...playVariants}
+                    className="absolute"
+                  >
+                    <Spinner className="size-5 text-foreground z-20" />
+                  </motion.div>
+                ) : !isPlaying ? (
+                  <motion.div
+                    key="play"
+                    {...playVariants}
+                    className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2"
+                  >
+                    <Play className="fill-foreground text-foreground size-5 z-20" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="pause"
+                    {...playVariants}
+                    className="absolute"
+                  >
+                    <Pause className="fill-foreground text-foreground size-5 z-20" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </Button>
+          </motion.div>
+        </div>
+
+        <motion.p
+          className="mt-2 text-muted-foreground flex items-center justify-end gap-2 z-20  max-w-full leading-relaxed"
+          initial={{
+            opacity: 0,
+          }}
+          animate={{
+            opacity: 1,
+          }}
+          exit={{
+            opacity: 0,
+          }}
+          transition={{
+            delay: 0.4,
+          }}
+        >
+          {props.description}
+        </motion.p>
+
+        <motion.div
+          className="mt-8 flex items-center justify-end gap-2 z-20"
+          initial={{
+            opacity: 0,
+          }}
+          animate={{
+            opacity: 1,
+          }}
+          exit={{
+            opacity: 0,
+          }}
+          transition={{
+            delay: 0.6,
+          }}
+        >
+          <Button
+            className="w-full rounded-full z-20 text-base"
+            asChild
+            size="lg"
+          >
+            <Link href={`/playground/${props._id}`}>
+              <AudioLines />
+              Conversar
+            </Link>
+          </Button>
+        </motion.div>
+      </div>
+    </>
   );
 }

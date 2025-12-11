@@ -1,23 +1,6 @@
 "use client";
 
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import {
   Card,
   CardContent,
   CardDescription,
@@ -77,7 +60,7 @@ export default function Page() {
           Inicio
         </motion.h1>
         <motion.p
-          className="text-lg text-muted-foreground tracking-tight"
+          className="text-sm md:text-lg text-muted-foreground tracking-tight"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
@@ -106,7 +89,7 @@ export default function Page() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="flex flex-wrap gap-4"
+        className="flex flex-wrap md:gap-4 gap-0"
       >
         <AnimatePresence mode="wait">
           {isLoading ? (

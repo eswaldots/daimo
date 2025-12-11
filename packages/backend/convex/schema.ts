@@ -8,6 +8,7 @@ export default defineSchema({
     name: v.string(),
     prompt: v.string(),
     shortDescription: v.string(),
+    description: v.optional(v.string()),
     firstMessagePrompt: v.string(),
     voiceId: v.string(),
   }).index("by_creator_id", ["creatorId"]),

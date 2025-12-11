@@ -27,7 +27,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
         <SidebarInset className="relative dark:bg-muted bg-background">
           <div className="flex flex-1 flex-col max-w-7xl mx-auto w-full">
             <div className="@container/main flex flex-1 flex-col gap-2">
-              <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-14 md:pt-14 pt-18 px-6">
+              <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-14 md:pt-14 pt-18 md:px-12 px-4">
                 <Trigger />
                 {children}
               </div>
