@@ -3,14 +3,12 @@
   "version": "1.0.0",
   "type": "module",
   "description": "",
-  "main": "./index.js",
-  "types": "./index.d.ts",
+  "main": "./index.ts",
   "exports": {
-    ".": {
-      "import": "./index.js",
-      "require": "./index.js"
-    },
-    "./package.json": "./package.json"
+    "./*": {
+      "types": "./convex/_generated/*.ts",
+      "default": "./convex/_generated/*.js"
+    }
   },
   "scripts": {
     "dev": "convex dev",
@@ -36,6 +34,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "@daimo/tsconfig": "workspace:*"
   }
 }

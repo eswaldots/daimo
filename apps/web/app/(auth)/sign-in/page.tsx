@@ -87,6 +87,11 @@ export default function Page() {
             size="lg"
             className="rounded-full w-full text-base shadow-none"
             type="button"
+            onClick={async () => {
+              await authClient.signIn.social({
+                provider: "google",
+              });
+            }}
           >
             <GoogleIcon />
             Continuar con google

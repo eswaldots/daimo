@@ -3,6 +3,7 @@
    * Convex functions run in and is used to typecheck them.
    * You can modify it, but some settings are required to use Convex.
    */
+  "extends": "@daimo/tsconfig/base.json",
   "compilerOptions": {
     /* These settings are not required by Convex and can be modified. */
     "allowJs": true,
@@ -11,6 +12,9 @@
     "jsx": "react-jsx",
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
+    /* These settings are required by Better auth. */
+    "declaration": false,
+    "declarationMap": false,
 
     /* These compiler options are required by Convex */
     "target": "ESNext",
