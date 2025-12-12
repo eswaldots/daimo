@@ -38,7 +38,7 @@ export function TrackSelector({
     <div className={cn("flex items-center gap-0", className)}>
       <TrackToggle
         size="icon"
-        variant="primary"
+        variant="default"
         source={source}
         pressed={pressed}
         pending={pending}

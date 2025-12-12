@@ -37,11 +37,11 @@ const CONTAINER_MOTION_PROPS = {
 
 const MESSAGE_MOTION_PROPS = {
   variants: {
-    hidden: {
+    initial: {
       opacity: 0,
       translateY: 10,
     },
-    visible: {
+    whileInView: {
       opacity: 1,
       translateY: 0,
     },
@@ -78,7 +78,14 @@ export function ChatTranscript({
                 message={message}
                 messageOrigin={messageOrigin}
                 hasBeenEdited={hasBeenEdited}
-                {...MESSAGE_MOTION_PROPS}
+                initial={{
+                  opacity: 0,
+                  translateY: 10,
+                }}
+                animate={{
+                  opacity: 1,
+                  translateY: 0,
+                }}
               />
             );
           })}
