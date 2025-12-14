@@ -94,7 +94,7 @@ async def my_agent(ctx: JobContext):
         tts=inworld.TTS(model="inworld-tts-1-max", voice=character["voiceId"]),
         # VAD and turn detection are used to determine when the user is speaking and when the agent should respond
         # See more at https://docs.livekit.io/agents/build/turns
-        turn_detection=MultilingualModel(),
+        turn_detection="stt",
         vad=ctx.proc.userdata["vad"],
         # allow the LLM to generate a response while waiting for the end of turn
         # See more at https://docs.livekit.io/agents/build/audio/#preemptive-generation
