@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
     dangerouslyAllowLocalIP: true,
     remotePatterns: [
       {
-        protocol: "http",
+        protocol: "https",
         hostname: "cautious-pelican-191.convex.cloud", // Replace with your image domain
         pathname: "/api/storage/**", // Optional: restrict to a specific path
       },
