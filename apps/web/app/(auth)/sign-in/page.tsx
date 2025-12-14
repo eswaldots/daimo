@@ -13,6 +13,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { authClient } from "@/lib/auth-client";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 const signUpSchema = z.object({
@@ -35,6 +36,7 @@ export default function Page() {
   });
 
   const router = useRouter();
+  const [isSocialLoading, setIsSocialLoading] = useState(false);
 
   const onSubmit = async (data: SignUpFormValues) => {
     const { error } = await authClient.signIn.email({
@@ -88,12 +90,18 @@ export default function Page() {
             className="rounded-full w-full text-base shadow-none"
             type="button"
             onClick={async () => {
+              setIsSocialLoading(true);
+
               await authClient.signIn.social({
                 provider: "google",
               });
             }}
           >
-            <GoogleIcon />
+            {isSocialLoading ? (
+              <Spinner className="size-[20px]" />
+            ) : (
+              <GoogleIcon />
+            )}
             Continuar con google
           </Button>
 
