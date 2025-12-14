@@ -35,7 +35,7 @@ export function CharacterCardSkeleton() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="w-full"
+      className="md:w-74 w-full"
     >
       <Card className="bg-transparent h-86 border-0 shadow-none w-full md:w-74 rounded-2xl px-0 gap-2 py-4">
         <CardHeader className="px-0">
