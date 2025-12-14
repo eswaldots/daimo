@@ -83,11 +83,8 @@ async def my_agent(ctx: JobContext):
         # See all available models at https://docs.livekit.io/agents/models/stt/
         stt=deepgram.STT(model="nova-2-conversationalai", language="es"),
         # A Large Language Model (LLM) is your agent's brain, processing user input and generating a response
-        # See all available models at https://docs.livekit.io/agents/models/llm/
-        llm=openai.LLM(
-            model="llama-3.1-8b-instant",
-            base_url="https://api.groq.com/openai/v1",
-            api_key=os.environ["GROQ_API_KEY"],
+        llm=openai.LLM.with_deepseek(
+            model="deepseek-chat",
         ),
         # Text-to-speech (TTS) is your agent's voice, turning the LLM's text into speech that the user can hear
         # See all available models as well as voice selections at https://docs.livekit.io/agents/models/tts/
