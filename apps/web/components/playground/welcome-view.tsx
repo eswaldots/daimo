@@ -2,6 +2,10 @@ import { useState } from "react";
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
 import { AnimatePresence, motion } from "motion/react";
+import { useQuery } from "convex/react";
+import Image from "next/image";
+import { api, Id } from "@daimo/backend";
+import { useParams } from "next/navigation";
 
 function WelcomeImage() {
   return (
@@ -33,61 +37,50 @@ export const WelcomeView = ({
   onStartCall,
   ref,
 }: React.ComponentProps<"div"> & WelcomeViewProps) => {
+  const { characterId } = useParams();
+  const character = useQuery(api.characters.getById, {
+    characterId: characterId as Id<"characters">,
+  });
   const [isLoading, setIsLoading] = useState(false);
 
   return (
     <div ref={ref}>
       <section className="bg-background flex flex-col items-center justify-center text-center">
-        <WelcomeImage />
+        <div className="flex items-center gap-6 my-4 flex-col">
+          <Image
+            className="size-36 rounded-full object-cover"
+            src={character?.storageUrl ?? ""}
+            alt="image"
+            width={2000}
+            height={2000}
+          />
 
-        <p className="text-foreground max-w-prose pt-1 leading-6 font-medium">
-          Chat live with your voice AI agent
-        </p>
-
+          <p className="text-foreground max-w-prose pt-1 leading-6 font-medium tracking-tight text-4xl">
+            Habla con {character?.name}
+          </p>
+        </div>
         <Button
           variant="default"
-          size="lg"
           onClick={() => {
             setIsLoading(true);
 
             onStartCall();
           }}
-          className="mt-6 w-64 rounded-full tracking-tight"
+          className="mt-6 rounded-full"
         >
           <AnimatePresence>
-            {isLoading ? (
+            {isLoading && (
               <MotionSpinner
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
+                key="spinner"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
               />
-            ) : (
-              <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
-              >
-                {startButtonText}
-              </motion.span>
             )}
+            <motion.span key="span">{startButtonText}</motion.span>
           </AnimatePresence>
         </Button>
       </section>
-
-      <div className="fixed bottom-5 left-0 flex w-full items-center justify-center">
-        <p className="text-muted-foreground max-w-prose pt-1 text-xs leading-5 font-normal text-pretty md:text-sm">
-          Need help getting set up? Check out the{" "}
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            href="https://docs.livekit.io/agents/start/voice-ai/"
-            className="underline"
-          >
-            Voice AI quickstart
-          </a>
-          .
-        </p>
-      </div>
     </div>
   );
 };

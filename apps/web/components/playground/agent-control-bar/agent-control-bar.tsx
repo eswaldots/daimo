@@ -164,7 +164,7 @@ export function AgentControlBar({
         {visibleControls.leave && (
           <Button
             variant="destructive"
-            size="lg"
+            size="icon"
             onClick={onDisconnect}
             disabled={!isConnected}
             className="rounded-full"

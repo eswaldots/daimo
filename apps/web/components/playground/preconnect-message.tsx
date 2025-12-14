@@ -1,13 +1,13 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, MotionProps } from "motion/react";
 import { type ReceivedMessage } from "@livekit/components-react";
 import { cn } from "@/lib/utils";
 import ShimmerText from "./shimmer-text";
 
 const MotionMessage = motion.create("p");
 
-const VIEW_MOTION_PROPS = {
+const VIEW_MOTION_PROPS: MotionProps = {
   variants: {
     visible: {
       opacity: 1,

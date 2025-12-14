@@ -15,6 +15,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { ChevronDown } from "lucide-react";
 
 type DeviceSelectProps = React.ComponentProps<typeof SelectTrigger> & {
   kind: MediaDeviceKind;
@@ -91,27 +99,25 @@ export function TrackDeviceSelect({
   }
 
   return (
-    <Select
-      open={open}
-      value={activeDeviceId}
-      onOpenChange={setOpen}
-      onValueChange={handleActiveDeviceChange}
-    >
-      <SelectTrigger className={cn(selectVariants({ size }), props.className)}>
-        {size !== "sm" && (
-          <SelectValue
-            className="font-mono text-sm"
-            placeholder={`Select a ${kind}`}
-          />
-        )}
-      </SelectTrigger>
-      <SelectContent className="rounded-xl">
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger
+        className={cn(selectVariants({ size }), props.className)}
+        asChild
+      >
+        <Button size="icon" variant="secondary">
+          <ChevronDown className="text-muted-foreground" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="rounded-lg">
         {filteredDevices.map((device) => (
-          <SelectItem key={device.deviceId} value={device.deviceId}>
+          <DropdownMenuItem
+            key={device.deviceId}
+            onSelect={() => handleActiveDeviceChange(device.deviceId)}
+          >
             {device.label}
-          </SelectItem>
+          </DropdownMenuItem>
         ))}
-      </SelectContent>
-    </Select>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

@@ -38,13 +38,13 @@ export function TrackSelector({
     <div className={cn("flex items-center gap-0", className)}>
       <TrackToggle
         size="icon"
-        variant="primary"
+        variant="default"
         source={source}
         pressed={pressed}
         pending={pending}
         disabled={disabled}
         onPressedChange={onPressedChange}
-        className="peer/track group/track has-[.audiovisualizer]:w-auto has-[.audiovisualizer]:px-3 has-[~_button]:rounded-r-none has-[~_button]:pr-2 has-[~_button]:pl-3"
+        className="peer/track bg-secondary group/track has-[.audiovisualizer]:w-auto has-[.audiovisualizer]:px-3 has-[~_button]:rounded-r-none has-[~_button]:pr-2 has-[~_button]:pl-3"
       >
         {audioTrackRef && (
           <BarVisualizer
@@ -63,7 +63,7 @@ export function TrackSelector({
           </BarVisualizer>
         )}
       </TrackToggle>
-      <hr className="bg-border peer-data-[state=off]/track:bg-destructive/20 relative z-10 -mr-px hidden h-4 w-px border-none has-[~_button]:block" />
+      <hr className="bg-border relative z-10 -mx-px hidden h-9 w-px border-none has-[~_button]:block" />
       <TrackDeviceSelect
         size="sm"
         kind={kind}
@@ -71,7 +71,7 @@ export function TrackSelector({
         onMediaDeviceError={onMediaDeviceError}
         onActiveDeviceChange={onActiveDeviceChange}
         className={cn([
-          "rounded-l-none pl-2",
+          "rounded-l-none pl-2 border-none",
           "peer-data-[state=off]/track:text-destructive",
           "hover:text-foreground focus:text-foreground",
           "hover:peer-data-[state=off]/track:text-foreground",

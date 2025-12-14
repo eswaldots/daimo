@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { motion } from "motion/react";
 
 export interface ChatEntryProps extends React.HTMLAttributes<HTMLLIElement> {
   /** The locale to use for the timestamp. */
@@ -54,7 +55,15 @@ export const ChatEntry = ({
           messageOrigin === "local" ? "bg-muted ml-auto p-2" : "mr-auto",
         )}
       >
-        {message}
+        {message.split(" ").map((word, index) => (
+          <motion.span
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            key={index}
+          >
+            {word}{" "}
+          </motion.span>
+        ))}
       </span>
     </li>
   );

@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { motion, Variants } from "motion/react";
+import { motion, MotionProps } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { ArrowUp } from "lucide-react";
 
-const MOTION_PROPS = {
+const MOTION_PROPS: MotionProps = {
   variants: {
     hidden: {
       height: 0,
@@ -89,7 +89,7 @@ export function ChatInput({
           disabled={isDisabled}
           variant={isDisabled ? "secondary" : "default"}
           title={isSending ? "Sending..." : "Send"}
-          className="self-start"
+          className="self-start rounded-full"
         >
           {isSending ? <Spinner /> : <ArrowUp />}
         </Button>

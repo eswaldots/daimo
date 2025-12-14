@@ -19,7 +19,7 @@ export default async function Page({
     throw new Error("Character not found");
   }
 
-  const { data: voices } = await getVoices(options);
+  const { voices } = await getVoices(options);
 
   return <CreateCharacterPage voices={voices} defaultValues={character} />;
 }

@@ -25,8 +25,8 @@ export const APP_CONFIG_DEFAULTS: AppConfig = {
   pageDescription: "A voice agent built with LiveKit",
 
   supportsChatInput: true,
-  supportsVideoInput: true,
-  supportsScreenShare: true,
+  supportsVideoInput: false,
+  supportsScreenShare: false,
   isPreConnectBufferEnabled: true,
 
   logo: "/lk-logo.svg",

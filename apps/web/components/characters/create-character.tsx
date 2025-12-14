@@ -69,7 +69,7 @@ export default function CreateCharacterPage({
   defaultValues,
 }: {
   voices: Voice[];
-  defaultValues?: Doc<"characters">;
+  defaultValues?: Doc<"characters"> & { storageUrl?: string | null };
 }) {
   const [image, setImage] = useState<File | null>(null);
 
@@ -100,11 +100,12 @@ export default function CreateCharacterPage({
   const [voice, setVoice] = useState<Voice | null>(null);
 
   const create = useMutation(api.characters.create);
+  const edit = useMutation(api.characters.editCharacter);
   const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
 
   const onSubmit = async (data: CharacterFormValues) => {
     console.log("Form data:", data);
-    const voiceId = voice?.id ?? "";
+    const voiceId = voice?.voiceId ?? "";
     // Form submission will be handled later by the user
 
     if (image) {
@@ -119,9 +120,19 @@ export default function CreateCharacterPage({
       const { storageId } = await result.json();
 
       try {
-        await create({ storageId, ...data, voiceId });
+        if (defaultValues) {
+          await edit({
+            ...data,
+            voiceId,
+            characterId: defaultValues._id,
+          });
+        } else {
+          await create({ storageId, ...data, voiceId });
+        }
 
-        toast.success("Personaje creado exitosamente");
+        toast.success(
+          `Personaje ${defaultValues ? "editado" : "creado"} exitosamente`,
+        );
 
         router.push("/admin/characters");
 
@@ -135,9 +146,19 @@ export default function CreateCharacterPage({
     }
 
     try {
-      await create({ ...data, voiceId });
+      if (defaultValues) {
+        await edit({
+          ...data,
+          voiceId,
+          characterId: defaultValues._id,
+        });
+      } else {
+        await create({ ...data, voiceId });
+      }
 
-      toast.success("Personaje creado exitosamente");
+      toast.success(
+        `Personaje ${defaultValues ? "editado" : "creado"} exitosamente`,
+      );
 
       router.push("/admin/characters");
     } catch (error) {
@@ -167,7 +188,13 @@ export default function CreateCharacterPage({
             <div className="relative w-fit">
               <Avatar className="size-24 hover:bg-background transition-colors cursor-pointer z-10">
                 <AvatarImage
-                  src={image ? URL.createObjectURL(image) : ""}
+                  src={
+                    defaultValues
+                      ? (defaultValues.storageUrl ?? "")
+                      : image
+                        ? URL.createObjectURL(image)
+                        : ""
+                  }
                   className="object-cover object-center"
                 ></AvatarImage>
                 {!image && (
@@ -176,21 +203,25 @@ export default function CreateCharacterPage({
                   </AvatarFallback>
                 )}
               </Avatar>
-              <Button
-                type="button"
-                className="absolute bottom-0 right-0 z-40 rounded-full dark:bg-accent"
-                variant="outline"
-                size="icon-sm"
-              >
-                <PlusIcon />
-                <input
-                  className="opacity-0 absolute inset-0"
-                  type="file"
-                  name="myImage"
-                  // Event handler to capture file selection and update the state
-                  onChange={handleImage}
-                />
-              </Button>
+              {!defaultValues && (
+                <Button
+                  type="button"
+                  className="absolute bottom-0 right-0 z-40 rounded-full dark:bg-accent"
+                  variant="outline"
+                  size="icon-sm"
+                >
+                  <PlusIcon />
+                  {!defaultValues && (
+                    <input
+                      className="opacity-0 absolute inset-0"
+                      type="file"
+                      name="myImage"
+                      // Event handler to capture file selection and update the state
+                      onChange={handleImage}
+                    />
+                  )}
+                </Button>
+              )}
             </div>
             <h1 className="tracking-tight text-4xl font-medium">{title}</h1>
           </div>
@@ -265,10 +296,10 @@ export default function CreateCharacterPage({
                     <InputGroupInput placeholder="Busca una voz" />
                   </InputGroup>
 
-                  <ItemGroup>
+                  <ItemGroup className="max-h-[40vh] overflow-y-scroll gap-2">
                     {voices.map((voice) => (
                       <div
-                        key={voice.id}
+                        key={voice.voiceId}
                         onClick={() => {
                           setVoice(voice);
                           setIsOpen(false);
@@ -285,7 +316,7 @@ export default function CreateCharacterPage({
                   <InputGroupInput
                     placeholder="Seleccione una voz"
                     readOnly
-                    value={voice?.name}
+                    value={voice?.displayName}
                     className="cursor-default"
                   />
                   <InputGroupAddon align="inline-end">
@@ -302,7 +333,13 @@ export default function CreateCharacterPage({
             variant="default"
             className="rounded-full w-fit ml-auto shadow-none mt-8"
           >
-            {isSubmitting ? <Spinner /> : "Crear personaje"}
+            {isSubmitting ? (
+              <Spinner />
+            ) : defaultValues ? (
+              "Guardar cambios"
+            ) : (
+              "Crear personaje"
+            )}
           </Button>
         </FieldGroup>
       </form>

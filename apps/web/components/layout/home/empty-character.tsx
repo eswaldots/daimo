@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/empty";
 import { User2Icon, PlusIcon } from "lucide-react";
 import { motion } from "motion/react";
-import { CreateCharacter } from "./create-character";
 import Link from "next/link";
 
 export function EmptyCharacter() {
