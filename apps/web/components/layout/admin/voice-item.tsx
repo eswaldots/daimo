@@ -19,7 +19,7 @@ export function VoiceItem(voice: Voice) {
 
   return (
     <Item
-      key={voice.id}
+      key={voice.name}
       variant="muted"
       className="rounded-2xl items-center flex dark:bg-border bg-secondary"
     >
@@ -28,7 +28,7 @@ export function VoiceItem(voice: Voice) {
           variant="ghost"
           size="icon"
           className="dark:bg-transparent"
-          onClick={() => handlePlay(voice.id)}
+          onClick={async () => await handlePlay(voice.voiceId)}
         >
           {isLoading ? (
             <Spinner className="size-6 text-muted-foreground" />
@@ -40,8 +40,8 @@ export function VoiceItem(voice: Voice) {
         </Button>
       </ItemMedia>
       <ItemContent className="gap-0">
-        <ItemTitle className="text-base">{voice.name}</ItemTitle>
-        <ItemDescription className="text-sm">{voice.language}</ItemDescription>
+        <ItemTitle className="text-base">{voice.displayName}</ItemTitle>
+        <ItemDescription className="text-sm">{voice.langCode}</ItemDescription>
       </ItemContent>
       {/*<ItemActions>
         <Button
@@ -62,7 +62,7 @@ export function SelectableVoiceItem(voice: Voice) {
 
   return (
     <Item
-      key={voice.id}
+      key={voice.name}
       variant="muted"
       className="rounded-2xl items-center flex bg-background group hover:bg-secondary cursor-pointer"
     >
@@ -71,7 +71,10 @@ export function SelectableVoiceItem(voice: Voice) {
           variant="ghost"
           size="icon"
           className="dark:bg-transparent rounded-full cursor-pointer"
-          onClick={() => handlePlay(voice.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            handlePlay(voice.voiceId);
+          }}
         >
           {isLoading ? (
             <Spinner className="size-6 text-muted-foreground" />
@@ -83,7 +86,7 @@ export function SelectableVoiceItem(voice: Voice) {
         </Button>
       </ItemMedia>
       <ItemContent className="gap-0">
-        <ItemTitle className="text-base">{voice.name}</ItemTitle>
+        <ItemTitle className="text-base">{voice.displayName}</ItemTitle>
       </ItemContent>
       <ItemActions>
         <Button

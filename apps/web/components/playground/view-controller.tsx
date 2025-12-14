@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, MotionProps } from "motion/react";
 import { useSessionContext } from "@livekit/components-react";
 import type { AppConfig } from "@/app-config";
 import { SessionView } from "./session-view";
@@ -9,7 +9,7 @@ import { WelcomeView } from "./welcome-view";
 const MotionWelcomeView = motion.create(WelcomeView);
 const MotionSessionView = motion.create(SessionView);
 
-const VIEW_MOTION_PROPS = {
+const VIEW_MOTION_PROPS: MotionProps = {
   variants: {
     visible: {
       opacity: 1,

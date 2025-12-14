@@ -14,6 +14,7 @@ import { Toaster } from "../ui/sonner";
 import { ViewController } from "./view-controller";
 import { useDebugMode } from "@/hooks/use-debug";
 import { useAgentErrors } from "@/hooks/use-agent-errors";
+import { useParams } from "next/navigation";
 
 const IN_DEVELOPMENT = process.env.NODE_ENV !== "production";
 
@@ -29,11 +30,14 @@ interface AppProps {
 }
 
 export function Playground({ appConfig }: AppProps) {
+  const { characterId } = useParams();
   const tokenSource = useMemo(() => {
     return typeof process.env.NEXT_PUBLIC_CONN_DETAILS_ENDPOINT === "string"
       ? getSandboxTokenSource(appConfig)
-      : TokenSource.endpoint("/api/connection-details");
-  }, [appConfig]);
+      : TokenSource.endpoint(
+          `/api/connection-details?characterId=${characterId}`,
+        );
+  }, [appConfig, characterId]);
 
   const session = useSession(
     tokenSource,
