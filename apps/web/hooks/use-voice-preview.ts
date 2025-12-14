@@ -1,5 +1,6 @@
 import { playVoice } from "@/lib/voices";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export const useVoicePreview = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -7,18 +8,31 @@ export const useVoicePreview = () => {
 
   const handlePlay = async (voiceId: string, sound?: string) => {
     setIsLoading(true);
-    const blob = await playVoice(voiceId, sound);
-    setIsLoading(false);
-    const url = URL.createObjectURL(blob);
-    const audio = new Audio(url);
+    try {
+      const blob = await playVoice(voiceId, sound);
+      setIsLoading(false);
 
-    setIsPlaying(true);
+      const audioData = Buffer.from(blob, "base64");
 
-    audio.onended = () => {
-      setIsPlaying(false);
-    };
+      const audioCtx = new AudioContext();
+      const source = audioCtx.createBufferSource();
 
-    await audio.play();
+      audioCtx.decodeAudioData(audioData.buffer, (buffer) => {
+        source.buffer = buffer;
+        source.connect(audioCtx.destination);
+        source.start();
+      });
+
+      setIsPlaying(true);
+
+      source.onended = () => {
+        setIsPlaying(false);
+      };
+    } catch {
+      setIsLoading(false);
+
+      toast.error("Error al reproducir la voz");
+    }
   };
 
   return { handlePlay, isLoading, isPlaying };

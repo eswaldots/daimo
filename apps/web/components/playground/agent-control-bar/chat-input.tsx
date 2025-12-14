@@ -89,7 +89,7 @@ export function ChatInput({
           disabled={isDisabled}
           variant={isDisabled ? "secondary" : "default"}
           title={isSending ? "Sending..." : "Send"}
-          className="self-start"
+          className="self-start rounded-full"
         >
           {isSending ? <Spinner /> : <ArrowUp />}
         </Button>

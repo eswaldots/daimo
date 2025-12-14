@@ -1,17 +1,13 @@
 "use server";
 
 export interface Voice {
-  id: string;
-  mode: string;
-  owner_id: string;
-  is_public: boolean;
   name: string;
+  langCode: string;
+  displayName: string;
   description: string;
-  created_at: Date;
-  gender: string;
-  embedding: number[];
-  language: string;
-  popularity: number;
+  tags: string[];
+  voiceId: string;
+  source: string;
 }
 
 type Options = {
@@ -33,16 +29,12 @@ export const getVoices = async (opts: Options) => {
   const options = {
     method: "GET",
     headers: {
-      "Cartesia-Version": "2025-04-16",
-      Authorization: `Bearer ${process.env.CARTESIA_API_KEY}`,
+      Authorization: `Basic ${process.env.INWORLD_API_KEY}`,
     },
-    // 3. Importante: Evitar caché de Next.js para que la búsqueda sea en tiempo real
-    cache: "no-store" as RequestCache,
   };
 
-  // 4. Construimos la URL final con toString()
   const res = await fetch(
-    `https://api.cartesia.ai/voices?${queryParams.toString()}`,
+    `https://api.inworld.ai/voices/v1/workspaces/${process.env.INWORLD_WORKSPACE_ID}/voices`,
     options,
   );
 
@@ -50,7 +42,7 @@ export const getVoices = async (opts: Options) => {
     throw new Error(`Failed to fetch voices: ${res.status} ${res.statusText}`);
   }
 
-  const data: { data: Voice[]; has_more: boolean } = await res.json();
+  const data: { voices: Voice[] } = await res.json();
   return data;
 };
 
@@ -58,34 +50,25 @@ export const playVoice = async (voiceId: string, sound?: string) => {
   const options = {
     method: "POST",
     headers: {
-      "Cartesia-Version": "2025-04-16",
-      Authorization: `Bearer ${process.env.CARTESIA_API_KEY}`,
+      Authorization: `Basic ${process.env.INWORLD_API_KEY}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model_id: "sonic-3",
-      transcript:
-        sound ||
-        '<emotion value="positivity">Hola amigo, espero que estes teniendo un buen día!</emotion>',
-      voice: { mode: "id", id: voiceId },
-      output_format: {
-        container: "wav",
-        encoding: "pcm_s16le",
-        sample_rate: 44100,
-      },
-      language: "es",
-      generation_config: { volume: 1, speed: 1 },
-      save: false,
-      speed: "normal",
+      text: sound ?? "Hola amigo, espero que estes teniendo un buen día",
+      voiceId,
+      modelId: "inworld-tts-1-max",
+      timestampType: "WORD",
     }),
   };
 
-  const res = await fetch("https://api.cartesia.ai/tts/bytes", options);
+  const res = await fetch("https://api.inworld.ai/tts/v1/voice", options);
 
   if (!res.ok) {
     throw new Error(`Failed to play voice: ${res.status} ${res.statusText}`);
   }
 
-  const blob = await res.blob();
-  return blob;
+  const data = await res.json();
+
+  console.log(data);
+  return data.audioContent as string;
 };

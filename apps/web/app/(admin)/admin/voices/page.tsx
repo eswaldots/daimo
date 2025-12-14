@@ -25,7 +25,7 @@ export default async function Page({
   searchParams: Promise<{ limit?: string; q?: string }>;
 }) {
   const options = await searchParams;
-  const { data: voices } = await getVoices(options);
+  const { voices } = await getVoices(options);
 
   return (
     <div className="space-y-6">
@@ -40,7 +40,7 @@ export default async function Page({
       <div className="text">
         <ItemGroup className="space-y-4">
           {voices?.map((voice) => (
-            <VoiceItem {...voice} key={voice.id} />
+            <VoiceItem {...voice} key={voice.name} />
           ))}
         </ItemGroup>
       </div>

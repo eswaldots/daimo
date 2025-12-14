@@ -109,3 +109,32 @@ export const create = mutation({
     return await ctx.db.insert("characters", { ...args });
   },
 });
+
+export const editCharacter = mutation({
+  args: {
+    characterId: v.id("characters"),
+    creatorId: v.optional(v.string()),
+    storageId: v.optional(v.id("_storage")),
+    name: v.string(),
+    prompt: v.string(),
+    shortDescription: v.string(),
+    description: v.string(),
+    firstMessagePrompt: v.string(),
+    voiceId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await authComponent.getAuthUser(ctx);
+
+    if (!user) {
+      throw new Error("User not authenticated");
+    }
+
+    if (user.role !== "admin") {
+      throw new Error("User not authorized");
+    }
+
+    const { characterId, ...rest } = args;
+
+    await ctx.db.patch(characterId, { ...rest });
+  },
+});
