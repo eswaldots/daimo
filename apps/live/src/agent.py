@@ -9,24 +9,31 @@ from livekit.agents import (
     JobContext,
     JobProcess,
     cli,
-    inference,
     room_io,
 )
-from livekit.plugins import noise_cancellation, silero
+from livekit.plugins import noise_cancellation, silero, deepgram, openai, inworld
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
+import os
+from convex import ConvexClient
+import json
 
 logger = logging.getLogger("agent")
 
 load_dotenv(".env.local")
 
+CONVEX_URL = os.getenv("CONVEX_URL")
+
+client = ConvexClient(CONVEX_URL or "")
+
+
+def get_character(character_id: str) -> dict:
+    return client.query("characters:getById", dict(characterId=character_id))
+
 
 class Assistant(Agent):
-    def __init__(self) -> None:
+    def __init__(self, instructions) -> None:
         super().__init__(
-            instructions="""You are a helpful voice AI assistant. The user is interacting with you via voice, even if you perceive the conversation as text.
-            You eagerly assist users with their questions by providing information from your extensive knowledge.
-            Your responses are concise, to the point, and without any complex formatting or punctuation including emojis, asterisks, or other symbols.
-            You are curious, friendly, and have a sense of humor.""",
+            instructions=instructions,
         )
 
     # To add tools, use the @function_tool decorator.
@@ -65,19 +72,26 @@ async def my_agent(ctx: JobContext):
         "room": ctx.room.name,
     }
 
+    metadata = json.loads(ctx.job.room.metadata)
+
+    character_id = metadata["characterId"]
+    character = get_character(character_id)
+
     # Set up a voice AI pipeline using OpenAI, Cartesia, AssemblyAI, and the LiveKit turn detector
     session = AgentSession(
         # Speech-to-text (STT) is your agent's ears, turning the user's speech into text that the LLM can understand
         # See all available models at https://docs.livekit.io/agents/models/stt/
-        stt=inference.STT(model="assemblyai/universal-streaming", language="en"),
+        stt=deepgram.STT(model="nova-2-conversationalai", language="es"),
         # A Large Language Model (LLM) is your agent's brain, processing user input and generating a response
         # See all available models at https://docs.livekit.io/agents/models/llm/
-        llm=inference.LLM(model="openai/gpt-4.1-mini"),
+        llm=openai.LLM(
+            model="llama-3.1-8b-instant",
+            base_url="https://api.groq.com/openai/v1",
+            api_key=os.environ["GROQ_API_KEY"],
+        ),
         # Text-to-speech (TTS) is your agent's voice, turning the LLM's text into speech that the user can hear
         # See all available models as well as voice selections at https://docs.livekit.io/agents/models/tts/
-        tts=inference.TTS(
-            model="cartesia/sonic-3", voice="9626c31c-bec5-4cca-baa8-f8ba9e84c8bc"
-        ),
+        tts=inworld.TTS(model="inworld-tts-1-max", voice=character["voiceId"]),
         # VAD and turn detection are used to determine when the user is speaking and when the agent should respond
         # See more at https://docs.livekit.io/agents/build/turns
         turn_detection=MultilingualModel(),
@@ -107,7 +121,7 @@ async def my_agent(ctx: JobContext):
 
     # Start the session, which initializes the voice pipeline and warms up the models
     await session.start(
-        agent=Assistant(),
+        agent=Assistant(instructions=character["prompt"]),
         room=ctx.room,
         room_options=room_io.RoomOptions(
             audio_input=room_io.AudioInputOptions(
