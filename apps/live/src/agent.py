@@ -19,11 +19,11 @@ import json
 
 logger = logging.getLogger("agent")
 
-load_dotenv(".env.local")
+load_dotenv(".env")
 
 CONVEX_URL = os.getenv("CONVEX_URL")
 
-client = ConvexClient(CONVEX_URL or "")
+client = ConvexClient(CONVEX_URL or "http://127.0.0.1:8000")
 
 
 def get_character(character_id: str) -> dict:
