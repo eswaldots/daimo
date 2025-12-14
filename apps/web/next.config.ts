@@ -7,6 +7,11 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "http",
+        hostname: "cautious-pelican-191.convex.cloud", // Replace with your image domain
+        pathname: "/api/storage/**", // Optional: restrict to a specific path
+      },
+      {
+        protocol: "http",
         hostname: "127.0.0.1", // Replace with your image domain
         port: "3210", // Optional: specify if your images are served on a specific port
         pathname: "/api/storage/**", // Optional: restrict to a specific path
