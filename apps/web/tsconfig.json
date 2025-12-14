@@ -7,7 +7,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@daimo/backend": ["../../packages/backend/index.ts"]
     },
     "declaration": false,
     "declarationMap": false
