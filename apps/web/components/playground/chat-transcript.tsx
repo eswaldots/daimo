@@ -1,13 +1,18 @@
 "use client";
 
-import { AnimatePresence, type HTMLMotionProps, motion } from "motion/react";
+import {
+  AnimatePresence,
+  type HTMLMotionProps,
+  motion,
+  MotionProps,
+} from "motion/react";
 import { type ReceivedMessage } from "@livekit/components-react";
 import { ChatEntry } from "./chat-entry";
 
 const MotionContainer = motion.create("div");
 const MotionChatEntry = motion.create(ChatEntry);
 
-const CONTAINER_MOTION_PROPS = {
+const CONTAINER_MOTION_PROPS: MotionProps = {
   variants: {
     hidden: {
       opacity: 0,
@@ -24,7 +29,6 @@ const CONTAINER_MOTION_PROPS = {
         delay: 0.2,
         ease: "easeOut",
         duration: 0.3,
-        stagerDelay: 0.2,
         staggerChildren: 0.1,
         staggerDirection: 1,
       },
@@ -33,19 +37,6 @@ const CONTAINER_MOTION_PROPS = {
   initial: "hidden",
   animate: "visible",
   exit: "hidden",
-};
-
-const MESSAGE_MOTION_PROPS = {
-  variants: {
-    initial: {
-      opacity: 0,
-      translateY: 10,
-    },
-    whileInView: {
-      opacity: 1,
-      translateY: 0,
-    },
-  },
 };
 
 interface ChatTranscriptProps {

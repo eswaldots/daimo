@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { motion } from "motion/react";
+import { motion, MotionProps } from "motion/react";
 import {
   ControlBarControls,
   useSessionContext,
@@ -17,7 +17,7 @@ import { AgentControlBar } from "./agent-control-bar/agent-control-bar";
 
 const MotionBottom = motion.create("div");
 
-const BOTTOM_VIEW_MOTION_PROPS = {
+const BOTTOM_VIEW_MOTION_PROPS: MotionProps = {
   variants: {
     visible: {
       opacity: 1,

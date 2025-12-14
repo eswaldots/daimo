@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { motion, Variants } from "motion/react";
+import { motion, MotionProps } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { ArrowUp } from "lucide-react";
 
-const MOTION_PROPS = {
+const MOTION_PROPS: MotionProps = {
   variants: {
     hidden: {
       height: 0,
