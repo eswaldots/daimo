@@ -1,6 +1,18 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "ui": "tui",
+  "globalEnv": [
+    "CONVEX_DEPLOYMENT",
+    "LIVEKIT_API_KEY",
+    "LIVEKIT_API_SECRET",
+    "NEXT_PUBLIC_LIVEKIT_URL",
+    "LIVEKIT_URL",
+    "INWORLD_API_KEY",
+    "NEXT_PUBLIC_CONVEX_URL",
+    "NEXT_PUBLIC_CONVEX_SITE_URL",
+    "SITE_URL",
+    "INWORLD_WORKSPACE_ID"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
