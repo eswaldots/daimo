@@ -1,45 +1,12 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@daimo/backend";
-import { useMutation, usePaginatedQuery } from "convex/react";
+import { usePaginatedQuery } from "convex/react";
 import { AnimatePresence, motion } from "motion/react";
-import { Doc } from "../../../../../packages/backend/convex/_generated/dataModel";
-import Image from "next/image";
-import { EmptyCharacter } from "@/components/layout/home/empty-character";
-import Link from "next/link";
-import { Separator } from "@/components/ui/separator";
-import { useState } from "react";
-import { toast } from "sonner";
-import { EllipsisVertical, Trash } from "lucide-react";
-import { Spinner } from "@/components/ui/spinner";
-import { CharacterCard } from "@/components/characters/character-card";
-
-export function CharacterCardSkeleton() {
-  return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <Card className="bg-secondary h-82 dark:bg-border/80 border-0 shadow-none w-full md:w-74 rounded-2xl py-4 gap-2">
-        <CardHeader className="px-4">
-          <Skeleton className="w-full h-48 rounded-xl bg-background dark:bg-accent" />
-        </CardHeader>
-
-        <CardContent className="space-y-2">
-          <Skeleton className="h-5 w-1/2 bg-background dark:bg-accent" />
-          <Skeleton className="h-3 w-full bg-background dark:bg-accent" />
-          <Skeleton className="h-3 w-full bg-background dark:bg-accent" />
-          <Skeleton className="h-3 w-full bg-background dark:bg-accent" />
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-}
+import {
+  CharacterCard,
+  CharacterCardSkeleton,
+} from "@/components/characters/character-card";
 
 export default function Page() {
   const { isLoading, results } = usePaginatedQuery(

@@ -5,7 +5,7 @@ import {
   CharacterCardSkeleton,
 } from "@/components/characters/character-card";
 import { api } from "@daimo/backend";
-import { useMutation, usePaginatedQuery } from "convex/react";
+import { usePaginatedQuery } from "convex/react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   InputGroup,

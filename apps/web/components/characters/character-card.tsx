@@ -32,17 +32,19 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 export function CharacterCardSkeleton() {
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <Card className="bg-secondary h-86 dark:bg-border/80 border-0 shadow-none w-full md:w-74 rounded-2xl py-4 gap-2">
-        <CardHeader className="px-4">
-          <Skeleton className="w-full h-48 rounded-xl bg-background dark:bg-accent" />
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="w-full"
+    >
+      <Card className="bg-transparent h-86 border-0 shadow-none w-full md:w-74 rounded-2xl px-0 gap-2 py-4">
+        <CardHeader className="px-0">
+          <Skeleton className="w-full h-64 rounded-lg bg-background dark:bg-border" />
         </CardHeader>
 
-        <CardContent className="space-y-2">
-          <Skeleton className="h-5 w-1/2 bg-background dark:bg-accent" />
-          <Skeleton className="h-3 w-full bg-background dark:bg-accent" />
-          <Skeleton className="h-3 w-full bg-background dark:bg-accent" />
-          <Skeleton className="h-3 w-full bg-background dark:bg-accent" />
+        <CardContent className="space-y-2 px-0">
+          <Skeleton className="h-5 w-1/2 bg-background dark:bg-border" />
+          <Skeleton className="h-3 w-full bg-background dark:bg-border" />
         </CardContent>
       </Card>
     </motion.div>

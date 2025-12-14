@@ -17,12 +17,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation } from "convex/react";
 import { api, Doc } from "@daimo/backend";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogTitle,
   DialogTrigger,
@@ -74,17 +73,10 @@ export default function CreateCharacterPage({
   const [image, setImage] = useState<File | null>(null);
 
   const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      if (file) {
-        reader.onload = (event) => {
-          setImage(file);
-        };
-        reader.readAsDataURL(file);
-      }
-    }
+    setImage(e.target.files?.[0] || null);
   };
+
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -98,6 +90,7 @@ export default function CreateCharacterPage({
 
   const [isOpen, setIsOpen] = useState(false);
   const [voice, setVoice] = useState<Voice | null>(null);
+  const router = useRouter();
 
   const create = useMutation(api.characters.create);
   const edit = useMutation(api.characters.editCharacter);
@@ -167,7 +160,6 @@ export default function CreateCharacterPage({
     }
   };
 
-  const router = useRouter();
   const title = watch("name");
 
   return (
@@ -186,7 +178,7 @@ export default function CreateCharacterPage({
         <FieldGroup className="max-w-2xl mx-auto gap-8 mt-8">
           <div className="w-full flex items-center gap-6">
             <div className="relative w-fit">
-              <Avatar className="size-24 hover:bg-background transition-colors cursor-pointer z-10">
+              <Avatar className="size-24 transition-colors cursor-pointer">
                 <AvatarImage
                   src={
                     defaultValues
@@ -209,18 +201,23 @@ export default function CreateCharacterPage({
                   className="absolute bottom-0 right-0 z-40 rounded-full dark:bg-accent"
                   variant="outline"
                   size="icon-sm"
+                  onClick={() => {
+                    console.log("hi");
+                    inputRef.current?.click();
+                  }}
                 >
                   <PlusIcon />
-                  {!defaultValues && (
-                    <input
-                      className="opacity-0 absolute inset-0"
-                      type="file"
-                      name="myImage"
-                      // Event handler to capture file selection and update the state
-                      onChange={handleImage}
-                    />
-                  )}
                 </Button>
+              )}
+
+              {!defaultValues && (
+                <input
+                  className="w-full h-full opacity-0 cursor-pointer absolute inset-0"
+                  ref={inputRef}
+                  type="file"
+                  // Event handler to capture file selection and update the state
+                  onChange={handleImage}
+                />
               )}
             </div>
             <h1 className="tracking-tight text-4xl font-medium">{title}</h1>
@@ -333,13 +330,8 @@ export default function CreateCharacterPage({
             variant="default"
             className="rounded-full w-fit ml-auto shadow-none mt-8"
           >
-            {isSubmitting ? (
-              <Spinner />
-            ) : defaultValues ? (
-              "Guardar cambios"
-            ) : (
-              "Crear personaje"
-            )}
+            {isSubmitting && <Spinner />}{" "}
+            {defaultValues ? "Guardar cambios" : "Crear personaje"}
           </Button>
         </FieldGroup>
       </form>
