@@ -1,5 +1,10 @@
+import json
 import logging
+import os
+from typing import cast
 
+import nltk
+from convex import ConvexClient
 from dotenv import load_dotenv
 from livekit import rtc
 from livekit.agents import (
@@ -10,12 +15,84 @@ from livekit.agents import (
     JobProcess,
     cli,
     room_io,
+    tokenize,
 )
-from livekit.plugins import noise_cancellation, silero, deepgram, openai, inworld
+from livekit.plugins import deepgram, groq, inworld, noise_cancellation, silero
+from livekit.agents.tokenize import SentenceStream
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
-import os
-from convex import ConvexClient
-import json
+from nltk.tokenize.punkt import PunktSentenceTokenizer
+from jinja2 import Template
+
+try:
+    nltk.data.find("tokenizers/punkt")
+except LookupError:
+    nltk.download("punkt")
+
+MASTER_TEMPLATE = """
+Eres {{ name }}.
+
+{{ backstory }}
+
+REGLAS DE OUTPUT:
+1. Responde fluido y natural, como si estuvieras teniendo una conversacion por voz humana. NUNCA des textos muy largos, se siente antinatural. Tienen que ser lo suficientemente largos para sentirse como una conversacion humana.
+2. Evita Markdown, emojis y caracteres especiales.
+"""
+
+
+class SpanishNLTKStream(tokenize.SentenceStream):
+    def __init__(self, tokenizer_impl):
+        super().__init__()
+        self._tokenizer_impl = tokenizer_impl
+        self._buffer = ""
+
+    def push_text(self, text: str) -> None:
+        self._buffer += text
+        try:
+            # Ahora VS Code sabe que _tokenizer_impl tiene este método
+            sentences = self._tokenizer_impl.tokenize(self._buffer)
+            if len(sentences) > 1:
+                for sentence in sentences[:-1]:
+                    self._event_ch.send_nowait(tokenize.TokenData(token=sentence))
+                self._buffer = sentences[-1]
+        except Exception:
+            pass
+
+    def flush(self) -> None:
+        # Si queda algo en el buffer al final, lo enviamos
+        if self._buffer.strip():
+            self._event_ch.send_nowait(tokenize.TokenData(token=self._buffer))
+            self._buffer = ""
+
+    def end_input(self) -> None:
+        self.flush()
+        self._event_ch.close()
+
+    async def aclose(self) -> None:
+        self._event_ch.close()
+
+
+class SpanishTokenizer(tokenize.SentenceTokenizer):
+    def __init__(self):
+        try:
+            # Intentamos cargar, si falla algo, descargamos todo
+            nltk.data.find("tokenizers/punkt")
+            nltk.data.find("tokenizers/punkt_tab")  # <--- ESTO FALTABA
+            loaded = nltk.data.load("tokenizers/punkt/spanish.pickle")
+        except LookupError:
+            logger.info("Descargando recursos NLTK (punkt y punkt_tab)...")
+            nltk.download("punkt")
+            nltk.download("punkt_tab")  # <--- OBLIGATORIO AHORA
+            loaded = nltk.data.load("tokenizers/punkt/spanish.pickle")
+        self._nltk_tokenizer = cast(PunktSentenceTokenizer, loaded)
+
+    def tokenize(self, text: str, *, language: str | None = None) -> list[str]:
+        # Implementación del método estático
+        return self._nltk_tokenizer.tokenize(text)
+
+    def stream(self, *, language: str | None = None) -> SentenceStream:
+        # Implementación del método de streaming (EL QUE FALTABA)
+        return SpanishNLTKStream(self._nltk_tokenizer)
+
 
 logger = logging.getLogger("agent")
 
@@ -59,6 +136,11 @@ server = AgentServer()
 
 def prewarm(proc: JobProcess):
     proc.userdata["vad"] = silero.VAD.load()
+    try:
+        nltk.download("punkt")
+        nltk.download("punkt_tab")  # <--- AÑADIDO AQUÍ TAMBIÉN
+    except Exception as e:
+        logger.error(f"Error descargando NLTK: {e}")
 
 
 server.setup_fnc = prewarm
@@ -74,6 +156,8 @@ async def my_agent(ctx: JobContext):
 
     metadata = json.loads(ctx.job.room.metadata)
 
+    my_tokenizer = SpanishTokenizer()
+
     character_id = metadata["characterId"]
     character = get_character(character_id)
 
@@ -81,21 +165,24 @@ async def my_agent(ctx: JobContext):
     session = AgentSession(
         # Speech-to-text (STT) is your agent's ears, turning the user's speech into text that the LLM can understand
         # See all available models at https://docs.livekit.io/agents/models/stt/
-        stt=deepgram.STT(model="nova-2-conversationalai", language="es"),
+        stt=deepgram.STT(model="nova-3", language="es"),
         # A Large Language Model (LLM) is your agent's brain, processing user input and generating a response
-        llm=openai.LLM.with_deepseek(
-            model="deepseek-chat",
+        llm=groq.LLM(
+            model="openai/gpt-oss-120b",
         ),
         # Text-to-speech (TTS) is your agent's voice, turning the LLM's text into speech that the user can hear
         # See all available models as well as voice selections at https://docs.livekit.io/agents/models/tts/
-        tts=inworld.TTS(model="inworld-tts-1-max", voice=character["voiceId"]),
+        tts=inworld.TTS(
+            model="inworld-tts-1",
+            voice=character["voiceId"],
+        ),
         # VAD and turn detection are used to determine when the user is speaking and when the agent should respond
         # See more at https://docs.livekit.io/agents/build/turns
-        turn_detection="stt",
+        turn_detection=MultilingualModel(),
         vad=ctx.proc.userdata["vad"],
         # allow the LLM to generate a response while waiting for the end of turn
         # See more at https://docs.livekit.io/agents/build/audio/#preemptive-generation
-        preemptive_generation=True,
+        preemptive_generation=False,
     )
 
     # To use a realtime model instead of a voice pipeline, use the following session setup instead.
@@ -118,7 +205,11 @@ async def my_agent(ctx: JobContext):
 
     # Start the session, which initializes the voice pipeline and warms up the models
     await session.start(
-        agent=Assistant(instructions=character["prompt"]),
+        agent=Assistant(
+            instructions=Template(MASTER_TEMPLATE).render(
+                backstory=character["prompt"], name=character["name"]
+            )
+        ),
         room=ctx.room,
         room_options=room_io.RoomOptions(
             audio_input=room_io.AudioInputOptions(
