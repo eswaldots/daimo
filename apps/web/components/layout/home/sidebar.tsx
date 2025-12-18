@@ -15,13 +15,17 @@ import { NavUser } from "./nav-user";
 import { Session } from "@/lib/types";
 import {
   Compass,
+  Ellipsis,
+  Home,
   Monitor,
   MoonIcon,
   PaletteIcon,
   Settings,
   SunIcon,
+  User,
+  User2Icon,
 } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   DropdownMenu,
@@ -33,18 +37,22 @@ import {
   DropdownMenuSubContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "next-themes";
+import { Separator } from "@/components/ui/separator";
+import { authClient } from "@/lib/auth-client";
 
 export default function HomeSidebar({ session }: { session: Session }) {
+  const router = useRouter();
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
 
   return (
-    <Sidebar className="border-input">
-      <SidebarHeader className="pt-4">
+    <Sidebar className="border-none">
+      <SidebarHeader className="pt-4 px-4">
         <SidebarMenu>
-          <SidebarMenuButton className="hover:bg-transparent">
+          <SidebarMenuButton className="hover:bg-transparent active:bg-transparent">
             <Link href="/home">
               <h1 className="font-medium tracking-tight text-2xl">daimo</h1>
             </Link>
@@ -56,42 +64,37 @@ export default function HomeSidebar({ session }: { session: Session }) {
           <SidebarGroupContent className="flex flex-col gap-1">
             {/*<CreateCharacter />*/}
             <SidebarMenuItem className="flex items-center gap-2">
-              <SidebarMenuButton isActive={pathname === "/home"} asChild>
+              <SidebarMenuButton
+                isActive={pathname === "/home"}
+                className="rounded-full text-sm px-4 h-9 data-[active=true]:font-medium"
+                asChild
+              >
                 <Link href="/home">
-                  <Compass className="text-muted-foreground" />
+                  <Home className="size-5" />
                   Inicio
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            {/*<SidebarMenuItem className="flex items-center gap-2">
-              <SidebarMenuButton isActive={pathname === "/characters"} asChild>
-                <Link href="/characters">
-                  <User2Icon />
-                  Tus personajes
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>*/}
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="pb-4">
+      <SidebarFooter className="pb-4 px-4">
         <SidebarMenuItem className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <SidebarMenuButton>
-                <Settings />
+              <SidebarMenuButton className="rounded-full text-sm px-4 h-9 font-medium items-center">
+                <Settings className="size-5 text-foreground" />
                 Configuración
               </SidebarMenuButton>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent side="top" className="md:max-w-full w-full">
+            <DropdownMenuContent side="top" className="w-70" align="start">
               <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <PaletteIcon />
-                  Tema
+                <DropdownMenuSubTrigger className="w-full">
+                  Tema de la interfaz
                 </DropdownMenuSubTrigger>
                 <DropdownMenuPortal>
-                  <DropdownMenuSubContent>
+                  <DropdownMenuSubContent className="w-64">
                     <DropdownMenuRadioGroup
                       value={theme}
                       onValueChange={(value) => setTheme(value)}
@@ -109,17 +112,28 @@ export default function HomeSidebar({ session }: { session: Session }) {
                   </DropdownMenuSubContent>
                 </DropdownMenuPortal>
               </DropdownMenuSub>
+              <div className="px-2 my-1 flex-1">
+                <Separator />
+              </div>
+              <DropdownMenuItem
+                onClick={async () => {
+                  await authClient.signOut();
+
+                  router.push("/");
+                }}
+              >
+                Cerrar sesión
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </SidebarMenuItem>
 
-        <NavUser
-          user={{
-            avatar: session.user.image ?? "",
-            email: session.user.email,
-            name: session.user.name,
-          }}
-        />
+        {/* <NavUser user={{ */}
+        {/*     avatar: session.user.image ?? "", */}
+        {/*     email: session.user.email, */}
+        {/*     name: session.user.name, */}
+        {/*   }} */}
+        {/* /> */}
       </SidebarFooter>
     </Sidebar>
   );

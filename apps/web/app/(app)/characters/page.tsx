@@ -7,12 +7,9 @@ import {
 import { api } from "@daimo/backend";
 import { usePaginatedQuery } from "convex/react";
 import { AnimatePresence, motion } from "motion/react";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group";
 import { EmptyCharacter } from "@/components/layout/home/empty-character";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function Page() {
   const { isLoading, results } = usePaginatedQuery(
@@ -23,30 +20,28 @@ export default function Page() {
 
   return (
     <>
-      <div className="grid gap-4">
-        <motion.h1
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ type: "spring" }}
-          className="tracking-tight text-2xl font-semibold"
-        >
-          Mis personajes
-        </motion.h1>
-      </div>
+      <motion.div
+        className="flex items-center justify-between"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <div className="grid gap-4">
+          <motion.h1 className="tracking-tight text-3xl font-medium">
+            Tus personajes
+          </motion.h1>
+        </div>
 
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        <InputGroup className="hover:bg-input transition-colors dark:bg-border/80 border-0 rounded-full py-6 px-4 h-9 max-w-md">
-          <InputGroupAddon>
-            <SearchIcon />
-          </InputGroupAddon>
-          <InputGroupInput
-            placeholder="Buscar personajes"
-            className="md:text-sm text-sm"
-          />
-        </InputGroup>
+        <Button className="rounded-full" asChild>
+          <Link href="/characters/create">Crear personaje</Link>
+        </Button>
       </motion.div>
 
-      <motion.div className="flex flex-wrap gap-4">
+      <motion.div
+        className="flex flex-wrap gap-4 pt-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.25 }}
+      >
         <AnimatePresence mode="wait">
           {isLoading && (
             <>

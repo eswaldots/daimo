@@ -43,7 +43,7 @@ export default function AdminSidebar({ session }: { session: Session }) {
   const { theme, setTheme } = useTheme();
 
   return (
-    <Sidebar className="border-input">
+    <Sidebar className="border-input" variant="inset">
       <SidebarHeader className="pt-4">
         <SidebarMenu>
           <SidebarMenuButton className="hover:bg-transparent">

@@ -46,6 +46,37 @@ export const getVoices = async (opts: Options) => {
   return data;
 };
 
+export const getVoicesFromGoogle = async (opts: Options) => {
+  const queryParams = new URLSearchParams({
+    limit: opts?.limit || "10",
+    is_owner: "true",
+  });
+
+  // 2. Solo agregamos 'q' si existe y no es una cadena vacía
+  if (opts?.q) {
+    queryParams.append("q", opts.q);
+  }
+
+  const options = {
+    method: "GET",
+    headers: {
+      Authorization: `Basic ${process.env.INWORLD_API_KEY}`,
+    },
+  };
+
+  const res = await fetch(
+    `https://api.inworld.ai/voices/v1/workspaces/${process.env.INWORLD_WORKSPACE_ID}/voices`,
+    options,
+  );
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch voices: ${res.status} ${res.statusText}`);
+  }
+
+  const data: { voices: Voice[] } = await res.json();
+  return data;
+};
+
 export const playVoice = async (voiceId: string, sound?: string) => {
   const options = {
     method: "POST",

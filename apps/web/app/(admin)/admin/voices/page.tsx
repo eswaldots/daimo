@@ -1,23 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { motion } from "motion/react";
-import CreateVoiceForm from "@/components/voices/create-voice";
-import { getVoices, Voice } from "@/lib/voices";
+import { getVoicesFromGoogle } from "@/lib/voices";
 import SearchInput from "@/components/layout/search-input";
-import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemDescription,
-  ItemGroup,
-  ItemHeader,
-  ItemMedia,
-  ItemTitle,
-} from "@/components/ui/item";
-import {
-  SelectableVoiceItem,
-  VoiceItem,
-} from "@/components/layout/admin/voice-item";
+import VoiceList from "@/components/voices/voice-list";
+import CreateVoiceForm from "@/components/voices/create-voice";
 
 export default async function Page({
   searchParams,
@@ -25,25 +10,21 @@ export default async function Page({
   searchParams: Promise<{ limit?: string; q?: string }>;
 }) {
   const options = await searchParams;
-  const { voices } = await getVoices(options);
+  const { voices } = await getVoicesFromGoogle(options);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-6">
         <h1 className="text-2xl font-medium tracking-tight">Voces</h1>
 
-        <Button className="rounded-full">Crear voz</Button>
+        <CreateVoiceForm>
+          <Button className="rounded-full">Crear voz</Button>
+        </CreateVoiceForm>
       </div>
 
       <SearchInput placeholder="Buscar voces" />
 
-      <div className="text">
-        <ItemGroup className="space-y-4">
-          {voices?.map((voice) => (
-            <VoiceItem {...voice} key={voice.name} />
-          ))}
-        </ItemGroup>
-      </div>
+      {voices && <VoiceList voices={voices} />}
       {/*<div key="empty" className="w-full">
         <Empty>
           <EmptyHeader>

@@ -17,7 +17,7 @@ from livekit.agents import (
     room_io,
     tokenize,
 )
-from livekit.plugins import deepgram, groq, inworld, noise_cancellation, silero
+from livekit.plugins import deepgram, groq, inworld, noise_cancellation, silero, google
 from livekit.agents.tokenize import SentenceStream
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
 from nltk.tokenize.punkt import PunktSentenceTokenizer
@@ -29,13 +29,36 @@ except LookupError:
     nltk.download("punkt")
 
 MASTER_TEMPLATE = """
-Eres {{ name }}.
-
+### CONTEXTO E IDENTIDAD
 {{ backstory }}
 
-REGLAS DE OUTPUT:
-1. Responde fluido y natural, como si estuvieras teniendo una conversacion por voz humana. NUNCA des textos muy largos, se siente antinatural. Tienen que ser lo suficientemente largos para sentirse como una conversacion humana.
-2. Evita Markdown, emojis y caracteres especiales.
+### REGLAS DE FORMATO TTS (OPTIMIZADO PARA AUDIO) ###
+Tu respuesta se convierte a audio. Sigue estas reglas de formato ESTRICTAS para sonar natural y evitar errores técnicos:
+
+1. **PUNTUACIÓN OBLIGATORIA (Core Principle):**
+   - Termina CADA frase con un punto final (.). Esto es vital para el procesador de audio.
+   - Ejemplo Bien: "Hola. Un momento. Déjame buscar eso."
+   - Ejemplo Mal: "Hola un momento déjame buscar eso"
+
+2. **PAUSAS NATURALES (Special Formatting):**
+   - Usa guiones (-) para crear pausas dramáticas o separar ideas.
+   - Ejemplo: "Tu total es $50 - por favor espera."
+   - Usa comas (,) para pausas breves y listas.
+
+3. **FLUJO CONVERSACIONAL (Natural Speech):**
+   - Usa frases cortas e independientes ("Standalone phrases").
+   - Evita oraciones subordinadas largas ("Run-on sentences").
+   - Si saludas, usa coma antes del nombre: "¡Hola, Humano!"
+
+4. **LÍMITE TÉCNICO DE BUFFER:**
+   - Tus respuestas NO deben superar las 40 palabras.
+   - Si la explicación es larga, da el titular y usa un guion para pausar antes de preguntar si siguen interesados.
+
+5. **ENTUSIASMO:**
+   - Usa signos de exclamación (!) para mostrar energía, pero no abuses.
+
+FORMATO PROHIBIDO:
+- No uses Markdown (**negrita**), emojis 🚀, ni listas con viñetas. Solo texto plano y puntuación.
 """
 
 
@@ -165,24 +188,22 @@ async def my_agent(ctx: JobContext):
     session = AgentSession(
         # Speech-to-text (STT) is your agent's ears, turning the user's speech into text that the LLM can understand
         # See all available models at https://docs.livekit.io/agents/models/stt/
-        stt=deepgram.STT(model="nova-3", language="es"),
+        stt=deepgram.STT(model="nova-3-general"),
         # A Large Language Model (LLM) is your agent's brain, processing user input and generating a response
         llm=groq.LLM(
             model="openai/gpt-oss-120b",
         ),
         # Text-to-speech (TTS) is your agent's voice, turning the LLM's text into speech that the user can hear
         # See all available models as well as voice selections at https://docs.livekit.io/agents/models/tts/
-        tts=inworld.TTS(
-            model="inworld-tts-1",
-            voice=character["voiceId"],
-        ),
+        tts=deepgram.TTS(model="aura-2-celeste-es"),
         # VAD and turn detection are used to determine when the user is speaking and when the agent should respond
         # See more at https://docs.livekit.io/agents/build/turns
         turn_detection=MultilingualModel(),
         vad=ctx.proc.userdata["vad"],
         # allow the LLM to generate a response while waiting for the end of turn
         # See more at https://docs.livekit.io/agents/build/audio/#preemptive-generation
-        preemptive_generation=False,
+        preemptive_generation=True,
+        resume_false_interruption=True,
     )
 
     # To use a realtime model instead of a voice pipeline, use the following session setup instead.
@@ -192,7 +213,14 @@ async def my_agent(ctx: JobContext):
     # 3. Add `from livekit.plugins import openai` to the top of this file
     # 4. Use the following session setup instead of the version above
     # session = AgentSession(
-    #     llm=openai.realtime.RealtimeModel(voice="marin")
+    #     llm=google.realtime.RealtimeModel(
+    #         voice="Despina",
+    #         temperature=0.8,
+    #         instructions=Template(MASTER_TEMPLATE).render(
+    #             backstory=character["prompt"], name=character["name"]
+    #         ),
+    #         model="gemini-2.0-flash-exp",
+    #     )
     # )
 
     # # Add a virtual avatar to the session, if desired

@@ -31,7 +31,9 @@ export default function Page() {
         placeholder="Buscar personajes"
       />
 
-      <DataTable columns={charactersColumns} data={characters} />
+      {characters.length !== 0 && (
+        <DataTable columns={charactersColumns} data={characters} />
+      )}
 
       {!isLoading && characters.length === 0 && <EmptyCharacter />}
     </div>

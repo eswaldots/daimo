@@ -16,7 +16,7 @@ import {
   EmptyDescription,
   EmptyContent,
 } from "@/components/ui/empty";
-import { AudioLines } from "lucide-react";
+import { AlertTriangleIcon, AudioLines } from "lucide-react";
 import { useState } from "react";
 
 export default function CreateVoiceForm({ children }: { children: ReactNode }) {
@@ -27,13 +27,13 @@ export default function CreateVoiceForm({ children }: { children: ReactNode }) {
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent>
+      <DialogContent showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle className="text-xl">Crear voz</DialogTitle>
+          <DialogTitle className="font-medium text-xl">Crear voz</DialogTitle>
         </DialogHeader>
 
         <div className="my-2">
-          <div className="w-full py-12 bg-secondary transition-colors hover:bg-border rounded-xl  cursor-pointer relative">
+          <div className="w-full py-12 bg-secondary transition-colors hover:bg-border rounded-lg  cursor-pointer relative">
             <input
               className="opacity-0 absolute inset-0"
               type="file"
@@ -57,6 +57,12 @@ export default function CreateVoiceForm({ children }: { children: ReactNode }) {
                 </EmptyDescription>
               </div>
             </div>
+          </div>
+
+          <div className="flex items-center gap-2 mt-4">
+            <h1 className="text-muted-foreground text-sm">
+              Asegurate de que los audios tengan una calidad aceptable.
+            </h1>
           </div>
         </div>
       </DialogContent>

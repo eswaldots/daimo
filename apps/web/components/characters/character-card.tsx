@@ -12,7 +12,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AnimatePresence, motion } from "motion/react";
 import { Doc } from "../../../../packages/backend/convex/_generated/dataModel";
 import Image from "next/image";
-import { AudioLines, Pause, Play } from "lucide-react";
+import {
+  AudioLines,
+  Ellipsis,
+  Pause,
+  Pen,
+  Play,
+  TrashIcon,
+} from "lucide-react";
 import Link from "next/link";
 import {
   Dialog,
@@ -29,6 +36,13 @@ import {
 import { useVoicePreview } from "@/hooks/use-voice-preview";
 import { Spinner } from "../ui/spinner";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { authClient } from "@/lib/auth-client";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 export function CharacterCardSkeleton() {
   return (
@@ -67,6 +81,8 @@ export function CharacterCard(
   props: Doc<"characters"> & { storageUrl?: string | null },
 ) {
   const isMobile = useIsMobile();
+  const { data } = authClient.useSession();
+  const isOwner = props.creatorId === (data?.user?.id ?? "");
 
   if (!isMobile) {
     return (
@@ -76,51 +92,74 @@ export function CharacterCard(
         exit={{ opacity: 0 }}
         transition={{ type: "spring" }}
       >
-        <Dialog>
-          <DialogTrigger asChild>
-            <Card className="group px-0 bg-transparent duration-300 cursor-pointer transition-colors border-0 shadow-none w-full md:w-74 rounded-2xl py-4 gap-2">
-              <CardHeader className="px-0 rounded-lg relative">
-                <motion.picture>
-                  <Image
-                    src={props.storageUrl ?? ""}
-                    alt="image"
-                    width={1028}
-                    height={1028}
-                    className="rounded-lg h-64 object-cover object-[50%_25%]"
-                  />
-                </motion.picture>
-                <div className="group-hover:opacity-100 opacity-0 transition-all h-64 rounded-lg bg-black/20 absolute inset-0">
-                  <Button
-                    className="backdrop-blur-lg bg-black/50 absolute left-2 bottom-2 text-white rounded-full hover:bg-white hover:text-black cursor-pointer"
-                    size="icon-sm"
-                    asChild
-                  >
-                    <Link href={`/playground/${props._id}/`}>
-                      <AudioLines />
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
+        <DropdownMenu>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Card className="group px-0 bg-transparent duration-300 cursor-pointer transition-colors border-0 shadow-none w-full md:w-74 rounded-2xl py-4 gap-2">
+                <CardHeader className="px-0 rounded-lg relative">
+                  <motion.picture>
+                    <Image
+                      src={props.storageUrl ?? ""}
+                      alt="image"
+                      width={1028}
+                      height={1028}
+                      className="rounded-lg h-64 object-cover object-[50%_25%]"
+                    />
+                  </motion.picture>
+                  <div className="group-hover:opacity-100 opacity-0 transition-all h-64 rounded-lg bg-black/20 absolute inset-0">
+                    <Button
+                      className="backdrop-blur-lg bg-black/50 absolute left-2 bottom-2 text-white rounded-full hover:bg-white hover:text-black cursor-pointer duration-75"
+                      size="icon-sm"
+                      asChild
+                    >
+                      <Link href={`/playground/${props._id}/`}>
+                        <AudioLines />
+                      </Link>
+                    </Button>
 
-              <CardContent className="space-y-2 truncate px-0">
-                <CardTitle>
-                  <div className="flex items-center w-full justify-between hover:underline">
-                    {props.name}
+                    {isOwner && (
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          className="backdrop-blur-lg bg-black/50 absolute right-2 bottom-2 text-white rounded-full hover:bg-white hover:text-black cursor-pointer duration-75"
+                          size="icon-sm"
+                        >
+                          <Ellipsis />
+                        </Button>
+                      </DropdownMenuTrigger>
+                    )}
                   </div>
-                </CardTitle>
-                <CardDescription className="text-balance max-h-16">
-                  {props.shortDescription}
-                </CardDescription>
-              </CardContent>
-            </Card>
-          </DialogTrigger>
-          <DialogContent
-            className="outline-0 ring-0 border-0 px-0 pt-0 pb-0"
-            showCloseButton={false}
-          >
-            <CharacterContent {...props} />
-          </DialogContent>
-        </Dialog>
+                </CardHeader>
+
+                <CardContent className="space-y-2 truncate px-0">
+                  <CardTitle>
+                    <div className="flex items-center w-full justify-between hover:underline">
+                      {props.name}
+                    </div>
+                  </CardTitle>
+                  <CardDescription className="text-balance max-h-16">
+                    {props.shortDescription}
+                  </CardDescription>
+                </CardContent>
+              </Card>
+            </DialogTrigger>
+            <DialogContent
+              className="outline-0 ring-0 border-0 px-0 pt-0 pb-0"
+              showCloseButton={false}
+            >
+              <CharacterContent {...props} />
+            </DialogContent>
+          </Dialog>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem>
+              <Pen />
+              Editar personaje
+            </DropdownMenuItem>
+            <DropdownMenuItem variant="destructive">
+              <TrashIcon />
+              Eliminar personaje
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </motion.div>
     );
   }
