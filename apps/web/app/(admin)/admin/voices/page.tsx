@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { getVoicesFromGoogle } from "@/lib/voices";
+import { getVoices, getVoicesFromGoogle } from "@/lib/voices";
 import SearchInput from "@/components/layout/search-input";
 import VoiceList from "@/components/voices/voice-list";
 import CreateVoiceForm from "@/components/voices/create-voice";
@@ -10,7 +10,7 @@ export default async function Page({
   searchParams: Promise<{ limit?: string; q?: string }>;
 }) {
   const options = await searchParams;
-  const { voices } = await getVoicesFromGoogle(options);
+  const { voices } = await getVoices(options);
 
   return (
     <div className="space-y-6">

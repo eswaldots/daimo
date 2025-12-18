@@ -45,7 +45,7 @@ export function AnimatedDaimo() {
       <svg
         viewBox="0 0 64 64"
         fill="currentColor"
-        className="text-primary size-24 overflow-visible"
+        className="text-neutral-50 size-24 overflow-visible"
       >
         {/* Usamos 'g' para agrupar estilos comunes de trazo */}
         <g

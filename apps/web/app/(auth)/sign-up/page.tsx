@@ -105,7 +105,7 @@ export default function Page() {
             }}
           >
             {isSocialLoading ? (
-              <Spinner className="size-[20px]" />
+              <Spinner className="size-4" />
             ) : (
               <GoogleIcon />
             )}

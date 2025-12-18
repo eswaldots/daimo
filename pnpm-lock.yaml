@@ -18,6 +18,8 @@ importers:
         specifier: 5.9.2
         version: 5.9.2
 
+  apps/live: {}
+
   apps/web:
     dependencies:
       '@ai-sdk/google-vertex':
@@ -144,6 +146,9 @@ importers:
         specifier: ^4.1.13
         version: 4.1.13
     devDependencies:
+      '@daimo/eslint-config':
+        specifier: workspace:*
+        version: link:../../packages/eslint-config
       '@daimo/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig

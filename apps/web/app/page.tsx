@@ -1,4 +1,4 @@
-import { Hero } from "@/components/layout/hero";
+import LandingPage from "@/components/layout/landing";
 import { authClient } from "@/lib/auth-client";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -13,6 +13,7 @@ export default async function Home() {
   if (data) {
     redirect("/home");
   } else {
-    return <Hero />;
+    return <LandingPage />
+      ;
   }
 }
