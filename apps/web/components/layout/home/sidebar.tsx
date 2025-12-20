@@ -60,18 +60,18 @@ export default function HomeSidebar({ session }: { session: Session }) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
+        <SidebarGroup className="px-4">
           <SidebarGroupContent className="flex flex-col gap-1">
             {/*<CreateCharacter />*/}
             <SidebarMenuItem className="flex items-center gap-2">
               <SidebarMenuButton
                 isActive={pathname === "/home"}
-                className="rounded-full text-sm px-4 h-9"
+                className="rounded-lg text-sm h-9"
                 asChild
               >
                 <Link href="/home">
-                  <Home className="text-muted-foreground size-5" strokeWidth={1.5} />
-                  Inicio
+                  <Home className="size-5" strokeWidth={1.5} />
+                  <span>Inicio</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -83,7 +83,10 @@ export default function HomeSidebar({ session }: { session: Session }) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton className="rounded-full text-sm px-4 h-9 font-medium items-center text-muted-foreground">
-                <Settings className="size-5 text-muted-foreground" strokeWidth={1.5} />
+                <Settings
+                  className="size-5 text-muted-foreground"
+                  strokeWidth={1.5}
+                />
                 Configuración
               </SidebarMenuButton>
             </DropdownMenuTrigger>
