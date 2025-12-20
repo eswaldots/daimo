@@ -153,7 +153,6 @@ async def my_agent(ctx: JobContext):
         )
     else:
         # Standard Stack: STT=Deepgram, LLM=Groq
-        tts_instance = None
         if tts_provider == "openai":
             tts_instance = openai.TTS(voice=voice)
         elif tts_provider == "deepgram":
