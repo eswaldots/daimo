@@ -5,8 +5,22 @@ import { toast } from "sonner";
 export const useVoicePreview = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentSource, setCurrentSource] = useState<{
+    source: AudioBufferSourceNode;
+    context: AudioContext;
+  } | null>(null);
 
   const handlePlay = async (voiceId: string, sound?: string) => {
+    if (currentSource) {
+      try {
+        currentSource.source.stop();
+        currentSource.context.close();
+      } catch {
+        // Source might have already ended
+      }
+      setCurrentSource(null);
+    }
+
     setIsLoading(true);
     try {
       const base64Audio = await playVoice(voiceId, sound);
@@ -32,10 +46,14 @@ export const useVoicePreview = () => {
         source.onended = () => {
           setIsPlaying(false);
           audioCtx.close();
+
+          setCurrentSource(null);
         };
 
         source.start();
         setIsPlaying(true);
+
+        setCurrentSource({ source, context: audioCtx });
       } catch {
         audioCtx.close(); // Clean up AudioContext on error
         setIsPlaying(false);
