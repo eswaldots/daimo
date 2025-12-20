@@ -1,6 +1,6 @@
 "use client";
 
-import { Doc } from "@daimo/backend";
+import { api, Doc } from "@daimo/backend";
 import { ColumnDef } from "@tanstack/react-table";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
@@ -15,6 +15,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
+import { useMutation } from "convex/react";
+import { toast } from "sonner";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -61,6 +63,8 @@ export const charactersColumns: ColumnDef<
     cell: ({ row }) => {
       const payment = row.original;
 
+      const deleteCharacter = useMutation(api.characters.deleteCharacter);
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -81,7 +85,18 @@ export const charactersColumns: ColumnDef<
                 Editar personaje
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem variant="destructive">
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={async () => {
+                try {
+                  await deleteCharacter({ characterId: payment._id });
+
+                  toast.success("Personaje eliminado exitosamente");
+                } catch {
+                  toast.error("Hubo un error intentando guardar el personaje");
+                }
+              }}
+            >
               Eliminar personaje
             </DropdownMenuItem>
           </DropdownMenuContent>

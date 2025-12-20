@@ -13,7 +13,14 @@ import { Spinner } from "@/components/ui/spinner";
 import { useVoicePreview } from "@/hooks/use-voice-preview";
 import { Voice } from "@/lib/voices";
 import { Pause, Play } from "lucide-react";
+import { toast } from "sonner";
 
+/**
+ * Render a list item that displays a voice and provides a play/pause preview control.
+ *
+ * @param voice - Voice object whose `displayName` and `langCode` are shown and whose `voiceId` is used to preview audio
+ * @returns A JSX element representing the voice item with a play/pause button and descriptive text
+ */
 export function VoiceItem(voice: Voice) {
   const { handlePlay, isLoading, isPlaying } = useVoicePreview();
 
@@ -41,7 +48,7 @@ export function VoiceItem(voice: Voice) {
       </ItemMedia>
       <ItemContent className="gap-0">
         <ItemTitle className="text-base">{voice.displayName}</ItemTitle>
-        <ItemDescription className="text-sm">{voice.langCode}</ItemDescription>
+        <ItemDescription className="text-sm">{voice?.langCode}</ItemDescription>
       </ItemContent>
       {/*<ItemActions>
         <Button
@@ -57,8 +64,16 @@ export function VoiceItem(voice: Voice) {
   );
 }
 
+/**
+ * Renders a selectable voice list item with a play/pause control, language indicator, and a "Usar voz" action button.
+ *
+ * The play control uses the preview hook for non-"gemini" voices and plays a generated sample URL for voices with `source === "gemini"`, updating play state via the hook's actions.
+ *
+ * @param voice - Voice entry to render (uses `name`, `displayName`, `voiceId`, `source`, `langCode`, and `description`)
+ * @returns A JSX element representing the selectable voice item with playback and action affordances
+ */
 export function SelectableVoiceItem(voice: Voice) {
-  const { handlePlay, isLoading, isPlaying } = useVoicePreview();
+  const { handlePlay, isLoading, isPlaying, actions } = useVoicePreview();
 
   return (
     <Item
@@ -71,7 +86,23 @@ export function SelectableVoiceItem(voice: Voice) {
           variant="ghost"
           size="icon"
           className="dark:bg-transparent rounded-full cursor-pointer"
-          onClick={(e) => {
+          onClick={async (e) => {
+            if (voice.source === "gemini") {
+              e.stopPropagation();
+              const audio = new Audio(
+                `https://gstatic.com/aistudio/voices/samples/${voice.displayName}.wav`,
+              );
+
+              actions.setIsPlaying(true);
+              await audio.play();
+
+              audio.addEventListener("ended", () => {
+                actions.setIsPlaying(false);
+              });
+
+              return;
+            }
+
             e.stopPropagation();
             handlePlay(voice.voiceId);
           }}
@@ -87,6 +118,14 @@ export function SelectableVoiceItem(voice: Voice) {
       </ItemMedia>
       <ItemContent className="gap-0">
         <ItemTitle className="text-base">{voice.displayName}</ItemTitle>
+        <ItemDescription>
+          {voice?.langCode && voice?.langCode?.toLowerCase().includes("en")
+            ? "🇺🇸"
+            : voice?.langCode?.toLowerCase().includes("es")
+              ? "🇪🇸"
+              : "Multilingual"}
+          {""} {voice.description && "-"} {voice.description}
+        </ItemDescription>
       </ItemContent>
       <ItemActions>
         <Button

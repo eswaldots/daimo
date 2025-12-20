@@ -34,6 +34,7 @@ import {
 import { Voice } from "@/lib/voices";
 import { SelectableVoiceItem } from "../layout/admin/voice-item";
 import { ItemGroup } from "../ui/item";
+import { cn } from "@/lib/utils";
 
 const characterSchema = z.object({
   name: z
@@ -59,10 +60,18 @@ const characterSchema = z.object({
   firstMessagePrompt: z
     .string()
     .min(5, { message: "El saludo debe tener al menos 5 caracteres" }),
+  ttsProvider: z.string().min(1, { message: "Seleccione un proveedor de voz" }),
 });
 
 type CharacterFormValues = z.infer<typeof characterSchema>;
 
+/**
+ * Render a form for creating or editing a character, including fields for name, descriptions, prompts, voice selection, and optional image upload.
+ *
+ * @param voices - List of available voices used to populate the voice/provider selector.
+ * @param defaultValues - Existing character document (with optional `storageUrl`) when editing; omit to create a new character.
+ * @returns The rendered React component containing the character creation/edit form.
+ */
 export default function CreateCharacterPage({
   voices,
   defaultValues,
@@ -83,23 +92,66 @@ export default function CreateCharacterPage({
     handleSubmit,
     formState: { errors, isSubmitting },
     watch,
+    setValue,
   } = useForm<CharacterFormValues>({
     resolver: zodResolver(characterSchema),
-    defaultValues,
+    defaultValues: defaultValues
+      ? {
+          ...defaultValues,
+          ttsProvider: defaultValues.ttsProvider || "inworld",
+        }
+      : {
+          ttsProvider: "inworld",
+        },
   });
 
   const [isOpen, setIsOpen] = useState(false);
-  const [voice, setVoice] = useState<Voice | null>(null);
+  const [voice, setVoice] = useState<Voice | null>(
+    defaultValues
+      ? voices.find((v) => v.voiceId === defaultValues.voiceId) || null
+      : null,
+  );
+  const [searchQuery, setSearchQuery] = useState("");
+  const activeProvider = watch("ttsProvider");
+
   const router = useRouter();
 
   const create = useMutation(api.characters.create);
   const edit = useMutation(api.characters.editCharacter);
   const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
 
+  const providers = Array.from(new Set(voices.map((v) => v.source)));
+  const providerDisplayNames: Record<string, string> = {
+    inworld: "Inworld",
+    gemini: "Google Gemini",
+    cartesia: "Cartesia",
+    deepgram: "Deepgram",
+  };
+
+  const filteredVoices = voices.filter(
+    (v) =>
+      v.source === activeProvider &&
+      (v.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        v.name.toLowerCase().includes(searchQuery.toLowerCase())),
+  );
+
   const onSubmit = async (data: CharacterFormValues) => {
     console.log("Form data:", data);
-    const voiceId = voice?.voiceId ?? "";
-    // Form submission will be handled later by the user
+    const voiceId = voice?.voiceId;
+
+    if (!voiceId) {
+      toast.error("Seleccione una voz");
+
+      return;
+    }
+
+    const ttsProvider = voice?.source;
+
+    if (!ttsProvider) {
+      toast.error("Hubo un error obteniendo el provider de la voz");
+
+      return;
+    }
 
     if (image) {
       const postUrl = await generateUploadUrl();
@@ -117,10 +169,11 @@ export default function CreateCharacterPage({
           await edit({
             ...data,
             voiceId,
+            ttsProvider,
             characterId: defaultValues._id,
           });
         } else {
-          await create({ storageId, ...data, voiceId });
+          await create({ storageId, ...data, voiceId, ttsProvider });
         }
 
         toast.success(
@@ -143,10 +196,11 @@ export default function CreateCharacterPage({
         await edit({
           ...data,
           voiceId,
+          ttsProvider,
           characterId: defaultValues._id,
         });
       } else {
-        await create({ ...data, voiceId });
+        await create({ ...data, voiceId, ttsProvider });
       }
 
       toast.success(
@@ -283,22 +337,53 @@ export default function CreateCharacterPage({
           <Field>
             <FieldLabel className="text-foreground">Voz</FieldLabel>
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
-              <DialogContent showCloseButton={false}>
+              <DialogContent showCloseButton={false} className="transition-all">
                 <DialogTitle>Voces</DialogTitle>
                 <div className="my-2 space-y-4">
+                  {providers.length > 1 && (
+                    <div className="flex gap-2">
+                      {providers.map((provider) => (
+                        <Button
+                          key={provider}
+                          type="button"
+                          variant={
+                            activeProvider === provider ? "default" : "ghost"
+                          }
+                          size="sm"
+                          className={cn(
+                            activeProvider !== provider
+                              ? "border-foreground/10"
+                              : "border-primary",
+                            "rounded-full border",
+                          )}
+                          onClick={() => {
+                            setValue("ttsProvider", provider);
+                            setVoice(null);
+                          }}
+                        >
+                          {providerDisplayNames[provider] || provider}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
                   <InputGroup className="border-0 shadow-none bg-transparent">
                     <InputGroupAddon align="inline-start">
                       <Search className="size-4" />
                     </InputGroupAddon>
-                    <InputGroupInput placeholder="Busca una voz" />
+                    <InputGroupInput
+                      placeholder="Busca una voz"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
                   </InputGroup>
 
                   <ItemGroup className="max-h-[40vh] overflow-y-scroll gap-2">
-                    {voices.map((voice) => (
+                    {filteredVoices.map((voice) => (
                       <div
                         key={voice.voiceId}
                         onClick={() => {
                           setVoice(voice);
+                          setValue("ttsProvider", voice.source);
                           setIsOpen(false);
                         }}
                       >
@@ -310,6 +395,13 @@ export default function CreateCharacterPage({
               </DialogContent>
               <DialogTrigger>
                 <InputGroup className="rounded-lg bg-secondary dark:bg-border border-border/20  hover:bg-input transition-colors cursor-default">
+                  {voice?.source && (
+                    <InputGroupAddon align="inline-start">
+                      <span className="text-xs px-2 py-1 rounded-md bg-primary/10 text-primary">
+                        {providerDisplayNames[voice.source] || voice.source}
+                      </span>
+                    </InputGroupAddon>
+                  )}
                   <InputGroupInput
                     placeholder="Seleccione una voz"
                     readOnly

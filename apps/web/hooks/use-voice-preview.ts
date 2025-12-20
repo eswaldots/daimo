@@ -5,35 +5,69 @@ import { toast } from "sonner";
 export const useVoicePreview = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentSource, setCurrentSource] = useState<{
+    source: AudioBufferSourceNode;
+    context: AudioContext;
+  } | null>(null);
 
   const handlePlay = async (voiceId: string, sound?: string) => {
+    if (currentSource) {
+      try {
+        currentSource.source.stop();
+        currentSource.context.close();
+      } catch {
+        // Source might have already ended
+      }
+      setCurrentSource(null);
+    }
+
     setIsLoading(true);
     try {
-      const blob = await playVoice(voiceId, sound);
+      const base64Audio = await playVoice(voiceId, sound);
       setIsLoading(false);
 
-      const audioData = Buffer.from(blob, "base64");
+      // Convert base64 to ArrayBuffer
+      const binaryString = atob(base64Audio);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const arrayBuffer = bytes.buffer;
 
       const audioCtx = new AudioContext();
-      const source = audioCtx.createBufferSource();
 
-      audioCtx.decodeAudioData(audioData.buffer, (buffer) => {
-        source.buffer = buffer;
+      try {
+        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+
+        const source = audioCtx.createBufferSource();
+        source.buffer = audioBuffer;
         source.connect(audioCtx.destination);
+
+        source.onended = () => {
+          setIsPlaying(false);
+          audioCtx.close();
+
+          setCurrentSource(null);
+        };
+
         source.start();
-      });
+        setIsPlaying(true);
 
-      setIsPlaying(true);
-
-      source.onended = () => {
+        setCurrentSource({ source, context: audioCtx });
+      } catch {
+        audioCtx.close(); // Clean up AudioContext on error
         setIsPlaying(false);
-      };
+        toast.error("Error al intentar decodificar la voz");
+      }
     } catch {
       setIsLoading(false);
-
-      toast.error("Error al reproducir la voz");
+      toast.error("Error al intentar reproducir la voz");
     }
   };
-
-  return { handlePlay, isLoading, isPlaying };
+  return {
+    handlePlay,
+    isLoading,
+    isPlaying,
+    actions: { setIsLoading, setIsPlaying },
+  };
 };

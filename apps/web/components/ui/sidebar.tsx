@@ -393,6 +393,15 @@ function SidebarGroup({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+/**
+ * Renders a styled label element for a sidebar group.
+ *
+ * Renders a container with the `data-slot="sidebar-group-label"` and `data-sidebar="group-label"` attributes and applies the sidebar group label styling and visibility rules used when the sidebar is in icon/collapsible modes.
+ *
+ * @param asChild - If `true`, renders a Slot instead of a `div`, allowing the caller to supply the underlying element.
+ * @param className - Additional CSS classes to merge with the component's default styling.
+ * @returns A React element representing the sidebar group label.
+ */
 function SidebarGroupLabel({
   className,
   asChild = false,
@@ -405,7 +414,7 @@ function SidebarGroupLabel({
       data-slot="sidebar-group-label"
       data-sidebar="group-label"
       className={cn(
-        "text-sidebar-foreground/70 ring-sidebar-ring flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium outline-hidden transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-5 [&>svg]:shrink-0",
+        "text-sidebar-foreground/70 ring-sidebar-ring flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium outline-hidden transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
         "group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
         className,
       )}
@@ -414,6 +423,14 @@ function SidebarGroupLabel({
   );
 }
 
+/**
+ * Renders a positioned action control for a sidebar group, styled as a compact icon button.
+ *
+ * When `asChild` is true the component renders a `Slot` so the caller can supply the underlying element;
+ * otherwise it renders a native `button`.
+ *
+ * @param asChild - If true, render a `Slot` (use the provided child as the element); otherwise render a `button`.
+ */
 function SidebarGroupAction({
   className,
   asChild = false,
@@ -426,7 +443,7 @@ function SidebarGroupAction({
       data-slot="sidebar-group-action"
       data-sidebar="group-action"
       className={cn(
-        "text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground absolute top-3.5 right-3 flex aspect-square w-5 items-center justify-center rounded-md p-0 outline-hidden transition-transform focus-visible:ring-2 [&>svg]:size-5",
+        "text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground absolute top-3.5 right-3 flex aspect-square w-5 items-center justify-center rounded-md p-0 outline-hidden transition-transform focus-visible:ring-2 [&>svg]:size-4",
         // Increases the hit area of the button on mobile.
         "after:absolute after:-inset-2 md:after:hidden",
         "group-data-[collapsible=icon]:hidden",
@@ -462,6 +479,12 @@ function SidebarMenu({ className, ...props }: React.ComponentProps<"ul">) {
   );
 }
 
+/**
+ * Renders a list item wrapper for a sidebar menu entry with consistent data attributes and styling.
+ *
+ * @param props - Props forwarded to the underlying `li` element. `className` will be merged with the component's default classes.
+ * @returns The rendered `li` element configured for sidebar menu usage.
+ */
 function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
   return (
     <li
@@ -474,7 +497,7 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
 }
 
 const sidebarMenuButtonVariants = cva(
-  "transition-colors duration-100 peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-hidden ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent duration-200 transition-colors focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-foreground/5 font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent  group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-5 [&>svg]:shrink-0",
+  "transition-colors duration-100 text-muted-foreground data-[active=true]:text-sidebar-foreground peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-hidden ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent duration-200 transition-colors focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-foreground/5 font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent  group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
 
   {
     variants: {

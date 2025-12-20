@@ -1,11 +1,10 @@
 import json
 import logging
 import os
-from typing import cast
 
-import nltk
 from convex import ConvexClient
 from dotenv import load_dotenv
+from jinja2 import Template
 from livekit import rtc
 from livekit.agents import (
     Agent,
@@ -15,83 +14,35 @@ from livekit.agents import (
     JobProcess,
     cli,
     room_io,
-    tokenize,
 )
-from livekit.plugins import deepgram, groq, inworld, noise_cancellation, silero, google
-from livekit.agents.tokenize import SentenceStream
+from livekit.plugins import (
+    deepgram,
+    google,
+    groq,
+    noise_cancellation,
+    openai,
+    silero,
+    cartesia,
+    inworld,
+)
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
-from nltk.tokenize.punkt import PunktSentenceTokenizer
-from jinja2 import Template
-
-try:
-    nltk.data.find("tokenizers/punkt")
-except LookupError:
-    nltk.download("punkt")
 
 MASTER_TEMPLATE = """
 ### CONTEXTO E IDENTIDAD
 {{ backstory }}
+
+### INSTRUCCIONES DE VOZ Y ESTILO (CRUCIAL)
+- Aun asi tu principal forma de respuesta sea por audio, NO TE LIMITES a dar respuestas vagas a preguntas no tan simples como "tips para tocar guitarra" o "por que el cielo es azul". Tus respuestas tienen que ser lo suficientemente informativas como para que el usuario pueda entender y resolver su problema.
+- Habla de forma natural y coloquial, como un humano en una conversación casual.
+- No uses listas numeradas ni estructuras de texto rígidas; habla en párrafos fluidos.
+- Varía tu entonación según el contenido emocional de lo que dices.
+- Si no entiendes algo, reacciona de forma natural, no como un error de sistema.
+- IMPORTANTE: Tu respuesta debe ser para ser OÍDA, no leída. Evita símbolos extraños o formato markdown.
 """
-
-
-class SpanishNLTKStream(tokenize.SentenceStream):
-    def __init__(self, tokenizer_impl):
-        super().__init__()
-        self._tokenizer_impl = tokenizer_impl
-        self._buffer = ""
-
-    def push_text(self, text: str) -> None:
-        self._buffer += text
-        try:
-            # Ahora VS Code sabe que _tokenizer_impl tiene este método
-            sentences = self._tokenizer_impl.tokenize(self._buffer)
-            if len(sentences) > 1:
-                for sentence in sentences[:-1]:
-                    self._event_ch.send_nowait(tokenize.TokenData(token=sentence))
-                self._buffer = sentences[-1]
-        except Exception:
-            pass
-
-    def flush(self) -> None:
-        # Si queda algo en el buffer al final, lo enviamos
-        if self._buffer.strip():
-            self._event_ch.send_nowait(tokenize.TokenData(token=self._buffer))
-            self._buffer = ""
-
-    def end_input(self) -> None:
-        self.flush()
-        self._event_ch.close()
-
-    async def aclose(self) -> None:
-        self._event_ch.close()
-
-
-class SpanishTokenizer(tokenize.SentenceTokenizer):
-    def __init__(self):
-        try:
-            # Intentamos cargar, si falla algo, descargamos todo
-            nltk.data.find("tokenizers/punkt")
-            nltk.data.find("tokenizers/punkt_tab")  # <--- ESTO FALTABA
-            loaded = nltk.data.load("tokenizers/punkt/spanish.pickle")
-        except LookupError:
-            logger.info("Descargando recursos NLTK (punkt y punkt_tab)...")
-            nltk.download("punkt")
-            nltk.download("punkt_tab")  # <--- OBLIGATORIO AHORA
-            loaded = nltk.data.load("tokenizers/punkt/spanish.pickle")
-        self._nltk_tokenizer = cast(PunktSentenceTokenizer, loaded)
-
-    def tokenize(self, text: str, *, language: str | None = None) -> list[str]:
-        # Implementación del método estático
-        return self._nltk_tokenizer.tokenize(text)
-
-    def stream(self, *, language: str | None = None) -> SentenceStream:
-        # Implementación del método de streaming (EL QUE FALTABA)
-        return SpanishNLTKStream(self._nltk_tokenizer)
-
 
 logger = logging.getLogger("agent")
 
-load_dotenv(".env")
+load_dotenv(".env.local")
 
 CONVEX_URL = os.getenv("CONVEX_URL")
 
@@ -130,12 +81,13 @@ server = AgentServer()
 
 
 def prewarm(proc: JobProcess):
+    """
+    Load a Silero voice-activity detector (VAD) and attach it to the given job process.
+    
+    Parameters:
+    	proc (JobProcess): Job process whose `userdata` dictionary will receive the VAD instance under the key `"vad"`.
+    """
     proc.userdata["vad"] = silero.VAD.load()
-    try:
-        nltk.download("punkt")
-        nltk.download("punkt_tab")  # <--- AÑADIDO AQUÍ TAMBIÉN
-    except Exception as e:
-        logger.error(f"Error descargando NLTK: {e}")
 
 
 server.setup_fnc = prewarm
@@ -145,13 +97,19 @@ server.setup_fnc = prewarm
 async def my_agent(ctx: JobContext):
     # Logging setup
     # Add any other context you want in all log entries here
+    """
+    Initialize and run a voice AI AgentSession for the job's room using the character specified in room metadata.
+    
+    Loads character configuration from Convex, configures text-to-speech, speech-to-text, LLM, VAD, and turn-detection according to the character's `ttsProvider` and `voiceId`, starts the AgentSession with rendered instructions, and connects the job context to the room.
+    
+    Parameters:
+        ctx (JobContext): Job execution context containing the room, process userdata (e.g., prewarmed VAD), and connection helpers.
+    """
     ctx.log_context_fields = {
         "room": ctx.room.name,
     }
 
     metadata = json.loads(ctx.job.room.metadata)
-
-    my_tokenizer = SpanishTokenizer()
 
     character_id = metadata["characterId"]
     character = get_character(character_id)
@@ -178,22 +136,58 @@ async def my_agent(ctx: JobContext):
     #     resume_false_interruption=True,
     # )
 
-    # To use a realtime model instead of a voice pipeline, use the following session setup instead.
-    # (Note: This is for the OpenAI Realtime API. For other providers, see https://docs.livekit.io/agents/models/realtime/))
-    # 1. Install livekit-agents[openai]
-    # 2. Set OPENAI_API_KEY in .env.local
-    # 3. Add `from livekit.plugins import openai` to the top of this file
-    # 4. Use the following session setup instead of the version above
-    session = AgentSession(
-        llm=google.realtime.RealtimeModel(
-            voice="Despina",
-            temperature=0.8,
-            instructions=Template(MASTER_TEMPLATE).render(
-                backstory=character["prompt"], name=character["name"]
-            ),
-            model="gemini-2.5-flash-native-audio-preview-12-2025",
+    tts_provider = character.get("ttsProvider", "deepgram")
+    voice_id = character.get("voiceId")
+
+    if not voice_id:
+        raise ValueError(
+            f"Character '{character.get('name', 'unknown')}' is missing voiceId. "
+            f"Please configure a voice for this character."
         )
-    )
+
+    if ":" not in voice_id:
+        raise ValueError(
+            f"Invalid voiceId format: '{voice_id}'. "
+            f"Expected format: 'provider:voice_name'"
+        )
+
+    voice = voice_id.split(":")[1]
+
+    if tts_provider == "gemini":
+        session = AgentSession(
+            llm=google.realtime.RealtimeModel(
+                voice=voice,
+                instructions=Template(MASTER_TEMPLATE).render(
+                    backstory=character["prompt"], name=character["name"]
+                ),
+                enable_affective_dialog=True,
+                model="gemini-2.5-flash-native-audio-preview-12-2025",
+            ),
+            vad=ctx.proc.userdata["vad"],
+        )
+    else:
+        # Standard Stack: STT=Deepgram, LLM=Groq
+        if tts_provider == "openai":
+            tts_instance = openai.TTS(voice=voice)
+        elif tts_provider == "deepgram":
+            tts_instance = deepgram.TTS(model=voice)
+        elif tts_provider == "cartesia":
+            tts_instance = cartesia.TTS(voice=voice, model="sonic-3")
+        elif tts_provider == "inworld":
+            tts_instance = inworld.TTS(voice=voice or "Hades")
+        else:
+            # Default to Deepgram (covers 'deepgram' and fallbacks)
+            tts_instance = deepgram.TTS(model=voice or "aura-asteria-en")
+
+        session = AgentSession(
+            stt=deepgram.STT(model="nova-3-general", language="es"),
+            llm=groq.LLM(
+                model="openai/gpt-oss-20b",
+            ),
+            tts=tts_instance,
+            turn_detection=MultilingualModel(),
+            vad=ctx.proc.userdata["vad"],
+        )
 
     # # Add a virtual avatar to the session, if desired
     # # For other providers, see https://docs.livekit.io/agents/models/avatar/

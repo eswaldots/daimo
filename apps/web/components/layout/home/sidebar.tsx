@@ -43,6 +43,15 @@ import { useTheme } from "next-themes";
 import { Separator } from "@/components/ui/separator";
 import { authClient } from "@/lib/auth-client";
 
+/**
+ * Renders the application's left sidebar with header, primary navigation, and settings/logout controls.
+ *
+ * The sidebar includes a clickable title linking to "/home", a navigation item for "Inicio" that is active when the pathname is "/home",
+ * and a settings menu that allows selecting the UI theme (light, dark, system) and signing out.
+ *
+ * @param session - The user's session object used to derive user-specific UI (e.g., avatar, email, name) where applicable.
+ * @returns The sidebar JSX element containing header, navigation content, and footer controls.
+ */
 export default function HomeSidebar({ session }: { session: Session }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -54,7 +63,9 @@ export default function HomeSidebar({ session }: { session: Session }) {
         <SidebarMenu>
           <SidebarMenuButton className="hover:bg-transparent active:bg-transparent">
             <Link href="/home">
-              <h1 className="font-medium tracking-tight text-2xl">daimo</h1>
+              <h1 className="font-medium tracking-tight text-2xl text-foreground">
+                daimo
+              </h1>
             </Link>
           </SidebarMenuButton>
         </SidebarMenu>
@@ -66,7 +77,7 @@ export default function HomeSidebar({ session }: { session: Session }) {
             <SidebarMenuItem className="flex items-center gap-2">
               <SidebarMenuButton
                 isActive={pathname === "/home"}
-                className="rounded-lg text-sm h-9"
+                className="rounded-lg text-sm"
                 asChild
               >
                 <Link href="/home">
@@ -82,7 +93,7 @@ export default function HomeSidebar({ session }: { session: Session }) {
         <SidebarMenuItem className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <SidebarMenuButton className="rounded-full text-sm px-4 h-9 font-medium items-center text-muted-foreground">
+              <SidebarMenuButton className="rounded-full text-sm px-4 font-medium items-center text-muted-foreground">
                 <Settings
                   className="size-5 text-muted-foreground"
                   strokeWidth={1.5}

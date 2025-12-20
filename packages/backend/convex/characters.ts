@@ -55,34 +55,6 @@ export const getById = query({
   },
 });
 
-export const deleteCharacter = mutation({
-  args: {
-    characterId: v.id("characters"),
-  },
-  handler: async (ctx, { characterId }) => {
-    const user = await ctx.auth.getUserIdentity();
-
-    if (!user) {
-      throw new ConvexError("Unautenticado");
-    }
-
-    const character = await ctx.db.get(characterId);
-
-    if (!character) {
-      throw new ConvexError("Personaje no encontrado");
-    }
-
-    if (character?.creatorId !== user.subject) {
-      throw new ConvexError("No eres dueño de este personaje");
-    }
-
-    if (character.storageId) {
-      await ctx.storage.delete(character.storageId);
-    }
-    return await ctx.db.delete(characterId);
-  },
-});
-
 export const create = mutation({
   args: {
     creatorId: v.optional(v.string()),
@@ -93,6 +65,7 @@ export const create = mutation({
     description: v.string(),
     firstMessagePrompt: v.string(),
     voiceId: v.string(),
+    ttsProvider: v.string(),
   },
   returns: v.id("characters"),
   handler: async (ctx, args) => {
@@ -121,6 +94,7 @@ export const editCharacter = mutation({
     description: v.string(),
     firstMessagePrompt: v.string(),
     voiceId: v.string(),
+    ttsProvider: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
@@ -136,5 +110,34 @@ export const editCharacter = mutation({
     const { characterId, ...rest } = args;
 
     await ctx.db.patch(characterId, { ...rest });
+  },
+});
+
+export const deleteCharacter = mutation({
+  args: {
+    characterId: v.id("characters"),
+  },
+  handler: async (ctx, args) => {
+    const user = await authComponent.getAuthUser(ctx);
+
+    if (!user) {
+      throw new Error("User not authenticated");
+    }
+
+    if (user.role !== "admin") {
+      throw new Error("User not authorized");
+    }
+
+    const character = await ctx.db.get(args.characterId);
+
+    if (!character) {
+      throw new Error("Character not found");
+    }
+
+    if (character.storageId) {
+      await ctx.storage.delete(character.storageId);
+    }
+
+    await ctx.db.delete(character._id);
   },
 });
