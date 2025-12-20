@@ -6,7 +6,7 @@ import type { Voice as NewVoice } from "./tts";
 // Keep original interface for backward compatibility
 export interface Voice {
   name: string;
-  langCode: string;
+  langCode?: string;
   displayName: string;
   description: string;
   tags: string[];
@@ -23,7 +23,7 @@ type Options = {
 function toLegacyVoice(voice: NewVoice): Voice {
   return {
     name: voice.name,
-    langCode: voice.languageCode,
+    langCode: voice.langCode,
     displayName: voice.displayName,
     description: voice.description,
     tags: voice.tags,
@@ -38,7 +38,7 @@ function fromLegacyVoice(legacyVoice: Voice): NewVoice {
     id: legacyVoice.voiceId,
     provider: legacyVoice.source,
     name: legacyVoice.name,
-    languageCode: legacyVoice.langCode,
+    langCode: legacyVoice.langCode,
     displayName: legacyVoice.displayName,
     description: legacyVoice.description,
     tags: legacyVoice.tags,

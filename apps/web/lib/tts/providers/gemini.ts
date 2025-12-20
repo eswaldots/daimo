@@ -257,7 +257,6 @@ export class GeminiTTSProvider extends BaseTTSProvider {
       id: this.formatVoiceId(voice.id),
       provider: this.id,
       name: voice.name,
-      languageCode: "en-US", // Gemini voices are English by default
       displayName: voice.name,
       description: voice.description,
       tags: [voice.description, voice.provider],
@@ -323,17 +322,8 @@ export class GeminiTTSProvider extends BaseTTSProvider {
     const mimeType =
       data.candidates[0].content.parts[0].inlineData.mimeType || "audio/wav";
 
-    // Clean base64 data - remove data URL prefix if present
-    let cleanBase64 = base64Audio;
-    if (base64Audio.startsWith("data:")) {
-      const commaIndex = base64Audio.indexOf(",");
-      if (commaIndex !== -1) {
-        cleanBase64 = base64Audio.substring(commaIndex + 1);
-      }
-    }
-
     return {
-      audioContent: cleanBase64,
+      audioContent: `data:audio/wav;base64,${base64Audio}`,
       mimeType,
       durationMs: undefined, // Gemini doesn't return duration in response
       metadata: {

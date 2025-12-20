@@ -41,5 +41,10 @@ export const useVoicePreview = () => {
     }
   };
 
-  return { handlePlay, isLoading, isPlaying };
+  return {
+    handlePlay,
+    isLoading,
+    isPlaying,
+    actions: { setIsLoading, setIsPlaying },
+  };
 };

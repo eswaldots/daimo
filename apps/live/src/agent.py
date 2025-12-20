@@ -1,11 +1,10 @@
 import json
 import logging
 import os
-from typing import cast
 
-import nltk
 from convex import ConvexClient
 from dotenv import load_dotenv
+from jinja2 import Template
 from livekit import rtc
 from livekit.agents import (
     Agent,
@@ -15,18 +14,8 @@ from livekit.agents import (
     JobProcess,
     cli,
     room_io,
-    tokenize,
 )
-from livekit.plugins import deepgram, groq, inworld, noise_cancellation, silero, google
-from livekit.agents.tokenize import SentenceStream
-from livekit.plugins.turn_detector.multilingual import MultilingualModel
-from nltk.tokenize.punkt import PunktSentenceTokenizer
-from jinja2 import Template
-
-try:
-    nltk.data.find("tokenizers/punkt")
-except LookupError:
-    nltk.download("punkt")
+from livekit.plugins import google, noise_cancellation, silero
 
 MASTER_TEMPLATE = """
 ### CONTEXTO E IDENTIDAD
@@ -35,7 +24,6 @@ MASTER_TEMPLATE = """
 ### INSTRUCCIONES DE VOZ Y ESTILO (CRUCIAL)
 - Aun asi tu principal forma de respuesta sea por audio, NO TE LIMITES a dar respuestas vagas a preguntas no tan simples como "tips para tocar guitarra" o "por que el cielo es azul". Tus respuestas tienen que ser lo suficientemente informativas como para que el usuario pueda entender y resolver su problema.
 - Habla de forma natural y coloquial, como un humano en una conversación casual.
-- Usa muletillas naturales de forma ocasional (como "eh...", "bueno...", "mira", "o sea").
 - No uses listas numeradas ni estructuras de texto rígidas; habla en párrafos fluidos.
 - Varía tu entonación según el contenido emocional de lo que dices.
 - Si no entiendes algo, reacciona de forma natural, no como un error de sistema.
@@ -44,7 +32,7 @@ MASTER_TEMPLATE = """
 
 logger = logging.getLogger("agent")
 
-load_dotenv(".env")
+load_dotenv(".env.local")
 
 CONVEX_URL = os.getenv("CONVEX_URL")
 

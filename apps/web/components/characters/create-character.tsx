@@ -34,6 +34,7 @@ import {
 import { Voice } from "@/lib/voices";
 import { SelectableVoiceItem } from "../layout/admin/voice-item";
 import { ItemGroup } from "../ui/item";
+import { cn } from "@/lib/utils";
 
 const characterSchema = z.object({
   name: z
@@ -313,7 +314,7 @@ export default function CreateCharacterPage({
           <Field>
             <FieldLabel className="text-foreground">Voz</FieldLabel>
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
-              <DialogContent showCloseButton={false}>
+              <DialogContent showCloseButton={false} className="transition-all">
                 <DialogTitle>Voces</DialogTitle>
                 <div className="my-2 space-y-4">
                   {providers.length > 1 && (
@@ -326,7 +327,12 @@ export default function CreateCharacterPage({
                             activeProvider === provider ? "default" : "ghost"
                           }
                           size="sm"
-                          className="rounded-full"
+                          className={cn(
+                            activeProvider !== provider
+                              ? "border-foreground/10"
+                              : "border-primary",
+                            "rounded-full border",
+                          )}
                           onClick={() => {
                             setValue("ttsProvider", provider);
                             setVoice(null);

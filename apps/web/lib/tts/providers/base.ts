@@ -9,7 +9,7 @@ import {
 // Interface for legacy voice format (compatibility with existing code)
 export interface LegacyVoice {
   name: string;
-  langCode: string;
+  langCode?: string;
   displayName: string;
   description: string;
   tags: string[];
@@ -85,7 +85,7 @@ export abstract class BaseTTSProvider implements TTSProvider {
   toLegacyVoice(voice: Voice): LegacyVoice {
     return {
       name: voice.name,
-      langCode: voice.languageCode,
+      langCode: voice.langCode,
       displayName: voice.displayName,
       description: voice.description,
       tags: voice.tags,
@@ -103,7 +103,7 @@ export abstract class BaseTTSProvider implements TTSProvider {
       id: voiceId,
       provider: this.id,
       name,
-      languageCode: legacyVoice.langCode,
+      langCode: legacyVoice.langCode,
       displayName: legacyVoice.displayName,
       description: legacyVoice.description,
       tags: legacyVoice.tags,

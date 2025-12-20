@@ -97,7 +97,7 @@ class TTSRegistry {
           voice.name.toLowerCase().includes(query) ||
           voice.displayName.toLowerCase().includes(query) ||
           voice.description.toLowerCase().includes(query) ||
-          voice.languageCode.toLowerCase().includes(query) ||
+          voice?.langCode?.toLowerCase().includes(query) ||
           voice.tags.some((tag) => tag.toLowerCase().includes(query)),
       );
     }

@@ -2,7 +2,7 @@ export interface Voice {
   id: string; // Unique identifier including provider prefix: "provider:voice-id"
   provider: string; // Provider ID: "gemini", "cartesia", "deepgram", "inworld"
   name: string;
-  languageCode: string; // BCP-47 language code: "en-US", "es-ES"
+  langCode?: string; // BCP-47 language code: "en-US", "es-ES"
   displayName: string;
   description: string;
   tags: string[];

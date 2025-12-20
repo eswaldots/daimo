@@ -46,6 +46,7 @@ export class CartesiaTTSProvider extends BaseTTSProvider {
         method: "GET",
         headers: {
           Authorization: `Bearer ${apiKey}`,
+          "Cartesia-Version": "2025-04-16",
           "Content-Type": "application/json",
         },
       },
@@ -124,10 +125,11 @@ export class CartesiaTTSProvider extends BaseTTSProvider {
     const voiceId = this.extractVoiceId(request.voiceId);
     const apiKey = process.env.CARTESIA_API_KEY!;
 
-    const response = await fetch("https://api.cartesia.ai/tts", {
+    const response = await fetch("https://api.cartesia.ai/tts/bytes", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
+        "Cartesia-Version": "2025-04-16",
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
