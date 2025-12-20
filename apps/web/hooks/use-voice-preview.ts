@@ -9,15 +9,21 @@ export const useVoicePreview = () => {
   const handlePlay = async (voiceId: string, sound?: string) => {
     setIsLoading(true);
     try {
-      const blob = await playVoice(voiceId, sound);
+      const base64Audio = await playVoice(voiceId, sound);
       setIsLoading(false);
 
-      const audioData = Buffer.from(blob, "base64");
+      // Convert base64 to ArrayBuffer
+      const binaryString = atob(base64Audio);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const arrayBuffer = bytes.buffer;
 
       const audioCtx = new AudioContext();
       const source = audioCtx.createBufferSource();
 
-      audioCtx.decodeAudioData(audioData.buffer, (buffer) => {
+      audioCtx.decodeAudioData(arrayBuffer, (buffer) => {
         source.buffer = buffer;
         source.connect(audioCtx.destination);
         source.start();

@@ -8,9 +8,11 @@ export const create = mutation({
     storageId: v.optional(v.id("_storage")),
     name: v.string(),
     shortDescription: v.string(),
+    description: v.optional(v.string()),
     firstMessagePrompt: v.string(),
     prompt: v.string(),
     voiceId: v.string(),
+    ttsProvider: v.string(),
   },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);

@@ -54,7 +54,9 @@ export default function HomeSidebar({ session }: { session: Session }) {
         <SidebarMenu>
           <SidebarMenuButton className="hover:bg-transparent active:bg-transparent">
             <Link href="/home">
-              <h1 className="font-medium tracking-tight text-2xl">daimo</h1>
+              <h1 className="font-medium tracking-tight text-2xl text-foreground">
+                daimo
+              </h1>
             </Link>
           </SidebarMenuButton>
         </SidebarMenu>
@@ -66,7 +68,7 @@ export default function HomeSidebar({ session }: { session: Session }) {
             <SidebarMenuItem className="flex items-center gap-2">
               <SidebarMenuButton
                 isActive={pathname === "/home"}
-                className="rounded-lg text-sm h-9"
+                className="rounded-lg text-sm"
                 asChild
               >
                 <Link href="/home">
@@ -82,7 +84,7 @@ export default function HomeSidebar({ session }: { session: Session }) {
         <SidebarMenuItem className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <SidebarMenuButton className="rounded-full text-sm px-4 h-9 font-medium items-center text-muted-foreground">
+              <SidebarMenuButton className="rounded-full text-sm px-4 font-medium items-center text-muted-foreground">
                 <Settings
                   className="size-5 text-muted-foreground"
                   strokeWidth={1.5}

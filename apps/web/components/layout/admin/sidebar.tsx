@@ -48,7 +48,7 @@ export default function AdminSidebar({ session }: { session: Session }) {
         <SidebarMenu>
           <SidebarMenuButton className="hover:bg-transparent">
             <Link href="/home">
-              <h1 className="font-medium tracking-tight text-2xl">
+              <h1 className="font-medium tracking-tight text-2xl text-foreground">
                 daimo{" "}
                 <span className="text-muted-foreground font-normal">
                   for admins

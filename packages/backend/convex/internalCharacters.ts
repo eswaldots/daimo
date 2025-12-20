@@ -8,8 +8,10 @@ export const internalCreate = internalMutation({
     name: v.string(),
     prompt: v.string(),
     shortDescription: v.string(),
+    description: v.optional(v.string()),
     firstMessagePrompt: v.string(),
     voiceId: v.string(),
+    ttsProvider: v.string(),
   },
   returns: v.id("characters"),
   handler: async (ctx, args) => {

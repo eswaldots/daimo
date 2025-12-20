@@ -1,7 +1,9 @@
 {
   "name": "@daimo/live",
+  "version": "0.0.0",
+  "private": true,
   "scripts": {
-    "dev": "uv run src/agent.py",
+    "dev": "uv run src/agent.py dev",
     "deploy": "./scripts/deploy.sh"
   }
 }
