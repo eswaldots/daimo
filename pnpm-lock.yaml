@@ -93,7 +93,7 @@ importers:
         version: 1.3.27(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       better-auth-localization:
         specifier: ^2.2.2
-        version: 2.2.2(better-auth@1.3.27(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0))
+        version: 2.2.2(better-auth@1.3.27(react-dom@19.2.0(react@19.2.0))(react@19.2.0))
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -175,7 +175,7 @@ importers:
         version: 9.39.1(jiti@2.6.1)
       eslint-config-next:
         specifier: 16.0.7
-        version: 16.0.7(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2))(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2)
+        version: 16.0.7(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2)
       tailwindcss:
         specifier: ^4
         version: 4.1.17
@@ -4738,6 +4738,10 @@ packages:
     resolution: {integrity: sha512-ZZKSmDAEFOijERBLkmYfJ+vmk3w+7hOLYDNkRCuRuMJGEmqYNCNLyBBFwWKVMhfwaEF3WOd0Zlw86U/WC/+nYw==}
     engines: {'0': node >=0.6.0}
 
+  watchpack@2.4.4:
+    resolution: {integrity: sha512-c5EGNOiyxxV5qmTtAB7rbiXxi1ooX1pQKMLX/MIabJjRA0SJBQOjKF+KSVfHkr9U1cADPon0mRiVe/riyaiDUA==}
+    engines: {node: '>=10.13.0'}
+
   wavesurfer.js@7.12.1:
     resolution: {integrity: sha512-NswPjVHxk0Q1F/VMRemCPUzSojjuHHisQrBqQiRXg7MVbe3f5vQ6r0rTTXA/a/neC/4hnOEC4YpXca4LpH0SUg==}
 
@@ -7217,10 +7221,6 @@ snapshots:
     dependencies:
       tweetnacl: 0.14.5
 
-  better-auth-localization@2.2.2(better-auth@1.3.27(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)):
-    dependencies:
-      better-auth: 1.3.27(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-
   better-auth-localization@2.2.2(better-auth@1.3.27(react-dom@19.2.0(react@19.2.0))(react@19.2.0)):
     dependencies:
       better-auth: 1.3.27(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -7697,13 +7697,13 @@ snapshots:
 
   escape-string-regexp@4.0.0: {}
 
-  eslint-config-next@16.0.7(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2))(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2):
+  eslint-config-next@16.0.7(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2):
     dependencies:
       '@next/eslint-plugin-next': 16.0.7
       eslint: 9.39.1(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.9
       eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.1(jiti@2.6.1))
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-import: 2.32.0(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-react: 7.37.5(eslint@9.39.1(jiti@2.6.1))
       eslint-plugin-react-hooks: 7.0.1(eslint@9.39.1(jiti@2.6.1))
@@ -7740,22 +7740,21 @@ snapshots:
       tinyglobby: 0.2.15
       unrs-resolver: 1.11.1
     optionalDependencies:
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.1(jiti@2.6.1))
+      eslint-plugin-import: 2.32.0(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.1(jiti@2.6.1))
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.1(jiti@2.6.1)):
+  eslint-module-utils@2.12.1(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.1(jiti@2.6.1)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
-      '@typescript-eslint/parser': 8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2)
       eslint: 9.39.1(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.9
       eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.1(jiti@2.6.1))
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.1(jiti@2.6.1)):
+  eslint-plugin-import@2.32.0(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.1(jiti@2.6.1)):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.9
@@ -7766,7 +7765,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.39.1(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.1(jiti@2.6.1))
+      eslint-module-utils: 2.12.1(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.1(jiti@2.6.1))
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
@@ -7777,8 +7776,6 @@ snapshots:
       semver: 6.3.1
       string.prototype.trimend: 1.0.9
       tsconfig-paths: 3.15.0
-    optionalDependencies:
-      '@typescript-eslint/parser': 8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2)
     transitivePeerDependencies:
       - eslint-import-resolver-typescript
       - eslint-import-resolver-webpack
@@ -9700,6 +9697,11 @@ snapshots:
       assert-plus: 1.0.0
       core-util-is: 1.0.2
       extsprintf: 1.3.0
+
+  watchpack@2.4.4:
+    dependencies:
+      glob-to-regexp: 0.4.1
+      graceful-fs: 4.2.11
 
   wavesurfer.js@7.12.1: {}
 
