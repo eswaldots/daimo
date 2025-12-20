@@ -15,6 +15,7 @@ import * as z from "zod";
 import { authClient } from "@/lib/auth-client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
 
 const signUpSchema = z.object({
   email: z.email({ message: "Email inválido" }),
@@ -49,8 +50,20 @@ export default function Page() {
           error.message ||
           "Hubo un error desconocido. Intente de nuevo mas tarde",
       });
+      posthog.capture("user_signin_failed", {
+        error_message: error.message,
+        signin_method: "email",
+      });
       return;
     }
+
+    // Identify user and capture signin event
+    posthog.identify(data.email, {
+      email: data.email,
+    });
+    posthog.capture("user_signed_in", {
+      signin_method: "email",
+    });
 
     router.push("/home");
   };
@@ -91,7 +104,9 @@ export default function Page() {
             type="button"
             onClick={async () => {
               setIsSocialLoading(true);
-
+              posthog.capture("user_signed_in", {
+                signin_method: "google",
+              });
               await authClient.signIn.social({
                 provider: "google",
               });

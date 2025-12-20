@@ -15,6 +15,7 @@ import * as z from "zod";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import posthog from "posthog-js";
 
 const signUpSchema = z.object({
   name: z
@@ -52,8 +53,21 @@ export default function Page() {
           error.message ||
           "Hubo un error desconocido. Intente de nuevo mas tarde",
       });
+      posthog.capture("user_signup_failed", {
+        error_message: error.message,
+        signup_method: "email",
+      });
       return;
     }
+
+    // Identify user and capture signup event
+    posthog.identify(data.email, {
+      email: data.email,
+      name: data.name,
+    });
+    posthog.capture("user_signed_up", {
+      signup_method: "email",
+    });
 
     router.push("/home");
   };
@@ -98,7 +112,9 @@ export default function Page() {
             type="button"
             onClick={async () => {
               setIsSocialLoading(true);
-
+              posthog.capture("user_signed_up", {
+                signup_method: "google",
+              });
               await authClient.signIn.social({
                 provider: "google",
               });

@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import * as Sentry from "@sentry/nextjs";
 import { motion, MotionProps } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { ArrowUp } from "lucide-react";
+import posthog from "posthog-js";
 
 const MOTION_PROPS: MotionProps = {
   variants: {
@@ -44,10 +46,14 @@ export function ChatInput({
 
     try {
       setIsSending(true);
+      posthog.capture("chat_message_sent", {
+        message_length: message.trim().length,
+      });
       await onSend(message);
       setMessage("");
     } catch (error) {
       console.error(error);
+      Sentry.captureException(error);
     } finally {
       setIsSending(false);
     }

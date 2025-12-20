@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { useAgent, useSessionContext } from "@livekit/components-react";
+import * as Sentry from "@sentry/nextjs";
 import { toast } from "sonner";
+import posthog from "posthog-js";
 
 export function useAgentErrors() {
   const agent = useAgent();
@@ -9,6 +11,16 @@ export function useAgentErrors() {
   useEffect(() => {
     if (isConnected && agent.state === "failed") {
       const reasons = agent.failureReasons;
+
+      // Track agent error in PostHog
+      posthog.capture("agent_error_occurred", {
+        failure_reasons: reasons,
+        failure_count: reasons.length,
+      });
+
+      // Also capture as an exception for error tracking
+      const errorMessage = reasons.join("; ");
+      Sentry.captureException(new Error(`Agent failed: ${errorMessage}`));
 
       toast.warning("Session finalizada", {
         description: (

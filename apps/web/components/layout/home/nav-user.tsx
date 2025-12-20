@@ -22,6 +22,7 @@ import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
 
 export function NavUser({
   user,
@@ -80,7 +81,13 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={() => {
+                  posthog.capture("upgrade_to_pro_clicked", {
+                    source: "nav_user_menu",
+                  });
+                }}
+              >
                 <Sparkles />
                 Actualizar a pro
               </DropdownMenuItem>
@@ -106,6 +113,10 @@ export function NavUser({
 
                   return;
                 }
+
+                // Capture logout event and reset PostHog
+                posthog.capture("user_signed_out");
+                posthog.reset();
 
                 router.push("/");
                 setIsLoading(false);
