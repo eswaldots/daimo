@@ -83,9 +83,9 @@ server = AgentServer()
 def prewarm(proc: JobProcess):
     """
     Load a Silero voice-activity detector (VAD) and attach it to the given job process.
-    
+
     Parameters:
-    	proc (JobProcess): Job process whose `userdata` dictionary will receive the VAD instance under the key `"vad"`.
+        proc (JobProcess): Job process whose `userdata` dictionary will receive the VAD instance under the key `"vad"`.
     """
     proc.userdata["vad"] = silero.VAD.load()
 
@@ -99,9 +99,9 @@ async def my_agent(ctx: JobContext):
     # Add any other context you want in all log entries here
     """
     Initialize and run a voice AI AgentSession for the job's room using the character specified in room metadata.
-    
+
     Loads character configuration from Convex, configures text-to-speech, speech-to-text, LLM, VAD, and turn-detection according to the character's `ttsProvider` and `voiceId`, starts the AgentSession with rendered instructions, and connects the job context to the room.
-    
+
     Parameters:
         ctx (JobContext): Job execution context containing the room, process userdata (e.g., prewarmed VAD), and connection helpers.
     """
@@ -151,7 +151,10 @@ async def my_agent(ctx: JobContext):
             f"Expected format: 'provider:voice_name'"
         )
 
-    voice = voice_id.split(":")[1]
+    voice = voice_id.split(":", 1)[1]
+
+    if not voice:
+        raise ValueError(f"Invalid voiceId: '{voice_id}'. Voice name cannot be empty.")
 
     if tts_provider == "gemini":
         session = AgentSession(
@@ -220,3 +223,4 @@ async def my_agent(ctx: JobContext):
 
 if __name__ == "__main__":
     cli.run_app(server)
+
