@@ -8,6 +8,11 @@ import { api, Id } from "@daimo/backend";
 import { useParams } from "next/navigation";
 import { Skeleton } from "../ui/skeleton";
 
+/**
+ * Renders a 64×64 decorative SVG icon used as the welcome image.
+ *
+ * @returns A JSX element containing a 64×64 SVG icon
+ */
 function WelcomeImage() {
   return (
     <svg

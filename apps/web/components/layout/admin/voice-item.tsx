@@ -15,6 +15,12 @@ import { Voice } from "@/lib/voices";
 import { Pause, Play } from "lucide-react";
 import { toast } from "sonner";
 
+/**
+ * Render a list item that displays a voice and provides a play/pause preview control.
+ *
+ * @param voice - Voice object whose `displayName` and `langCode` are shown and whose `voiceId` is used to preview audio
+ * @returns A JSX element representing the voice item with a play/pause button and descriptive text
+ */
 export function VoiceItem(voice: Voice) {
   const { handlePlay, isLoading, isPlaying } = useVoicePreview();
 
@@ -58,6 +64,14 @@ export function VoiceItem(voice: Voice) {
   );
 }
 
+/**
+ * Renders a selectable voice list item with a play/pause control, language indicator, and a "Usar voz" action button.
+ *
+ * The play control uses the preview hook for non-"gemini" voices and plays a generated sample URL for voices with `source === "gemini"`, updating play state via the hook's actions.
+ *
+ * @param voice - Voice entry to render (uses `name`, `displayName`, `voiceId`, `source`, `langCode`, and `description`)
+ * @returns A JSX element representing the selectable voice item with playback and action affordances
+ */
 export function SelectableVoiceItem(voice: Voice) {
   const { handlePlay, isLoading, isPlaying, actions } = useVoicePreview();
 

@@ -43,6 +43,15 @@ import { useTheme } from "next-themes";
 import { Separator } from "@/components/ui/separator";
 import { authClient } from "@/lib/auth-client";
 
+/**
+ * Renders the application's left sidebar with header, primary navigation, and settings/logout controls.
+ *
+ * The sidebar includes a clickable title linking to "/home", a navigation item for "Inicio" that is active when the pathname is "/home",
+ * and a settings menu that allows selecting the UI theme (light, dark, system) and signing out.
+ *
+ * @param session - The user's session object used to derive user-specific UI (e.g., avatar, email, name) where applicable.
+ * @returns The sidebar JSX element containing header, navigation content, and footer controls.
+ */
 export default function HomeSidebar({ session }: { session: Session }) {
   const router = useRouter();
   const pathname = usePathname();

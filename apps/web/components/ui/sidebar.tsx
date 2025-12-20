@@ -393,6 +393,15 @@ function SidebarGroup({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+/**
+ * Renders a styled label element for a sidebar group.
+ *
+ * Renders a container with the `data-slot="sidebar-group-label"` and `data-sidebar="group-label"` attributes and applies the sidebar group label styling and visibility rules used when the sidebar is in icon/collapsible modes.
+ *
+ * @param asChild - If `true`, renders a Slot instead of a `div`, allowing the caller to supply the underlying element.
+ * @param className - Additional CSS classes to merge with the component's default styling.
+ * @returns A React element representing the sidebar group label.
+ */
 function SidebarGroupLabel({
   className,
   asChild = false,
@@ -414,6 +423,14 @@ function SidebarGroupLabel({
   );
 }
 
+/**
+ * Renders a positioned action control for a sidebar group, styled as a compact icon button.
+ *
+ * When `asChild` is true the component renders a `Slot` so the caller can supply the underlying element;
+ * otherwise it renders a native `button`.
+ *
+ * @param asChild - If true, render a `Slot` (use the provided child as the element); otherwise render a `button`.
+ */
 function SidebarGroupAction({
   className,
   asChild = false,
@@ -462,6 +479,12 @@ function SidebarMenu({ className, ...props }: React.ComponentProps<"ul">) {
   );
 }
 
+/**
+ * Renders a list item wrapper for a sidebar menu entry with consistent data attributes and styling.
+ *
+ * @param props - Props forwarded to the underlying `li` element. `className` will be merged with the component's default classes.
+ * @returns The rendered `li` element configured for sidebar menu usage.
+ */
 function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
   return (
     <li

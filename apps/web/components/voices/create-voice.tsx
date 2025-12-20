@@ -35,6 +35,13 @@ interface CreateVoiceFormProps {
   supportedProviders: string[];
 }
 
+/**
+ * Renders a dialog form to create a custom voice with provider selection, metadata fields, audio upload, optional trimming, and submission handling.
+ *
+ * @param children - Trigger element rendered as the dialog opener.
+ * @param supportedProviders - Array of voice provider identifiers used to populate the provider selector and determine the default provider.
+ * @returns A React element that renders the dialog-based create-voice form UI.
+ */
 export default function CreateVoiceForm({
   children,
   supportedProviders,
