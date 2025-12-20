@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import * as Sentry from "@sentry/nextjs";
 import { motion, MotionProps } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -52,7 +53,7 @@ export function ChatInput({
       setMessage("");
     } catch (error) {
       console.error(error);
-      posthog.captureException(error);
+      Sentry.captureException(error);
     } finally {
       setIsSending(false);
     }

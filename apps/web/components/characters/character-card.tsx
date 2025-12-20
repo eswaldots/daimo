@@ -351,16 +351,18 @@ function CharacterContent(
             className="w-full rounded-full z-20 text-base"
             asChild
             size="lg"
-            onClick={() => {
-              posthog.capture("character_conversation_started", {
-                character_id: props._id,
-                character_name: props.name,
-                tts_provider: props.ttsProvider,
-                source: "character_card",
-              });
-            }}
           >
-            <Link href={`/playground/${props._id}`}>
+            <Link
+              href={`/playground/${props._id}`}
+              onClick={() => {
+                posthog.capture("character_conversation_started", {
+                  character_id: props._id,
+                  character_name: props.name,
+                  tts_provider: props.ttsProvider,
+                  source: "character_card",
+                });
+              }}
+            >
               <AudioLines />
               Conversar
             </Link>

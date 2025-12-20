@@ -10,6 +10,7 @@ import {
   FieldError,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import * as Sentry from "@sentry/nextjs";
 import { Textarea } from "@/components/ui/textarea";
 import { ChevronDown, ChevronLeft, PlusIcon, Search } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -196,7 +197,7 @@ export default function CreateCharacterPage({
         return;
       } catch (error) {
         console.error(error);
-        posthog.captureException(error);
+        Sentry.captureException(error);
         toast.error("Failed to create character");
 
         return;
@@ -232,7 +233,7 @@ export default function CreateCharacterPage({
       router.push("/admin/characters");
     } catch (error) {
       console.error(error);
-      posthog.captureException(error);
+      Sentry.captureException(error);
       toast.error("Failed to create character");
     }
   };
@@ -453,3 +454,4 @@ export default function CreateCharacterPage({
     </>
   );
 }
+

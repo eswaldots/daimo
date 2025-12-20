@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useAgent, useSessionContext } from "@livekit/components-react";
+import * as Sentry from "@sentry/nextjs";
 import { toast } from "sonner";
 import posthog from "posthog-js";
 
@@ -19,7 +20,7 @@ export function useAgentErrors() {
 
       // Also capture as an exception for error tracking
       const errorMessage = reasons.join("; ");
-      posthog.captureException(new Error(`Agent failed: ${errorMessage}`));
+      Sentry.captureException(new Error(`Agent failed: ${errorMessage}`));
 
       toast.warning("Session finalizada", {
         description: (

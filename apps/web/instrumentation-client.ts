@@ -34,7 +34,11 @@ export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
 // https://posthog.com/docs/libraries/next-js
 import posthog from "posthog-js";
 
-posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
+if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) {
+  throw new Error("NEXT_PUBLIC_POSTHOG_KEY env variable is not set");
+}
+
+posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
   api_host: "/ingest",
   ui_host: "https://us.posthog.com",
   defaults: "2025-05-24",
