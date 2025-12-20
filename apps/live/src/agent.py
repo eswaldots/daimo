@@ -124,6 +124,19 @@ async def my_agent(ctx: JobContext):
 
     tts_provider = character.get("ttsProvider", "deepgram")
     voice_id: str = character["voiceId"]
+
+    if not voice_id:
+        raise ValueError(
+            f"Character '{character.get('name', 'unknown')}' is missing voiceId. "
+            f"Please configure a voice for this character."
+        )
+
+    if ":" not in voice_id:
+        raise ValueError(
+            f"Invalid voiceId format: '{voice_id}'. "
+            f"Expected format: 'provider:voice_name'"
+        )
+
     voice = voice_id.split(":")[1]
 
     if tts_provider == "gemini":

@@ -21,19 +21,27 @@ export const useVoicePreview = () => {
       const arrayBuffer = bytes.buffer;
 
       const audioCtx = new AudioContext();
-      const source = audioCtx.createBufferSource();
+      try {
+        const source = audioCtx.createBufferSource();
 
-      audioCtx.decodeAudioData(arrayBuffer, (buffer) => {
-        source.buffer = buffer;
-        source.connect(audioCtx.destination);
-        source.start();
-      });
+        audioCtx.decodeAudioData(arrayBuffer, (buffer) => {
+          source.buffer = buffer;
+          source.connect(audioCtx.destination);
+          source.start();
+        });
 
-      setIsPlaying(true);
+        setIsPlaying(true);
 
-      source.onended = () => {
-        setIsPlaying(false);
-      };
+        source.onended = () => {
+          setIsPlaying(false);
+
+          audioCtx.close();
+        };
+      } catch {
+        setIsLoading(false);
+
+        toast.error("Error al intentar decodificar la voz");
+      }
     } catch {
       setIsLoading(false);
 

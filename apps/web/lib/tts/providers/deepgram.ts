@@ -121,7 +121,7 @@ export class DeepgramTTSProvider extends BaseTTSProvider {
       id: this.formatVoiceId(voice.name),
       provider: this.id,
       name: voice.name,
-      languageCode: voice.language,
+      langCode: voice.language,
       displayName: `${voice.name} (${voice.gender})`,
       description:
         voice.description || `${voice.gender} voice for ${voice.language}`,
@@ -172,7 +172,7 @@ export class DeepgramTTSProvider extends BaseTTSProvider {
 
     return {
       audioContent: base64Audio,
-      mimeType: "audio/wav",
+      mimeType: "audio/mpeg",
       durationMs: undefined, // Deepgram doesn't return duration in response
       metadata: {
         provider: this.id,

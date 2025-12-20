@@ -64,7 +64,7 @@ export class CartesiaTTSProvider extends BaseTTSProvider {
       id: this.formatVoiceId(voice.id),
       provider: this.id,
       name: voice.name,
-      languageCode: voice.language,
+      langCode: voice.language,
       displayName: voice.name,
       description: voice.description,
       tags: [voice.gender, voice.language],
@@ -159,7 +159,7 @@ export class CartesiaTTSProvider extends BaseTTSProvider {
 
     return {
       audioContent: base64Audio,
-      mimeType: "audio/wav",
+      mimeType: "audio/pcm",
       durationMs: undefined, // Cartesia doesn't return duration in response
       metadata: {
         provider: this.id,
