@@ -43,6 +43,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import posthog from "posthog-js";
 
 export function CharacterCardSkeleton() {
   return (
@@ -274,6 +275,11 @@ function CharacterContent(
               variant="secondary"
               className="cursor-pointer z-20 rounded-full relative"
               onClick={async () => {
+                posthog.capture("character_voice_preview_played", {
+                  character_id: props._id,
+                  character_name: props.name,
+                  voice_id: props.voiceId,
+                });
                 await handlePlay(props.voiceId, props.firstMessagePrompt);
               }}
             >
@@ -345,6 +351,14 @@ function CharacterContent(
             className="w-full rounded-full z-20 text-base"
             asChild
             size="lg"
+            onClick={() => {
+              posthog.capture("character_conversation_started", {
+                character_id: props._id,
+                character_name: props.name,
+                tts_provider: props.ttsProvider,
+                source: "character_card",
+              });
+            }}
           >
             <Link href={`/playground/${props._id}`}>
               <AudioLines />

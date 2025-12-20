@@ -14,6 +14,7 @@ import { ChatTranscript } from "./chat-transcript";
 import { PreConnectMessage } from "./preconnect-message";
 import { TileLayout } from "./tile-layout";
 import { AgentControlBar } from "./agent-control-bar/agent-control-bar";
+import posthog from "posthog-js";
 
 const MotionBottom = motion.create("div");
 
@@ -131,7 +132,12 @@ export const SessionView = ({
           <AgentControlBar
             controls={controls}
             isConnected={session.isConnected}
-            onDisconnect={session.end}
+            onDisconnect={() => {
+              posthog.capture("session_ended", {
+                message_count: messages.length,
+              });
+              session.end();
+            }}
             onChatOpenChange={setChatOpen}
           />
         </div>

@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { createCustomVoice } from "@/lib/voices";
 import { Spinner } from "@/components/ui/spinner";
 import AudioTrimmer from "./audio-trimmer";
+import posthog from "posthog-js";
 
 interface CreateVoiceFormProps {
   children: ReactNode;
@@ -80,6 +81,12 @@ export default function CreateVoiceForm({
         formData.append("audio", file);
 
         await createCustomVoice(formData);
+        posthog.capture("voice_created", {
+          voice_name: name,
+          voice_provider: provider,
+          language: language,
+          has_description: description.length > 0,
+        });
         toast.success("Voz creada exitosamente");
         setOpen(false);
         // Reset form
@@ -92,6 +99,7 @@ export default function CreateVoiceForm({
         setLanguage("en-US");
       } catch (error) {
         console.error(error);
+        posthog.captureException(error);
         toast.error(
           error instanceof Error ? error.message : "Error al crear la voz",
         );

@@ -35,6 +35,7 @@ import { Voice } from "@/lib/voices";
 import { SelectableVoiceItem } from "../layout/admin/voice-item";
 import { ItemGroup } from "../ui/item";
 import { cn } from "@/lib/utils";
+import posthog from "posthog-js";
 
 const characterSchema = z.object({
   name: z
@@ -172,8 +173,18 @@ export default function CreateCharacterPage({
             ttsProvider,
             characterId: defaultValues._id,
           });
+          posthog.capture("character_edited", {
+            character_name: data.name,
+            tts_provider: ttsProvider,
+            has_image: true,
+          });
         } else {
           await create({ storageId, ...data, voiceId, ttsProvider });
+          posthog.capture("character_created", {
+            character_name: data.name,
+            tts_provider: ttsProvider,
+            has_image: true,
+          });
         }
 
         toast.success(
@@ -185,6 +196,7 @@ export default function CreateCharacterPage({
         return;
       } catch (error) {
         console.error(error);
+        posthog.captureException(error);
         toast.error("Failed to create character");
 
         return;
@@ -199,8 +211,18 @@ export default function CreateCharacterPage({
           ttsProvider,
           characterId: defaultValues._id,
         });
+        posthog.capture("character_edited", {
+          character_name: data.name,
+          tts_provider: ttsProvider,
+          has_image: false,
+        });
       } else {
         await create({ ...data, voiceId, ttsProvider });
+        posthog.capture("character_created", {
+          character_name: data.name,
+          tts_provider: ttsProvider,
+          has_image: false,
+        });
       }
 
       toast.success(
@@ -210,6 +232,7 @@ export default function CreateCharacterPage({
       router.push("/admin/characters");
     } catch (error) {
       console.error(error);
+      posthog.captureException(error);
       toast.error("Failed to create character");
     }
   };
