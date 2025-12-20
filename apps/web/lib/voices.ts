@@ -19,7 +19,12 @@ type Options = {
   limit?: string;
 };
 
-// Convert new voice format to legacy format
+/**
+ * Convert a voice from the new TTS format to the legacy Voice shape.
+ *
+ * @param voice - The voice object in the new `NewVoice` format to convert
+ * @returns A legacy `Voice` object with `voiceId` mapped from `id` and `source` from `provider`
+ */
 function toLegacyVoice(voice: NewVoice): Voice {
   return {
     name: voice.name,
@@ -32,7 +37,12 @@ function toLegacyVoice(voice: NewVoice): Voice {
   };
 }
 
-// Convert legacy voice format to new format (if needed)
+/**
+ * Convert a legacy Voice object into the new NewVoice format.
+ *
+ * @param legacyVoice - The legacy voice to convert.
+ * @returns A NewVoice with fields mapped from the legacy voice; `id` is populated from `voiceId`, `provider` from `source`, and `metadata.source` set to `"legacy"`.
+ */
 function fromLegacyVoice(legacyVoice: Voice): NewVoice {
   return {
     id: legacyVoice.voiceId,
@@ -85,7 +95,22 @@ export const playVoice = async (voiceId: string, sound?: string) => {
   return response.audioContent;
 };
 
-// Create a custom voice using the specified provider
+/**
+ * Creates a custom TTS voice from uploaded audio using the specified provider.
+ *
+ * Expects `formData` to include the following keys:
+ * - `provider` (optional): provider ID to use (defaults to "inworld")
+ * - `name` (optional): display name for the custom voice (defaults to "Custom Voice")
+ * - `description` (optional): descriptive text for the voice
+ * - `language` (optional): BCP-47 language tag (defaults to "en-US")
+ * - `audio` (required): audio File containing the voice sample
+ *
+ * @param formData - FormData containing provider, name, description, language and the audio file
+ * @returns The newly created voice converted to the legacy Voice format
+ * @throws Error if the `audio` file is missing
+ * @throws Error if the specified provider is not found or not configured
+ * @throws Error if the specified provider does not support custom voice creation
+ */
 export async function createCustomVoice(formData: FormData): Promise<Voice> {
   const providerId = (formData.get("provider") as string) || "inworld";
   const name = (formData.get("name") as string) || "Custom Voice";
@@ -120,7 +145,11 @@ export async function createCustomVoice(formData: FormData): Promise<Voice> {
   return toLegacyVoice(newVoice);
 }
 
-// Get list of providers that support custom voice creation
+/**
+ * List provider IDs that support creating custom voices.
+ *
+ * @returns An array of provider IDs that expose a `createVoice` function
+ */
 export async function getSupportedProviders(): Promise<string[]> {
   const providers = tts.getProviders();
   return providers

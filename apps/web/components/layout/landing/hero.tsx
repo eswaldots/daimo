@@ -5,6 +5,11 @@ import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 import Link from "next/link";
 
+/**
+ * Renders the full-screen hero section containing an animated title and two action buttons.
+ *
+ * @returns A React element representing the hero section with per-letter animated text and a button group that fades in.
+ */
 export function Hero() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-white">
@@ -43,6 +48,14 @@ export function Hero() {
   );
 }
 
+/**
+ * Renders the given string with a per-character staggered entrance animation.
+ *
+ * Each character is wrapped in an animated span that moves up, rotates to neutral, and fades in with a staggered delay.
+ *
+ * @param text - The string whose characters will be rendered and animated individually
+ * @returns A React element containing the animated characters as inline spans
+ */
 function AnimatedText({ text }: { text: string }) {
   const words = text.split("");
 

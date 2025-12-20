@@ -13,6 +13,17 @@ interface AudioTrimmerProps {
   onCancel: () => void;
 }
 
+/**
+ * Render an interactive waveform UI that lets the user select and export a trimmed segment of the provided audio file.
+ *
+ * The component loads `file` into a waveform, allows selecting a region, and calls `onTrim` with a WAV `File` named
+ * `trimmed-{originalName}` when the user applies the trim. It also exposes a cancel action via `onCancel`.
+ *
+ * @param file - The input audio `File` to load and trim.
+ * @param onTrim - Callback invoked with the trimmed audio `File` in WAV format (named `trimmed-{originalName}`).
+ * @param onCancel - Callback invoked when the user cancels the trimming operation.
+ * @returns The React element that provides the audio trimming UI.
+ */
 export default function AudioTrimmer({
   file,
   onTrim,

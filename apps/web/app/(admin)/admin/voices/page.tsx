@@ -4,6 +4,12 @@ import SearchInput from "@/components/layout/search-input";
 import VoiceList from "@/components/voices/voice-list";
 import CreateVoiceForm from "@/components/voices/create-voice";
 
+/**
+ * Renders the admin "Voces" page with controls to create, search, and list voices.
+ *
+ * @param searchParams - A promise resolving to query options object (may include `limit` and `q`) used to fetch voices
+ * @returns The page's JSX containing the title, a create-voice button wrapped by CreateVoiceForm (provided with supported providers), a search input, and a VoiceList when voices are available
+ */
 export default async function Page({
   searchParams,
 }: {

@@ -38,6 +38,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "next-themes";
 
+/**
+ * Renders the admin sidebar containing navigation links, a theme selector, and the current user's card.
+ *
+ * @param session - Session object for the authenticated admin used to populate the user card (name, email, avatar).
+ * @returns The sidebar UI element for admin pages.
+ */
 export default function AdminSidebar({ session }: { session: Session }) {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
