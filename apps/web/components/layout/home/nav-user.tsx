@@ -24,6 +24,19 @@ import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
 
+/**
+ * Renders a sidebar user menu showing the user's avatar, name, email and account actions.
+ *
+ * The menu includes an "Actualizar a pro" action that captures an analytics event, a "Cuenta" item,
+ * and a logout action that sets a loading state, signs the user out via `authClient.signOut()`,
+ * captures a `user_signed_out` event, resets PostHog, and navigates to the root path on success.
+ *
+ * @param user - Object with the user's display information:
+ *   - name: Display name shown in the menu and avatar fallback
+ *   - email: Email shown in the menu
+ *   - avatar: URL for the avatar image
+ * @returns A JSX element containing the navigation sidebar user menu.
+ */
 export function NavUser({
   user,
 }: {

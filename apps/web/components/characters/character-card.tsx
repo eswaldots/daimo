@@ -45,6 +45,11 @@ import {
 } from "../ui/dropdown-menu";
 import posthog from "posthog-js";
 
+/**
+ * Renders a skeleton placeholder used while a character card is loading.
+ *
+ * @returns A JSX element containing the loading skeleton for a character card.
+ */
 export function CharacterCardSkeleton() {
   return (
     <motion.div
@@ -219,6 +224,14 @@ export function CharacterCard(
   );
 }
 
+/**
+ * Render the detailed character view shown inside a dialog (desktop) or drawer (mobile).
+ *
+ * Renders the character image, name, play/preview control for the character's voice, description, and a "Conversar" button that navigates to the playground. The play button triggers analytics and uses the voice preview hook; the conversation button records analytics before navigation.
+ *
+ * @param props - Character document and optional storageUrl. Expected fields used: `_id`, `name`, `description`, `voiceId`, `firstMessagePrompt`, and `ttsProvider`. `storageUrl` can override the image source.
+ * @returns The JSX element containing the character content (image, controls, description, and action button).
+ */
 function CharacterContent(
   props: Doc<"characters"> & { storageUrl?: string | null },
 ) {

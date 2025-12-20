@@ -3,6 +3,14 @@ import { useAgent, useSessionContext } from "@livekit/components-react";
 import { toast } from "sonner";
 import posthog from "posthog-js";
 
+/**
+ * Watches the LiveKit agent and active session and handles agent failures when detected.
+ *
+ * When the session is connected and the agent enters the "failed" state, records the failure (event + exception), shows a warning toast containing the failure reason(s) and a support link, and terminates the session.
+ *
+ * @remarks
+ * Side effects: sends analytics via PostHog, displays a toast notification, and calls the session `end()` function.
+ */
 export function useAgentErrors() {
   const agent = useAgent();
   const { isConnected, end } = useSessionContext();

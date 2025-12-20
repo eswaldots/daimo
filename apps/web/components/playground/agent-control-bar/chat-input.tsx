@@ -31,6 +31,19 @@ interface ChatInputProps {
   onSend?: (message: string) => void;
 }
 
+/**
+ * Render a chat input bar that lets the user type messages and submit them.
+ *
+ * The component disables sending while a message is being sent, when no agent is available,
+ * or when the input is empty after trimming. Submissions invoke `onSend` with the current
+ * message, record an analytics event containing the trimmed message length, and capture
+ * any exception that occurs during sending.
+ *
+ * @param chatOpen - Whether the chat UI is open; controls visibility and input enabled state
+ * @param isAgentAvailable - Whether an agent is available to receive messages (defaults to `false`)
+ * @param onSend - Async handler invoked with the current message when the form is submitted
+ * @returns A React element containing the input field and send button for the chat UI
+ */
 export function ChatInput({
   chatOpen,
   isAgentAvailable = false,

@@ -29,6 +29,15 @@ const signUpSchema = z.object({
 
 type SignUpFormValues = z.infer<typeof signUpSchema>;
 
+/**
+ * Renders the sign-up page and manages both email/password and Google OAuth sign-up flows.
+ *
+ * The component displays form fields with client-side validation, shows field and root-level errors,
+ * triggers authClient for sign-up, captures analytics events via posthog, and navigates to `/home`
+ * after successful registration.
+ *
+ * @returns The React element for the sign-up page with validation, error display, social sign-in, and analytics integration.
+ */
 export default function Page() {
   const {
     register,
