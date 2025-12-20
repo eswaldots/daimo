@@ -6,6 +6,7 @@ import { useQuery } from "convex/react";
 import Image from "next/image";
 import { api, Id } from "@daimo/backend";
 import { useParams } from "next/navigation";
+import { Skeleton } from "../ui/skeleton";
 
 function WelcomeImage() {
   return (
@@ -47,17 +48,24 @@ export const WelcomeView = ({
     <div ref={ref}>
       <section className="bg-background flex flex-col items-center justify-center text-center">
         <div className="flex items-center gap-6 my-4 flex-col">
-          <Image
-            className="size-36 rounded-full object-cover"
-            src={character?.storageUrl ?? ""}
-            alt="image"
-            width={2000}
-            height={2000}
-          />
+          {character?.storageUrl ? (
+            <Image
+              className="size-36 rounded-full object-cover"
+              src={character?.storageUrl ?? ""}
+              alt="image"
+              width={2000}
+              height={2000}
+            />
+          ) : (
+            <Skeleton className="size-36 rounded-full object-cover" />
+          )}
 
-          <p className="text-foreground max-w-prose pt-1 leading-6 font-medium tracking-tight text-4xl">
-            Habla con {character?.name}
-          </p>
+          <div className="text-foreground max-w-prose pt-1 leading-6 font-medium tracking-tight text-4xl">
+            Habla con{" "}
+            {character?.name || (
+              <Skeleton className="h-7 ml-1 w-32 inline-block" />
+            )}
+          </div>
         </div>
         <Button
           variant="default"

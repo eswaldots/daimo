@@ -65,7 +65,7 @@ export const create = mutation({
     description: v.string(),
     firstMessagePrompt: v.string(),
     voiceId: v.string(),
-    ttsProvider: v.string(),
+    ttsProvider: v.optional(v.string()),
   },
   returns: v.id("characters"),
   handler: async (ctx, args) => {
@@ -94,7 +94,7 @@ export const editCharacter = mutation({
     description: v.string(),
     firstMessagePrompt: v.string(),
     voiceId: v.string(),
-    ttsProvider: v.string(),
+    ttsProvider: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);

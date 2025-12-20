@@ -15,7 +15,17 @@ from livekit.agents import (
     cli,
     room_io,
 )
-from livekit.plugins import google, noise_cancellation, silero
+from livekit.plugins import (
+    deepgram,
+    google,
+    groq,
+    noise_cancellation,
+    openai,
+    silero,
+    cartesia,
+    inworld,
+)
+from livekit.plugins.turn_detector.multilingual import MultilingualModel
 
 MASTER_TEMPLATE = """
 ### CONTEXTO E IDENTIDAD
@@ -112,23 +122,46 @@ async def my_agent(ctx: JobContext):
     #     resume_false_interruption=True,
     # )
 
-    # To use a realtime model instead of a voice pipeline, use the following session setup instead.
-    # (Note: This is for the OpenAI Realtime API. For other providers, see https://docs.livekit.io/agents/models/realtime/))
-    # 1. Install livekit-agents[openai]
-    # 2. Set OPENAI_API_KEY in .env.local
-    # 3. Add `from livekit.plugins import openai` to the top of this file
-    # 4. Use the following session setup instead of the version above
-    session = AgentSession(
-        llm=google.realtime.RealtimeModel(
-            voice="Zephyr",
-            instructions=Template(MASTER_TEMPLATE).render(
-                backstory=character["prompt"], name=character["name"]
+    tts_provider = character.get("ttsProvider", "deepgram")
+    voice_id: str = character["voiceId"]
+    voice = voice_id.split(":")[1]
+
+    if tts_provider == "gemini":
+        session = AgentSession(
+            llm=google.realtime.RealtimeModel(
+                voice=voice,
+                instructions=Template(MASTER_TEMPLATE).render(
+                    backstory=character["prompt"], name=character["name"]
+                ),
+                enable_affective_dialog=True,
+                model="gemini-2.5-flash-native-audio-preview-12-2025",
             ),
-            enable_affective_dialog=True,
-            model="gemini-2.5-flash-native-audio-preview-12-2025",  # Verifica si la versión 2.5 existe en tu región, lo estándar ahora es 2.0-flash-exp
-        ),
-        vad=silero.VAD.load(),
-    )
+            vad=silero.VAD.load(),
+        )
+    else:
+        # Standard Stack: STT=Deepgram, LLM=Groq
+        tts_instance = None
+        if tts_provider == "openai":
+            tts_instance = openai.TTS(voice=voice)
+        if tts_provider == "deepgram":
+            tts_instance = deepgram.TTS(model=voice)
+        if tts_provider == "cartesia":
+            tts_instance = cartesia.TTS(voice=voice, model="sonic-3")
+        if tts_provider == "inworld":
+            tts_instance = inworld.TTS(voice=voice or "Hades")
+        else:
+            # Default to Deepgram (covers 'deepgram' and fallbacks)
+            tts_instance = deepgram.TTS(model=voice or "aura-asteria-en")
+
+        session = AgentSession(
+            stt=deepgram.STT(model="nova-3-general", language="es"),
+            llm=groq.LLM(
+                model="openai/gpt-oss-20b",
+            ),
+            tts=tts_instance,
+            turn_detection=MultilingualModel(),
+            vad=silero.VAD.load(),
+        )
 
     # # Add a virtual avatar to the session, if desired
     # # For other providers, see https://docs.livekit.io/agents/models/avatar/

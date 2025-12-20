@@ -11,6 +11,6 @@ export default defineSchema({
     description: v.optional(v.string()),
     firstMessagePrompt: v.string(),
     voiceId: v.string(),
-    ttsProvider: v.string(),
+    ttsProvider: v.optional(v.string()),
   }).index("by_creator_id", ["creatorId"]),
 });

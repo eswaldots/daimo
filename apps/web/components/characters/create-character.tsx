@@ -131,6 +131,7 @@ export default function CreateCharacterPage({
   const onSubmit = async (data: CharacterFormValues) => {
     console.log("Form data:", data);
     const voiceId = voice?.voiceId ?? "";
+    const ttsProvider = voice?.source ?? undefined;
 
     if (image) {
       const postUrl = await generateUploadUrl();
@@ -148,10 +149,11 @@ export default function CreateCharacterPage({
           await edit({
             ...data,
             voiceId,
+            ttsProvider,
             characterId: defaultValues._id,
           });
         } else {
-          await create({ storageId, ...data, voiceId });
+          await create({ storageId, ...data, voiceId, ttsProvider });
         }
 
         toast.success(
@@ -174,10 +176,11 @@ export default function CreateCharacterPage({
         await edit({
           ...data,
           voiceId,
+          ttsProvider,
           characterId: defaultValues._id,
         });
       } else {
-        await create({ ...data, voiceId });
+        await create({ ...data, voiceId, ttsProvider });
       }
 
       toast.success(
