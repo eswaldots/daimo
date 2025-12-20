@@ -136,18 +136,18 @@ async def my_agent(ctx: JobContext):
                 enable_affective_dialog=True,
                 model="gemini-2.5-flash-native-audio-preview-12-2025",
             ),
-            vad=silero.VAD.load(),
+            vad=ctx.proc.userdata["vad"],
         )
     else:
         # Standard Stack: STT=Deepgram, LLM=Groq
         tts_instance = None
         if tts_provider == "openai":
             tts_instance = openai.TTS(voice=voice)
-        if tts_provider == "deepgram":
+        elif tts_provider == "deepgram":
             tts_instance = deepgram.TTS(model=voice)
-        if tts_provider == "cartesia":
+        elif tts_provider == "cartesia":
             tts_instance = cartesia.TTS(voice=voice, model="sonic-3")
-        if tts_provider == "inworld":
+        elif tts_provider == "inworld":
             tts_instance = inworld.TTS(voice=voice or "Hades")
         else:
             # Default to Deepgram (covers 'deepgram' and fallbacks)
@@ -160,7 +160,7 @@ async def my_agent(ctx: JobContext):
             ),
             tts=tts_instance,
             turn_detection=MultilingualModel(),
-            vad=silero.VAD.load(),
+            vad=ctx.proc.userdata["vad"],
         )
 
     # # Add a virtual avatar to the session, if desired

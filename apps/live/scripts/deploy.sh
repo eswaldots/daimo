@@ -4,4 +4,6 @@
 mv package.json package.json.tmp
 
 lk agent deploy
+EXIT_CODE=$?
 mv package.json.tmp package.json
+exit $EXIT_CODE

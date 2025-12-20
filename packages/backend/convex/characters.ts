@@ -65,7 +65,7 @@ export const create = mutation({
     description: v.string(),
     firstMessagePrompt: v.string(),
     voiceId: v.string(),
-    ttsProvider: v.optional(v.string()),
+    ttsProvider: v.string(),
   },
   returns: v.id("characters"),
   handler: async (ctx, args) => {
@@ -120,8 +120,6 @@ export const deleteCharacter = mutation({
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
 
-    const character = await ctx.db.get(args.characterId);
-
     if (!user) {
       throw new Error("User not authenticated");
     }
@@ -129,6 +127,8 @@ export const deleteCharacter = mutation({
     if (user.role !== "admin") {
       throw new Error("User not authorized");
     }
+
+    const character = await ctx.db.get(args.characterId);
 
     if (!character) {
       throw new Error("Character not found");

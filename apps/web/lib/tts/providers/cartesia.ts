@@ -107,7 +107,7 @@ export class CartesiaTTSProvider extends BaseTTSProvider {
       id: this.formatVoiceId(voiceData.id),
       provider: this.id,
       name: voiceData.name,
-      languageCode: options.language || "en",
+      langCode: options.language || "en",
       displayName: voiceData.name,
       description: voiceData.description || "",
       tags: ["custom"],

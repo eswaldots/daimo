@@ -234,7 +234,7 @@ export class GeminiTTSProvider extends BaseTTSProvider {
   id = "gemini";
   name = "Google Gemini";
 
-  protected requiredEnvVars: string[] = [];
+  protected requiredEnvVars: string[] = ["GEMINI_API_KEY"];
 
   async getVoices(options?: VoiceOptions): Promise<Voice[]> {
     // Gemini voices are static, no API key needed for listing
@@ -301,7 +301,7 @@ export class GeminiTTSProvider extends BaseTTSProvider {
             speechConfig: {
               voiceConfig: {
                 prebuiltVoiceConfig: {
-                  voiceName: request.voiceId,
+                  voiceName: voiceId,
                 },
               },
             },
@@ -323,7 +323,7 @@ export class GeminiTTSProvider extends BaseTTSProvider {
       data.candidates[0].content.parts[0].inlineData.mimeType || "audio/wav";
 
     return {
-      audioContent: `data:audio/wav;base64,${base64Audio}`,
+      audioContent: base64Audio,
       mimeType,
       durationMs: undefined, // Gemini doesn't return duration in response
       metadata: {

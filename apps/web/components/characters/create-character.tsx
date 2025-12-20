@@ -130,8 +130,21 @@ export default function CreateCharacterPage({
 
   const onSubmit = async (data: CharacterFormValues) => {
     console.log("Form data:", data);
-    const voiceId = voice?.voiceId ?? "";
-    const ttsProvider = voice?.source ?? undefined;
+    const voiceId = voice?.voiceId;
+
+    if (!voiceId) {
+      toast.error("Seleccione una voz");
+
+      return;
+    }
+
+    const ttsProvider = voice?.source;
+
+    if (!ttsProvider) {
+      toast.error("Hubo un error obteniendo el provider de la voz");
+
+      return;
+    }
 
     if (image) {
       const postUrl = await generateUploadUrl();
