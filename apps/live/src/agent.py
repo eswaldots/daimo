@@ -123,7 +123,7 @@ async def my_agent(ctx: JobContext):
     # )
 
     tts_provider = character.get("ttsProvider", "deepgram")
-    voice_id: str = character["voiceId"]
+    voice_id = character.get("voiceId")
 
     if not voice_id:
         raise ValueError(
