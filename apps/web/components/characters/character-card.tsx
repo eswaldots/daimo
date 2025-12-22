@@ -44,6 +44,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import posthog from "posthog-js";
+import { useRouter } from "next/navigation";
 
 export function CharacterCardSkeleton() {
   return (
@@ -84,138 +85,129 @@ export function CharacterCard(
   const isMobile = useIsMobile();
   const { data } = authClient.useSession();
   const isOwner = props.creatorId === (data?.user?.id ?? "");
+  const router = useRouter();
 
   if (!isMobile) {
     return (
+      <Link href={`/characters/${props._id}`}>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ type: "spring" }}
+        >
+          <DropdownMenu>
+            <Card className="group px-0 bg-transparent duration-300 cursor-pointer transition-colors border-0 shadow-none w-full md:w-74 rounded-2xl py-4 gap-2">
+              <CardHeader className="px-0 rounded-lg relative">
+                <motion.picture>
+                  <Image
+                    src={props.storageUrl ?? ""}
+                    alt="image"
+                    width={1028}
+                    height={1028}
+                    className="rounded-lg h-64 object-cover object-[50%_25%]"
+                  />
+                </motion.picture>
+                <div className="group-hover:opacity-100 opacity-0 transition-all h-64 rounded-lg bg-black/20 absolute inset-0">
+                  <Button
+                    className="backdrop-blur-lg bg-black/50 absolute left-2 bottom-2 text-white rounded-full hover:bg-white hover:text-black cursor-pointer duration-75"
+                    size="icon-sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+
+                      router.push(`/playground/${props._id}/`);
+                    }}
+                  >
+                    <AudioLines />
+                  </Button>
+
+                  {isOwner && (
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        className="backdrop-blur-lg bg-black/50 absolute right-2 bottom-2 text-white rounded-full hover:bg-white hover:text-black cursor-pointer duration-75"
+                        size="icon-sm"
+                      >
+                        <Ellipsis />
+                      </Button>
+                    </DropdownMenuTrigger>
+                  )}
+                </div>
+              </CardHeader>
+
+              <CardContent className="space-y-2 truncate px-0">
+                <CardTitle>
+                  <div className="flex items-center w-full justify-between hover:underline">
+                    {props.name}
+                  </div>
+                </CardTitle>
+                <CardDescription className="text-balance max-h-16">
+                  {props.shortDescription}
+                </CardDescription>
+              </CardContent>
+            </Card>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem>
+                <Pen />
+                Editar personaje
+              </DropdownMenuItem>
+              <DropdownMenuItem variant="destructive">
+                <TrashIcon />
+                Eliminar personaje
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </motion.div>
+      </Link>
+    );
+  }
+
+  return (
+    <Link href={`/characters/${props._id}`}>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ type: "spring" }}
+        className="w-full"
       >
-        <DropdownMenu>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Card className="group px-0 bg-transparent duration-300 cursor-pointer transition-colors border-0 shadow-none w-full md:w-74 rounded-2xl py-4 gap-2">
-                <CardHeader className="px-0 rounded-lg relative">
-                  <motion.picture>
-                    <Image
-                      src={props.storageUrl ?? ""}
-                      alt="image"
-                      width={1028}
-                      height={1028}
-                      className="rounded-lg h-64 object-cover object-[50%_25%]"
-                    />
-                  </motion.picture>
-                  <div className="group-hover:opacity-100 opacity-0 transition-all h-64 rounded-lg bg-black/20 absolute inset-0">
-                    <Button
-                      className="backdrop-blur-lg bg-black/50 absolute left-2 bottom-2 text-white rounded-full hover:bg-white hover:text-black cursor-pointer duration-75"
-                      size="icon-sm"
-                      asChild
-                    >
-                      <Link href={`/playground/${props._id}/`}>
-                        <AudioLines />
-                      </Link>
-                    </Button>
+        <Card className="group px-0 bg-transparent duration-300 cursor-pointer transition-colors border-0 shadow-none w-full md:w-74 rounded-2xl py-4 gap-2">
+          <CardHeader className="px-0 rounded-lg relative">
+            <motion.picture>
+              <Image
+                src={props.storageUrl ?? ""}
+                alt="image"
+                width={1028}
+                height={1028}
+                className="rounded-xl h-72 object-cover object-[50%_25%]"
+              />
+            </motion.picture>
+            <div className="group-hover:opacity-100 opacity-0 transition-all h-64 rounded-lg bg-black/20 absolute inset-0">
+              <Button
+                className="backdrop-blur-lg bg-black/50 absolute left-2 bottom-2 text-white rounded-full hover:bg-white hover:text-black cursor-pointer"
+                size="icon-sm"
+                asChild
+              >
+                <Link href={`/playground/${props._id}/`}>
+                  <AudioLines />
+                </Link>
+              </Button>
+            </div>
+          </CardHeader>
 
-                    {isOwner && (
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          className="backdrop-blur-lg bg-black/50 absolute right-2 bottom-2 text-white rounded-full hover:bg-white hover:text-black cursor-pointer duration-75"
-                          size="icon-sm"
-                        >
-                          <Ellipsis />
-                        </Button>
-                      </DropdownMenuTrigger>
-                    )}
-                  </div>
-                </CardHeader>
-
-                <CardContent className="space-y-2 truncate px-0">
-                  <CardTitle>
-                    <div className="flex items-center w-full justify-between hover:underline">
-                      {props.name}
-                    </div>
-                  </CardTitle>
-                  <CardDescription className="text-balance max-h-16">
-                    {props.shortDescription}
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            </DialogTrigger>
-            <DialogContent
-              className="outline-0 ring-0 border-0 px-0 pt-0 pb-0"
-              showCloseButton={false}
-            >
-              <CharacterContent {...props} />
-            </DialogContent>
-          </Dialog>
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem>
-              <Pen />
-              Editar personaje
-            </DropdownMenuItem>
-            <DropdownMenuItem variant="destructive">
-              <TrashIcon />
-              Eliminar personaje
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </motion.div>
-    );
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ type: "spring" }}
-      className="w-full"
-    >
-      <Drawer>
-        <DrawerTrigger asChild>
-          <Card className="group px-0 bg-transparent duration-300 cursor-pointer transition-colors border-0 shadow-none w-full md:w-74 rounded-2xl py-4 gap-2">
-            <CardHeader className="px-0 rounded-lg relative">
-              <motion.picture>
-                <Image
-                  src={props.storageUrl ?? ""}
-                  alt="image"
-                  width={1028}
-                  height={1028}
-                  className="rounded-xl h-72 object-cover object-[50%_25%]"
-                />
-              </motion.picture>
-              <div className="group-hover:opacity-100 opacity-0 transition-all h-64 rounded-lg bg-black/20 absolute inset-0">
-                <Button
-                  className="backdrop-blur-lg bg-black/50 absolute left-2 bottom-2 text-white rounded-full hover:bg-white hover:text-black cursor-pointer"
-                  size="icon-sm"
-                  asChild
-                >
-                  <Link href={`/playground/${props._id}/`}>
-                    <AudioLines />
-                  </Link>
-                </Button>
+          <CardContent className="md:space-y-2 truncate px-0">
+            <CardTitle>
+              <div className="flex items-center w-full justify-between hover:underline md:text-base text-lg">
+                {props.name}
               </div>
-            </CardHeader>
-
-            <CardContent className="md:space-y-2 truncate px-0">
-              <CardTitle>
-                <div className="flex items-center w-full justify-between hover:underline md:text-base text-lg">
-                  {props.name}
-                </div>
-              </CardTitle>
-              <CardDescription className="text-balance max-h-16 text-sm">
-                {props.shortDescription}
-              </CardDescription>
-            </CardContent>
-          </Card>
-        </DrawerTrigger>
-        <DrawerContent className="outline-0 ring-0 border-0 px-0 pt-0 pb-0 rounded-t-3xl">
-          <CharacterContent {...props} />
-        </DrawerContent>
-      </Drawer>
-    </motion.div>
+            </CardTitle>
+            <CardDescription className="text-balance max-h-16 text-sm">
+              {props.shortDescription}
+            </CardDescription>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </Link>
   );
 }
 

@@ -47,14 +47,14 @@ const characterSchema = z.object({
     .min(10, {
       message: "La descripción corta debe tener al menos 10 caracteres",
     })
-    .max(40, {
-      message: "La descripción corta no puede tener mas de 80 caracteres",
+    .max(120, {
+      message: "La descripción corta no puede tener mas de 120 caracteres",
     }),
   description: z
     .string()
     .min(10, { message: "La descripción debe tener al menos 10 caracteres" })
-    .max(120, {
-      message: "La descripción no puede tener mas de 120 caracteres",
+    .max(800, {
+      message: "La descripción no puede tener mas de 800 caracteres",
     }),
   prompt: z
     .string()
@@ -454,4 +454,3 @@ export default function CreateCharacterPage({
     </>
   );
 }
-

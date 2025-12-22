@@ -1,3 +1,4 @@
+import TransitionProvider from "@/components/context/transition-provider";
 import HomeSidebar from "@/components/layout/home/sidebar";
 import { Trigger } from "@/components/layout/home/trigger";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -5,6 +6,7 @@ import { authClient } from "@/lib/auth-client";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { ReactNode } from "react";
+import { ViewTransition } from "react";
 
 export default async function Layout({ children }: { children: ReactNode }) {
   const { data } = await authClient.getSession({
@@ -28,8 +30,10 @@ export default async function Layout({ children }: { children: ReactNode }) {
           <div className="flex flex-1 flex-col max-w-7xl mx-auto w-full">
             <div className="@container/main flex flex-1 flex-col gap-2">
               <div className="flex flex-col gap-4 py-4 md:gap-4 md:py-14 md:pt-14 pt-18 md:px-12 px-4">
-                <Trigger />
-                {children}
+                <ViewTransition>
+                  <Trigger />
+                  {children}
+                </ViewTransition>
               </div>
             </div>
           </div>

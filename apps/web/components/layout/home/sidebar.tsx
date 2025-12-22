@@ -58,7 +58,7 @@ export default function HomeSidebar({ session }: { session: Session }) {
   const { theme, setTheme } = useTheme();
 
   return (
-    <Sidebar className="border-none">
+    <Sidebar className="border-border">
       <SidebarHeader className="pt-4 px-4">
         <SidebarMenu>
           <SidebarMenuButton className="hover:bg-transparent active:bg-transparent">
@@ -83,6 +83,19 @@ export default function HomeSidebar({ session }: { session: Session }) {
                 <Link href="/home">
                   <Home className="size-5" strokeWidth={1.5} />
                   <span>Inicio</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+
+            <SidebarMenuItem className="flex items-center gap-2">
+              <SidebarMenuButton
+                isActive={pathname.includes("characters")}
+                className="rounded-lg text-sm"
+                asChild
+              >
+                <Link href="/characters">
+                  <User className="size-5" strokeWidth={1.5} />
+                  <span>Personajes</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -152,3 +165,4 @@ export default function HomeSidebar({ session }: { session: Session }) {
     </Sidebar>
   );
 }
+
