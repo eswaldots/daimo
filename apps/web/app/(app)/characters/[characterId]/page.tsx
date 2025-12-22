@@ -27,7 +27,7 @@ export async function generateMetadata(
   }
 
   return {
-    title: `${character.name}`,
+    title: `${character.name} - Daimo`,
   };
 }
 

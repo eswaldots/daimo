@@ -79,6 +79,7 @@ export const create = mutation({
     prompt: v.string(),
     shortDescription: v.string(),
     description: v.string(),
+    accessType: v.union(v.literal("free"), v.literal("premium")),
     firstMessagePrompt: v.string(),
     voiceId: v.string(),
     ttsProvider: v.string(),
@@ -95,7 +96,7 @@ export const create = mutation({
       throw new Error("User not authorized");
     }
 
-    return await ctx.db.insert("characters", { ...args });
+    return await ctx.db.insert("characters", { ...args, origin: "official" });
   },
 });
 
@@ -105,6 +106,7 @@ export const editCharacter = mutation({
     creatorId: v.optional(v.string()),
     storageId: v.optional(v.id("_storage")),
     name: v.string(),
+    accessType: v.union(v.literal("free"), v.literal("premium")),
     prompt: v.string(),
     shortDescription: v.string(),
     description: v.string(),

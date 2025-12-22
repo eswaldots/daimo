@@ -2,16 +2,55 @@
 
 import { api } from "@daimo/backend";
 import Image from "next/image";
-import { Preloaded, useMutation, usePreloadedQuery } from "convex/react";
-import { notFound } from "next/navigation";
+import {
+  Preloaded,
+  useMutation,
+  usePreloadedQuery,
+  useQuery,
+} from "convex/react";
+import { notFound, useRouter } from "next/navigation";
 import { Button } from "../ui/button";
-import { AudioLines, Heart, HeartPlus, PencilIcon } from "lucide-react";
+import {
+  AudioLines,
+  Brain,
+  Clock,
+  Heart,
+  LucideCardSim,
+  MemoryStick,
+  Mic,
+  SparklesIcon,
+  XIcon,
+} from "lucide-react";
 import { authClient } from "@/lib/auth-client";
-import { motion } from "motion/react";
+import { motion, useScroll, useSpring, useTransform } from "motion/react";
 import { Separator } from "../ui/separator";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import ClickSpark from "../ClickSpark";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "../ui/drawer";
+import { useIsMobile } from "@/hooks/use-mobile";
+import DaimoIcon from "../icons/daimo";
+import Link from "next/link";
+import { ScrollArea } from "../ui/scroll-area";
 
 export default function CharacterView({
   preloadedCharacter,
@@ -25,10 +64,13 @@ export default function CharacterView({
   if (!character) {
     notFound();
   }
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const [isStarred, setIsStarred] = useState(character.isStarredByUser);
   const starCharacter = useMutation(api.stars.starCharacter);
   const unstarCharacter = useMutation(api.stars.unstarCharacter);
+  const router = useRouter();
+  const isPremium = character.accessType === "premium";
 
   const toggleStarred = () => {
     setIsStarred(!isStarred);
@@ -40,6 +82,18 @@ export default function CharacterView({
     }
   };
 
+  const container = useRef(null);
+  const subscription = useQuery(api.subscriptions.getCurrentSubscription);
+
+  const { scrollYProgress } = useScroll({
+    target: container,
+    offset: ["start start", "end start"],
+  });
+  const isMobile = useIsMobile();
+
+  const value = useTransform(scrollYProgress, [0, 1], ["0vh", "100vh"]);
+  const y = useSpring(value, { damping: 40, stiffness: 300 });
+
   return (
     <motion.section
       className="flex flex-col"
@@ -48,32 +102,98 @@ export default function CharacterView({
       exit={{ opacity: 0 }}
       transition={{ delay: 0.2 }}
     >
-      <div className="absolute left-0 top-0 h-96 w-full">
-        <div className="absolute inset-0 opacity-40" />
+      <div className="absolute left-0 top-0 md:h-96 w-full" ref={container}>
+        <div className="absolute inset-0 z-20 backdrop-blur-2xl bg-black/20" />
+        <Image
+          src={character.storageUrl ?? ""}
+          fill
+          alt={character.name}
+          className="object-cover object-[50%_25%] z-10 backdrop-blur-2xl sm:size-48 sm:bg-transparent"
+        />
+        <div className="md:bg-black/20 absolute inset-0 sm:backdrop-blur-2xl" />
 
-        <div className="flex flex-col items-start h-96 justify-center px-20 gap-18 z-20">
-          <section className="flex items-center gap-24 w-full">
-            <motion.div className="relative size-48">
+        <div className="flex flex-col items-start pt-18 md:pt-0 md:h-96 justify-center gap-4 md:gap-18 z-20">
+          <section className="flex md:flex-row flex-col items-center gap-12 md:gap-24 w-full z-40 md:px-20 px-0">
+            <motion.div
+              className="relative overflow-visible h-56 md:size-48 md:aspect-square"
+              style={{ y: isMobile ? y : undefined }}
+            >
               <Image
                 src={character.storageUrl ?? ""}
-                fill
+                width={2000}
+                height={2000}
                 alt={character.name}
-                className="object-cover object-[50%_25%] rounded-full"
+                className="object-cover md:object-[50%_25%] md:bg-secondary size-112 md:size-48 bg-transparent md:rounded-full"
               />
             </motion.div>
-            <div className="z-10 flex flex-col gap-8">
-              <motion.h1 className="tracking-tight font-medium text-5xl text-foreground">
-                {character.name}
-              </motion.h1>
-              <div>
-                <motion.p className="text-foreground/60 max-w-md">
-                  {character.shortDescription}
-                </motion.p>
+            <div className="w-full md:bg-transparent bg-background z-20 rounded-t-3xl py-8 px-4 md:px-0">
+              <div className="z-10 flex flex-col gap-8 w-full md:py-0 py-4">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-4">
+                    <motion.h1 className=" tracking-tight font-semibold text-3xl md:text-5xl text-foreground md:text-white">
+                      {character.name}
+                    </motion.h1>
+                    {isPremium && (
+                      <div className="font-mono font-medium text-sm text-background tracking-wide flex items-center flex-row gap-1 bg-primary px-3.5 md:px-4 py-1 md:py-1.5 rounded-full">
+                        <SparklesIcon className="size-3" />
+                        PRO
+                      </div>
+                    )}
+                  </div>
+                  <motion.p className="text-foreground md:text-white/80 max-w-md font-medium md:text-xl text-base">
+                    {character.shortDescription}
+                  </motion.p>
+                  <Dialog>
+                    <DialogTrigger>
+                      <motion.p className="text-foreground md:text-white/80 max-w-md text-sm hover:underline cursor-pointer">
+                        Aún no te conoce
+                      </motion.p>
+                    </DialogTrigger>
+                    <DialogContent className="md:max-w-2xl px-6 py-8 pt-10 md:p-16 rounded-3xl text-left">
+                      <DialogHeader className="text-left">
+                        <span className="text-foreground font-medium">
+                          Memoria
+                        </span>
+                        <DialogTitle className="text-foreground text-3xl md:text-5xl leading-[1.1] font-semibold">
+                          Lo que {character.name} recuerda sobre ti
+                        </DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-1">
+                        <DialogDescription className="tracking-tight text-lg md:text-xl font-medium text-foreground mt-6 md:mt-16">
+                          Todavía no hay recuerdos guardados.
+                        </DialogDescription>
+                        <DialogDescription className="tracking-normal text-sm md:text-base text-foreground">
+                          A medida de que hablen, Daimo ira guardando detalles
+                          importantes para personalizar la experiencia.
+                        </DialogDescription>
+                      </div>
+                      <DialogFooter className="mt-6 md:mt-16 flex items-start w-full">
+                        <DialogClose asChild>
+                          <Button className="rounded-full ml-auto">
+                            Entendido
+                          </Button>
+                        </DialogClose>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </div>
-              <motion.div className="z-40 flex items-center gap-3">
+
+              <motion.div className="z-40 flex items-center gap-3 md:bg-transparent bg-background md:my-4">
                 <Button
-                  className="rounded-full z-40 border-primary border"
+                  className="rounded-full z-40 border-primary border md:text-sm text-primary-foreground text-base md:flex-0 flex-1"
                   size="lg"
+                  onClick={() => {
+                    if (
+                      isPremium &&
+                      (!subscription || subscription?.planId === "free")
+                    ) {
+                      setIsDialogOpen(true);
+
+                      return;
+                    }
+                    router.push(`/playground/${character._id}`);
+                  }}
                 >
                   <AudioLines />
                   {!isPending && !session
@@ -81,7 +201,7 @@ export default function CharacterView({
                     : "Conversar"}
                 </Button>
                 <Button
-                  className="rounded-full z-40 dark:bg-border dark:hover:bg-border/50"
+                  className="rounded-full z-40 md:bg-white/50 md:dark:bg-border md:dark:hover:bg-border/50 md:p-3"
                   variant="secondary"
                   size="icon-lg"
                   onClick={toggleStarred}
@@ -93,27 +213,315 @@ export default function CharacterView({
                   >
                     <Heart
                       className={cn(
-                        "transition-all",
+                        "transition-all md:size-4 size-5",
                         isStarred
                           ? "fill-rose-500 text-rose-500"
-                          : "dark:fill-border fill-secondary",
+                          : "dark:fill-border fill-transparent",
                       )}
                     />
                   </ClickSpark>
                 </Button>
               </motion.div>
+              <motion.div>
+                <div className="my-8 md:my-12 md:hidden">
+                  <p className="my-4 max-w-3xl">{character.description}</p>
+                </div>
+              </motion.div>
             </div>
           </section>
         </div>
-        <motion.div className="mx-20">
-          <Separator />
-          <div className="my-6">
-            <strong className="font-medium">Información del personaje</strong>
-
+        <motion.div>
+          <div className="my-8 md:my-12 hidden md:block mx-20">
             <p className="my-4 max-w-3xl">{character.description}</p>
           </div>
         </motion.div>
       </div>
+
+      {isMobile ? (
+        <Drawer open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DrawerContent>
+            <ScrollArea className="flex flex-col items-center py-8 px-4 overflow-auto">
+              <DrawerClose className="absolute right-4 top-6 p-1.5 rounded-full bg-secondary text-muted-foreground">
+                <XIcon className="size-5" />
+              </DrawerClose>
+              <DrawerHeader>
+                <motion.div
+                  className="p-5 bg-foreground rounded-3xl w-fit mx-auto my-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.1, ease: "easeOut" }}
+                >
+                  <DaimoIcon className="text-background size-12" />
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2, ease: "easeOut" }}
+                >
+                  <DrawerTitle className="font-semibold text-center text-3xl max-w-lg">
+                    Desbloquea todos los personajes
+                  </DrawerTitle>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3, ease: "easeOut" }}
+                >
+                  <DrawerDescription className="text-center text-sm my-3">
+                    Unete a la version beta por solo $15 al mes — Cancela en
+                    cualquier momento.
+                  </DrawerDescription>
+                </motion.div>
+              </DrawerHeader>
+              <motion.div
+                className="my-4 flex flex-col items-center w-full gap-6"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4, ease: "easeOut" }}
+              >
+                <div className="rounded-3xl w-full bg-secondary border border-secondary p-6 h-96">
+                  <div className="flex items-center gap-2">
+                    <h1 className="tracking-tight font-semibold text-xl">
+                      Pro
+                    </h1>
+
+                    <div className="font-medium text-xs text-background tracking-wide flex items-center flex-row gap-1 bg-primary px-2.5 py-1 rounded-lg">
+                      Popular
+                    </div>
+                  </div>
+
+                  <p className="text-muted-foreground text-sm">
+                    Para aprendices ambiciosos
+                  </p>
+
+                  <div className="my-4 flex items-baseline gap-1">
+                    <h1 className="text-2xl font-bold">$15</h1>
+                    <p className="text-xs text-muted-foreground">por mes</p>
+                  </div>
+
+                  <Button
+                    className="my-2 rounded-full w-full"
+                    size="lg"
+                    asChild
+                  >
+                    <Link
+                      href={
+                        "https://wa.me/04120196456?text='hola,estoyinteraso'"
+                      }
+                      target="_blank"
+                    >
+                      Actualizar a pro
+                    </Link>
+                  </Button>
+
+                  <div className="my-4 text-xs space-y-2">
+                    <li className="list-none flex items-center gap-2 text-muted-foreground">
+                      <Clock className="size-3" />
+                      15 horas de uso por mes
+                    </li>
+                    <li className="list-none flex items-center gap-2 text-muted-foreground">
+                      <LucideCardSim className="size-3" />
+                      Memoria de por vida
+                    </li>
+                    <li className="list-none flex items-center gap-2 text-muted-foreground">
+                      <Brain className="size-3" />
+                      Razonamiento avanzado
+                    </li>
+                    <li className="list-none flex items-center gap-2 text-muted-foreground">
+                      <SparklesIcon className="size-3" />
+                      Acceso a personajes PRO
+                    </li>
+                    <li className="list-none flex items-center gap-2 text-muted-foreground">
+                      <Mic className="size-3" />
+                      Clonación de voz
+                    </li>
+                  </div>
+                </div>
+                <div className="rounded-3xl w-full border border-border p-6 h-96">
+                  <div className="flex items-center gap-2">
+                    <h1 className="tracking-tight font-semibold text-xl">
+                      Gratuito
+                    </h1>
+                  </div>
+
+                  <p className="text-muted-foreground text-sm">
+                    Para experimentadores
+                  </p>
+
+                  <div className="my-4 flex items-baseline gap-1">
+                    <h1 className="text-2xl font-bold">$0</h1>
+                  </div>
+
+                  <Button
+                    className="my-2 rounded-full w-full"
+                    size="lg"
+                    asChild
+                    variant="secondary"
+                  >
+                    <Link
+                      href={
+                        "https://wa.me/04120196456?text='hola,estoyinteraso'"
+                      }
+                      target="_blank"
+                    >
+                      Continuar gratis
+                    </Link>
+                  </Button>
+
+                  <div className="my-4 text-xs space-y-2">
+                    <li className="list-none flex items-center gap-2 text-muted-foreground">
+                      <Clock className="size-3" />
+                      30 minutos de uso por mes
+                    </li>
+                    <li className="list-none flex items-center gap-2 text-muted-foreground">
+                      <LucideCardSim className="size-3" />
+                      Memoria por sesión
+                    </li>
+                    <li className="list-none flex items-center gap-2 text-muted-foreground">
+                      <SparklesIcon className="size-3" />
+                      Acceso a personajes gratuitos
+                    </li>
+                  </div>
+                </div>
+              </motion.div>
+            </ScrollArea>
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="md:max-w-5xl flex flex-col items-center py-16 px-32 max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <motion.div
+                className="p-5 bg-foreground rounded-3xl w-fit mx-auto my-6"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.1, ease: "easeOut" }}
+              >
+                <DaimoIcon className="text-background size-14" />
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2, ease: "easeOut" }}
+              >
+                <DialogTitle className="font-semibold text-center text-5xl max-w-lg">
+                  Desbloquea todos los personajes
+                </DialogTitle>
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3, ease: "easeOut" }}
+              >
+                <DialogDescription className="text-center text-base my-4">
+                  Unete a la version beta por solo $15 al mes — Cancela en
+                  cualquier momento.
+                </DialogDescription>
+              </motion.div>
+            </DialogHeader>
+            <motion.div
+              className="my-4 flex items-center w-full gap-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, ease: "easeOut" }}
+            >
+              <div className="rounded-3xl h-96 flex-1 border border-border p-6">
+                <div className="flex items-center gap-2">
+                  <h1 className="tracking-tight font-semibold text-2xl">
+                    Gratuito
+                  </h1>
+                </div>
+
+                <p className="text-muted-foreground">Para experimentadores</p>
+
+                <div className="my-4 flex items-baseline gap-1">
+                  <h1 className="text-3xl font-bold">$0</h1>
+                </div>
+
+                <Button
+                  className="my-2 rounded-full w-full"
+                  size="lg"
+                  asChild
+                  variant="secondary"
+                >
+                  <Link
+                    href={"https://wa.me/04120196456?text='hola,estoyinteraso'"}
+                    target="_blank"
+                  >
+                    Continuar gratis
+                  </Link>
+                </Button>
+
+                <div className="my-4 text-sm space-y-2">
+                  <li className="list-none flex items-center gap-2 text-muted-foreground">
+                    <Clock className="size-4" />
+                    30 minutos de uso por mes
+                  </li>
+                  <li className="list-none flex items-center gap-2 text-muted-foreground">
+                    <LucideCardSim className="size-4" />
+                    Memoria por sesión
+                  </li>
+                  <li className="list-none flex items-center gap-2 text-muted-foreground">
+                    <SparklesIcon className="size-4" />
+                    Acceso a personajes gratuitos
+                  </li>
+                </div>
+              </div>
+
+              <div className="rounded-3xl h-96 flex-1 bg-secondary border border-secondary p-6">
+                <div className="flex items-center gap-2">
+                  <h1 className="tracking-tight font-semibold text-2xl">Pro</h1>
+
+                  <div className="font-medium text-xs text-background tracking-wide flex items-center flex-row gap-1 bg-primary px-2.5 py-1 rounded-lg">
+                    Popular
+                  </div>
+                </div>
+
+                <p className="text-muted-foreground">
+                  Para aprendices ambiciosos
+                </p>
+
+                <div className="my-4 flex items-baseline gap-1">
+                  <h1 className="text-3xl font-bold">$15</h1>
+                  <p className="text-sm text-muted-foreground">por mes</p>
+                </div>
+
+                <Button className="my-2 rounded-full w-full" size="lg" asChild>
+                  <Link
+                    href={"https://wa.me/04120196456?text='hola,estoyinteraso'"}
+                    target="_blank"
+                  >
+                    Actualizar a pro
+                  </Link>
+                </Button>
+
+                <div className="my-4 text-sm space-y-2">
+                  <li className="list-none flex items-center gap-2 text-muted-foreground">
+                    <Clock className="size-4" />
+                    15 horas de uso por mes
+                  </li>
+                  <li className="list-none flex items-center gap-2 text-muted-foreground">
+                    <LucideCardSim className="size-4" />
+                    Memoria de por vida
+                  </li>
+                  <li className="list-none flex items-center gap-2 text-muted-foreground">
+                    <Brain className="size-4" />
+                    Razonamiento avanzado
+                  </li>
+                  <li className="list-none flex items-center gap-2 text-muted-foreground">
+                    <SparklesIcon className="size-4" />
+                    Acceso a personajes PRO
+                  </li>
+                  <li className="list-none flex items-center gap-2 text-muted-foreground">
+                    <Mic className="size-4" />
+                    Clonación de voz
+                  </li>
+                </div>
+              </div>
+            </motion.div>
+          </DialogContent>
+        </Dialog>
+      )}
     </motion.section>
   );
 }

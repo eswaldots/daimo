@@ -9,6 +9,8 @@ export default defineSchema({
     prompt: v.string(),
     shortDescription: v.string(),
     description: v.optional(v.string()),
+    origin: v.union(v.literal("community"), v.literal("official")),
+    accessType: v.union(v.literal("free"), v.literal("premium")),
     firstMessagePrompt: v.string(),
     voiceId: v.string(),
     ttsProvider: v.string(),
@@ -17,4 +19,13 @@ export default defineSchema({
     starredBy: v.string(),
     starredCharacter: v.id("characters"),
   }).index("by_user_and_character_id", ["starredBy", "starredCharacter"]),
+  subscriptions: defineTable({
+    // Por ahora los planes son solo objetos estaticos
+    planId: v.string(),
+    userId: v.string(),
+    status: v.union(v.literal("active"), v.literal("expired")),
+    startsAt: v.number(),
+    endsAt: v.number(),
+    updatedAt: v.string(),
+  }).index("by_user_id", ["userId"]),
 });

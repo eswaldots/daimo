@@ -10,11 +10,11 @@
 
 import type * as auth from "../auth.js";
 import type * as characters from "../characters.js";
-import type * as charactersActions from "../charactersActions.js";
+import type * as constants_plans from "../constants/plans.js";
 import type * as http from "../http.js";
-import type * as internalCharacters from "../internalCharacters.js";
 import type * as stars from "../stars.js";
 import type * as storage from "../storage.js";
+import type * as subscriptions from "../subscriptions.js";
 
 import type {
   ApiFromModules,
@@ -25,11 +25,11 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   characters: typeof characters;
-  charactersActions: typeof charactersActions;
+  "constants/plans": typeof constants_plans;
   http: typeof http;
-  internalCharacters: typeof internalCharacters;
   stars: typeof stars;
   storage: typeof storage;
+  subscriptions: typeof subscriptions;
 }>;
 
 /**

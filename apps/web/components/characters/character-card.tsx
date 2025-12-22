@@ -18,6 +18,7 @@ import {
   Pause,
   Pen,
   Play,
+  SparklesIcon,
   TrashIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -85,6 +86,8 @@ export function CharacterCard(
   const isMobile = useIsMobile();
   const { data } = authClient.useSession();
   const isOwner = props.creatorId === (data?.user?.id ?? "");
+  const isPremium = props.accessType === "premium";
+
   const router = useRouter();
 
   if (!isMobile) {
@@ -105,12 +108,12 @@ export function CharacterCard(
                     alt="image"
                     width={1028}
                     height={1028}
-                    className="rounded-lg h-64 object-cover object-[50%_25%]"
+                    className="rounded-lg h-64 object-cover object-[50%_25%] dark:bg-border/80 bg-secondary"
                   />
                 </motion.picture>
                 <div className="group-hover:opacity-100 opacity-0 transition-all h-64 rounded-lg bg-black/20 absolute inset-0">
                   <Button
-                    className="backdrop-blur-lg bg-black/50 absolute left-2 bottom-2 text-white rounded-full hover:bg-white hover:text-black cursor-pointer duration-75"
+                    className="backdrop-blur-xl bg-black/50 absolute left-2 bottom-2 text-white rounded-full hover:bg-white hover:text-black cursor-pointer duration-75"
                     size="icon-sm"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -137,8 +140,19 @@ export function CharacterCard(
 
               <CardContent className="space-y-2 truncate px-0">
                 <CardTitle>
-                  <div className="flex items-center w-full justify-between hover:underline">
-                    {props.name}
+                  <div className="flex items-center w-full gap-2 hover:underline">
+                    {props.name}{" "}
+                    {isPremium ? (
+                      <div className="font-mono font-medium text-xs text-background tracking-wide flex items-center flex-row gap-1 bg-primary px-2 py-1 rounded-full">
+                        <SparklesIcon className="size-3" />
+                        PRO
+                      </div>
+                    ) : (
+                      <div className="font-mono font-medium text-xs text-background tracking-tighter flex items-center flex-row gap-1 bg-primary px-2 py-1 rounded-full opacity-0">
+                        <SparklesIcon className="size-3" />
+                        PRO
+                      </div>
+                    )}
                   </div>
                 </CardTitle>
                 <CardDescription className="text-balance max-h-16">
@@ -163,7 +177,7 @@ export function CharacterCard(
   }
 
   return (
-    <Link href={`/characters/${props._id}`}>
+    <Link href={`/characters/${props._id}`} className="w-full">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -171,7 +185,7 @@ export function CharacterCard(
         transition={{ type: "spring" }}
         className="w-full"
       >
-        <Card className="group px-0 bg-transparent duration-300 cursor-pointer transition-colors border-0 shadow-none w-full md:w-74 rounded-2xl py-4 gap-2">
+        <Card className="group px-0 bg-transparent duration-300 cursor-pointer transition-colors border-0 shadow-none w-full rounded-2xl py-4 gap-2">
           <CardHeader className="px-0 rounded-lg relative">
             <motion.picture>
               <Image
@@ -179,20 +193,9 @@ export function CharacterCard(
                 alt="image"
                 width={1028}
                 height={1028}
-                className="rounded-xl h-72 object-cover object-[50%_25%]"
+                className="rounded-xl h-72 object-cover object-[50%_25%] bg-secondary"
               />
             </motion.picture>
-            <div className="group-hover:opacity-100 opacity-0 transition-all h-64 rounded-lg bg-black/20 absolute inset-0">
-              <Button
-                className="backdrop-blur-lg bg-black/50 absolute left-2 bottom-2 text-white rounded-full hover:bg-white hover:text-black cursor-pointer"
-                size="icon-sm"
-                asChild
-              >
-                <Link href={`/playground/${props._id}/`}>
-                  <AudioLines />
-                </Link>
-              </Button>
-            </div>
           </CardHeader>
 
           <CardContent className="md:space-y-2 truncate px-0">
