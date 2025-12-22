@@ -13,6 +13,7 @@ import type * as characters from "../characters.js";
 import type * as charactersActions from "../charactersActions.js";
 import type * as http from "../http.js";
 import type * as internalCharacters from "../internalCharacters.js";
+import type * as stars from "../stars.js";
 import type * as storage from "../storage.js";
 
 import type {
@@ -27,6 +28,7 @@ declare const fullApi: ApiFromModules<{
   charactersActions: typeof charactersActions;
   http: typeof http;
   internalCharacters: typeof internalCharacters;
+  stars: typeof stars;
   storage: typeof storage;
 }>;
 

@@ -13,4 +13,8 @@ export default defineSchema({
     voiceId: v.string(),
     ttsProvider: v.string(),
   }).index("by_creator_id", ["creatorId"]),
+  stars: defineTable({
+    starredBy: v.string(),
+    starredCharacter: v.id("characters"),
+  }).index("by_user_and_character_id", ["starredBy", "starredCharacter"]),
 });

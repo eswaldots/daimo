@@ -1,8 +1,9 @@
 import { paginationOptsValidator } from "convex/server";
 import { mutation, query } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
-import { Id } from "./_generated/dataModel";
+import { Doc, Id } from "./_generated/dataModel";
 import { authComponent } from "./auth";
+import { api, internal } from "./_generated/api";
 
 export const getMyCharacters = query({
   args: {
@@ -44,11 +45,26 @@ export const getById = query({
       return character;
     }
 
-    const characterWithUrl = {
+    let isStarredByUser: undefined | boolean = undefined;
+
+    const user = await ctx.auth.getUserIdentity();
+
+    if (user) {
+      isStarredByUser = await ctx.runQuery(internal.stars.isStarringCharacter, {
+        characterId: character._id,
+        userId: user.subject,
+      });
+    }
+
+    const characterWithUrl: Doc<"characters"> & {
+      storageUrl?: string | null;
+      isStarredByUser: undefined | boolean;
+    } = {
       ...character,
       storageUrl: character.storageId
         ? await ctx.storage.getUrl(character.storageId as Id<"_storage">)
         : undefined,
+      isStarredByUser,
     };
 
     return characterWithUrl;
