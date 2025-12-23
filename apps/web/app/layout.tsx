@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter_Tight, JetBrains_Mono } from "next/font/google";
+import { Geist_Mono, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/context/theme-provider";
 import { ConvexClientProvider } from "@/components/context/convex-client-provider";
@@ -11,10 +11,10 @@ const geistSans = Inter_Tight({
   subsets: ["latin"],
 });
 
-const geistMono = JetBrains_Mono({
+const geistMono = Geist_Mono({
   subsets: ["latin"],
   display: "swap",
-  variable: '--font-jetbrains-mono',
+  variable: "--font-jetbrains-mono",
 });
 
 export const metadata: Metadata = {

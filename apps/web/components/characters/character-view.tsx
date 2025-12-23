@@ -1,6 +1,7 @@
 "use client";
 
 import { api } from "@daimo/backend";
+import Markdown from "react-markdown";
 import Image from "next/image";
 import {
   Preloaded,
@@ -12,11 +13,23 @@ import { notFound, useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import {
   AudioLines,
+  AudioWaveform,
+  Book,
+  BookA,
+  BookHeadphones,
+  BotIcon,
   Brain,
+  BrainIcon,
+  CheckIcon,
+  CircleQuestionMark,
   Clock,
   Heart,
+  Laugh,
   LucideCardSim,
   Mic,
+  NotebookPen,
+  PlayIcon,
+  Smile,
   SparklesIcon,
   XIcon,
 } from "lucide-react";
@@ -134,7 +147,7 @@ export default function CharacterView({
       transition={{ delay: 0.2 }}
     >
       <div className="absolute left-0 top-0 md:h-96 w-full" ref={container}>
-        <div className="absolute inset-0 z-20 backdrop-blur-2xl bg-black/20" />
+        <div className="absolute inset-0 z-20 backdrop-blur-3xl bg-black/20" />
         {/* TODO: storageUrl never has to be undefined or null */}
         {character.storageUrl && (
           <Image
@@ -147,7 +160,7 @@ export default function CharacterView({
         <div className="md:bg-black/20 absolute inset-0 sm:backdrop-blur-2xl" />
 
         <div className="flex flex-col items-start pt-18 md:pt-0 md:h-96 justify-center gap-4 md:gap-18 z-20">
-          <section className="flex md:flex-row flex-col items-center gap-12 md:gap-24 w-full z-40 md:px-20 px-0">
+          <section className="flex md:flex-row flex-col items-center gap-12 md:gap-12 w-full z-40 md:px-8 px-0">
             <motion.div
               className="relative overflow-visible h-56 md:size-48 md:aspect-square"
               style={{ y: isMobile ? y : undefined }}
@@ -266,16 +279,127 @@ export default function CharacterView({
               </motion.div>
               <motion.div>
                 <div className="my-8 md:my-12 md:hidden">
-                  <p className="my-4 max-w-3xl">{character.description}</p>
+                  <div className="my-4 prose prose-neutral prose-sm md:prose-sm max-w-4xl dark:prose-invert">
+                    <Markdown>{character.description}</Markdown>
+                  </div>
                 </div>
               </motion.div>
             </div>
           </section>
         </div>
         <motion.div>
-          <div className="my-8 md:my-12 hidden md:block mx-20">
-            <p className="my-4 max-w-3xl">{character.description}</p>
+          <div className="py-6 flex items-start px-20 justify-between">
+            <div className="flex flex-col items-center space-y-2">
+              <span className="text-muted-foreground tracking-wider text-xs font-semibold">
+                POPULARIDAD
+              </span>
+              <h1 className="text-2xl font-bold text-foreground/80 font-mono tracking-tighter">
+                420
+              </h1>
+
+              <span className="text-muted-foreground text-xs -mt-1 tracking-wide">
+                likes
+              </span>
+            </div>
+
+            <div className="bg-muted-foreground/20 w-px h-16" />
+
+            <div className="flex flex-col items-center space-y-2">
+              <span className="text-muted-foreground tracking-wider text-xs font-semibold">
+                SESIONES
+              </span>
+              <h1 className="text-2xl text-foreground/80 font-bold font-mono tracking-tighter">
+                420
+              </h1>
+              <span className="text-muted-foreground text-xs -mt-1">
+                sesiones
+              </span>
+            </div>
+
+            <div className="bg-muted-foreground/20 w-px h-16" />
+            <div className="flex flex-col items-center space-y-2">
+              <span className="text-muted-foreground tracking-wide text-xs font-semibold">
+                ACCESO
+              </span>
+              <h1 className="text-2xl text-foreground/80 font-bold font-mono tracking-tighter">
+                PRO
+              </h1>
+              <span className="text-muted-foreground text-xs -mt-1">
+                acceso de alta prioridad
+              </span>
+            </div>
+
+            <div className="bg-muted-foreground/20 w-px h-16" />
+            <div className="flex flex-col items-center space-y-2">
+              <span className="text-muted-foreground tracking-wider text-xs font-semibold">
+                VOZ
+              </span>
+              <AudioWaveform className="size-8 text-foreground/80" />
+              <span className="text-muted-foreground text-xs -mt-1">
+                original
+              </span>
+            </div>
+
+            <div className="bg-muted-foreground/20 w-px h-16" />
+            <div className="flex flex-col items-center space-y-2">
+              <span className="text-muted-foreground tracking-wider text-xs font-semibold">
+                ESTADO
+              </span>
+              <CheckIcon className="size-8 text-foreground/80" />
+              <span className="text-muted-foreground text-xs -mt-1">
+                personaje oficial
+              </span>
+            </div>
           </div>
+
+          <div className="mx-8 my-6 pb-6 flex items-start gap-16">
+            <div className="flex-1">
+              <div className="font-mono tracking-tighter text-xs uppercase font-semibold text-muted-foreground">
+                Sobre el personaje
+              </div>
+
+              <div className="max-w-4xl prose prose-neutral prose-sm md:prose-sm w-full dark:prose-invert my-4">
+                <Markdown>{character.description}</Markdown>
+              </div>
+            </div>
+
+            <div className="rounded-3xl w-96 h-96">
+              <div className="font-mono tracking-tighter text-xs uppercase font-semibold text-muted-foreground">
+                SUGERENCIAS DE INICIO
+              </div>
+
+              <div className="my-4 flex items-center gap-3 rounded-2xl hover:bg-secondary transition-colors p-3 cursor-pointer">
+                <div className="p-2 rounded-xl bg-secondary w-fit">
+                  <BookHeadphones className="size-8 text-primary" />
+                </div>
+                <h1 className="text-sm font-medium leading-tight tracking-tight">
+                  Crea un cuento donde yo soy un superhéroe que salva a los
+                  robots.
+                </h1>
+              </div>
+
+              <div className="my-4 flex items-center gap-3 rounded-2xl hover:bg-secondary transition-colors p-3 cursor-pointer">
+                <div className="p-2 rounded-xl bg-secondary w-fit">
+                  <Smile className="size-8 text-primary" />
+                </div>
+                <h1 className="text-sm font-medium leading-tight tracking-tight">
+                  Cuéntame el chiste más gracioso que tengas en tu base de
+                  datos.
+                </h1>
+              </div>
+
+              <div className="my-4 flex items-center gap-3 rounded-2xl hover:bg-secondary transition-colors p-3 cursor-pointer">
+                <div className="p-2 rounded-xl bg-secondary w-fit">
+                  <CircleQuestionMark className="size-8 text-primary" />
+                </div>
+                <h1 className="text-sm font-medium leading-tight tracking-tight">
+                  Juguemos a las adivinanzas, tu empiezas
+                </h1>
+              </div>
+            </div>
+          </div>
+          {/* <div className="my-8 md:my-12 hidden md:block mx-20"> */}
+          {/* </div> */}
         </motion.div>
       </div>
 
@@ -327,7 +451,7 @@ export default function CharacterView({
                       Pro
                     </h1>
 
-                    <div className="font-medium text-xs text-background tracking-wide flex items-center flex-row gap-1 bg-primary px-2.5 py-1 rounded-lg">
+                    <div className="font-medium text-xs text-background tracking-wider flex items-center flex-row gap-1 bg-primary px-2.5 py-1 rounded-lg">
                       Popular
                     </div>
                   </div>
@@ -565,3 +689,4 @@ export default function CharacterView({
     </motion.section>
   );
 }
+
