@@ -26,6 +26,6 @@ export default defineSchema({
     status: v.union(v.literal("active"), v.literal("expired")),
     startsAt: v.number(),
     endsAt: v.number(),
-    updatedAt: v.string(),
+    updatedAt: v.number(),
   }).index("by_user_id", ["userId"]),
 });

@@ -142,7 +142,6 @@ export default function CreateCharacterPage({
   );
 
   const onSubmit = async (data: CharacterFormValues) => {
-    console.log("Form data:", data);
     const accessType = isPremium ? "premium" : "free";
     const voiceId = voice?.voiceId;
 
@@ -209,7 +208,6 @@ export default function CreateCharacterPage({
 
         return;
       } catch (error) {
-        console.error(error);
         Sentry.captureException(error);
         toast.error("Failed to create character");
 
@@ -246,7 +244,6 @@ export default function CreateCharacterPage({
 
       router.push("/admin/characters");
     } catch (error) {
-      console.error(error);
       Sentry.captureException(error);
       toast.error("Failed to create character");
     }
@@ -291,7 +288,6 @@ export default function CreateCharacterPage({
                 variant="outline"
                 size="icon-sm"
                 onClick={() => {
-                  console.log("hi");
                   inputRef.current?.click();
                 }}
               >

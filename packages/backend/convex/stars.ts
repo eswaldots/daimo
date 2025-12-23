@@ -13,10 +13,21 @@ export const starCharacter = mutation({
       throw new ConvexError("Unauthenticated");
     }
 
-    await ctx.db.insert("stars", {
-      starredBy: user._id,
-      starredCharacter: characterId,
-    });
+    const existing = await ctx.db
+      .query("stars")
+      .withIndex("by_user_and_character_id", (q) =>
+        q.eq("starredBy", user._id).eq("starredCharacter", characterId),
+      )
+      .unique();
+
+    if (!existing) {
+      return await ctx.db.insert("stars", {
+        starredBy: user._id,
+        starredCharacter: characterId,
+      });
+    }
+
+    throw new ConvexError("You already starred this character");
   },
 });
 

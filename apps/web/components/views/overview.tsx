@@ -7,6 +7,7 @@ import {
   CharacterCard,
   CharacterCardSkeleton,
 } from "@/components/characters/character-card";
+import { EmptyCharacter } from "../layout/home/empty-character";
 
 /**
  * Render an overview section with headings and personalized character recommendations.
@@ -69,32 +70,10 @@ export function Overview() {
                 <CharacterCard {...result} key={result._id} />
               ))
             )}
-            {/*{!isLoading && results.length === 0 && <EmptyCharacter />}*/}
+            {!isLoading && results.length === 0 && <EmptyCharacter />}
           </AnimatePresence>
         </motion.div>
       </div>
-
-      {/* <motion.h1 */}
-      {/*   className="text-xl font-medium tracking-tight md:py-0 py-4" */}
-      {/*   initial={{ opacity: 0 }} */}
-      {/*   animate={{ opacity: 1 }} */}
-      {/* > */}
-      {/*   Populares */}
-      {/* </motion.h1> */}
-      {/**/}
-      {/* <motion.div */}
-      {/*   initial={{ opacity: 0 }} */}
-      {/*   animate={{ opacity: 1 }} */}
-      {/*   className="flex flex-wrap gap-4" */}
-      {/* > */}
-      {/*   <CharacterCardSkeleton /> */}
-      {/**/}
-      {/*   <CharacterCardSkeleton /> */}
-      {/**/}
-      {/*   <CharacterCardSkeleton /> */}
-      {/**/}
-      {/*   <CharacterCardSkeleton /> */}
-      {/* </motion.div> */}
     </>
   );
 }
