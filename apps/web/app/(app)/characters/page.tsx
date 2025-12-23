@@ -26,7 +26,7 @@ export default function Page() {
         animate={{ opacity: 1 }}
       >
         <div className="grid gap-4">
-          <motion.h1 className="tracking-tight text-3xl font-medium">
+          <motion.h1 className="tracking-tight text-3xl font-semibold">
             Tus personajes
           </motion.h1>
         </div>

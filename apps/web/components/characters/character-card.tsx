@@ -110,7 +110,7 @@ export function CharacterCard(
                 <div className="flex items-center w-full gap-2 hover:underline min-h-6">
                   {props.name}{" "}
                   {isPremium && (
-                    <div className="font-mono font-medium text-xs text-background tracking-wide flex items-center flex-row gap-1 bg-primary px-2 py-1 rounded-full">
+                    <div className="font-mono font-medium text-xs text-primary tracking-wide flex items-center flex-row gap-1 bg-secondary px-2 py-1 rounded-full">
                       <SparklesIcon className="size-3" />
                       PRO
                     </div>
