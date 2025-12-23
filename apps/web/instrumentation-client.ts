@@ -9,7 +9,10 @@ if (process.env.NODE_ENV === "production") {
     dsn: "https://2367495471865a5179969da5070b96ca@o4510568326692864.ingest.us.sentry.io/4510568332525568",
 
     // Add optional integrations for additional features
-    integrations: [Sentry.replayIntegration()],
+    integrations: [
+      Sentry.replayIntegration(),
+      Sentry.consoleLoggingIntegration(),
+    ],
 
     // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
     tracesSampleRate: 0.1,
