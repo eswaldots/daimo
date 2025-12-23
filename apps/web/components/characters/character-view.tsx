@@ -25,6 +25,7 @@ import {
   Clock,
   Heart,
   Laugh,
+  LockIcon,
   LucideCardSim,
   Mic,
   NotebookPen,
@@ -146,8 +147,20 @@ export default function CharacterView({
       exit={{ opacity: 0 }}
       transition={{ delay: 0.2 }}
     >
-      <div className="absolute left-0 top-0 w-full" ref={container}>
-        <div className="flex flex-col items-start py-6 justify-center gap-4 md:gap-18 z-20">
+      <div className="absolute left-0 top-0 md:h-96 w-full" ref={container}>
+        <div className="absolute inset-0 z-20 backdrop-blur-3xl bg-black/20" />
+        {/* TODO: storageUrl never has to be undefined or null */}
+        {character.storageUrl && (
+          <Image
+            src={character.storageUrl}
+            fill
+            alt={character.name}
+            className="object-cover object-[50%_25%] z-10 backdrop-blur-2xl sm:size-48 sm:bg-transparent"
+          />
+        )}
+        <div className="md:bg-black/20 absolute inset-0 sm:backdrop-blur-2xl" />
+
+        <div className="flex flex-col items-start pt-18 md:pt-0 md:h-96 justify-center gap-4 md:gap-18 z-20">
           <section className="flex md:flex-row flex-col items-center gap-12 md:gap-12 w-full z-40 md:px-8 px-0">
             <motion.div
               className="relative overflow-visible h-56 md:size-48 md:aspect-square"
@@ -163,27 +176,27 @@ export default function CharacterView({
                 />
               )}
             </motion.div>
-            <div className="w-full md:bg-transparent bg-background z-20 rounded-t-3xl py-12 px-4 md:px-0">
+            <div className="w-full md:bg-transparent bg-background z-20 rounded-t-3xl py-8 px-4 md:px-0">
               <div className="z-10 flex flex-col gap-8 w-full md:py-0 py-4">
                 <div className="space-y-2">
                   <div className="flex items-center gap-4">
-                    <motion.h1 className=" tracking-tight font-semibold text-3xl md:text-5xl text-foreground">
+                    <motion.h1 className=" tracking-tight font-semibold text-3xl md:text-5xl text-foreground md:text-white">
                       {character.name}
                     </motion.h1>
                     {isPremium && (
-                      <div className="font-mono font-medium text-sm text-primary tracking-wide flex items-center flex-row gap-1 bg-secondary px-3.5 md:px-4 py-1 md:py-1.5 rounded-full">
+                      <div className="font-mono font-medium text-sm text-primary tracking-wide flex items-center flex-row gap-1 bg-background px-3.5 md:px-4 py-1 md:py-1.5 rounded-full">
                         <SparklesIcon className="size-3" />
                         PRO
                       </div>
                     )}
                   </div>
-                  <motion.p className="text-foreground max-w-md font-medium md:text-xl text-base">
+                  <motion.p className="text-foreground md:text-white/80 max-w-md font-medium md:text-xl text-base">
                     {character.shortDescription}
                   </motion.p>
                   <Dialog>
                     <DialogTrigger>
-                      <motion.p className="text-foreground/50 max-w-md text-sm hover:underline cursor-pointer">
-                        Aún está aprendiendo sobre ti
+                      <motion.p className="text-foreground md:text-white/80 max-w-md text-sm hover:underline cursor-pointer">
+                        Aún no te conoce
                       </motion.p>
                     </DialogTrigger>
                     <DialogContent className="md:max-w-2xl px-6 py-8 pt-10 md:p-16 rounded-3xl text-left">
@@ -238,7 +251,7 @@ export default function CharacterView({
                     router.push(`/playground/${character._id}`);
                   }}
                 >
-                  {!subscription && isPremium ? <SparklesIcon /> : <Mic />}
+                  {!subscription && isPremium ? <LockIcon /> : <Mic />}
                   {!isPending && !session
                     ? "Iniciar sesión para conversar"
                     : !subscription && isPremium
@@ -246,7 +259,7 @@ export default function CharacterView({
                       : "Conversar"}
                 </Button>
                 <Button
-                  className="rounded-full z-40 md:dark:bg-border md:dark:hover:bg-border/50 md:p-3"
+                  className="rounded-full z-40 md:bg-white/50 md:dark:bg-border md:dark:hover:bg-border/50 md:p-3"
                   variant="secondary"
                   size="icon-lg"
                   onClick={toggleStarred}

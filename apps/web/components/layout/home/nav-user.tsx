@@ -66,7 +66,7 @@ export function NavUser({
                   {user.name}
                 </span>
                 <span className="truncate text-xs text-foreground font-normal">
-                  {subscription ? "Gratuito" : "Pro"}
+                  {!subscription ? "Gratuito" : "Pro"}
                 </span>
               </div>
             </SidebarMenuButton>
