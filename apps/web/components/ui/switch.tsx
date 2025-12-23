@@ -5,6 +5,12 @@ import * as SwitchPrimitive from "@radix-ui/react-switch"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * Styled switch component that mirrors Radix UI Switch behavior with built-in theme, state, disabled, and focus styles.
+ *
+ * @param className - Additional CSS class names to merge into the root element's classes
+ * @returns A switch element with a thumb that translates horizontally when checked and supports disabled and focus-visible states
+ */
 function Switch({
   className,
   ...props

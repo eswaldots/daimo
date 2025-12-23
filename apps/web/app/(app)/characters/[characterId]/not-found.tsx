@@ -2,6 +2,14 @@ export const metadata = {
   title: "Personaje no encontrado",
 };
 
+/**
+ * Render a centered 404 view indicating the requested character was not found.
+ *
+ * Renders a centered container with a prominent "404" heading and the Spanish message
+ * "No pudimos encontrar ese personaje".
+ *
+ * @returns A JSX element displaying a centered 404 page with the message "No pudimos encontrar ese personaje".
+ */
 export default function NotFound() {
   return (
     <div

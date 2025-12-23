@@ -7,6 +7,13 @@ import { MenuIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
+/**
+ * Renders the mobile header bar with a sidebar toggle and centered logo/title.
+ *
+ * The header includes a ghost-style toggle button that opens or closes the sidebar and a centered cluster containing the Daimo icon and the title "daimo". When the current path contains "admin", an inline "for admins" label is shown next to the title. The component also ensures the mobile sidebar open state is synchronized when the pathname or related sidebar state changes.
+ *
+ * @returns The header element containing the mobile toggle button and centered logo/title.
+ */
 export function Trigger() {
   const { isMobile, open, toggleSidebar, openMobile, setOpenMobile } =
     useSidebar();

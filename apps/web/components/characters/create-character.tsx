@@ -69,11 +69,11 @@ const characterSchema = z.object({
 type CharacterFormValues = z.infer<typeof characterSchema>;
 
 /**
- * Render a form for creating or editing a character, including fields for name, descriptions, prompts, voice selection, and optional image upload.
+ * Renders the form used to create or edit a character, including fields for name, short and full descriptions, prompts, voice/provider selection, optional image upload, and access type.
  *
- * @param voices - List of available voices used to populate the voice/provider selector.
- * @param defaultValues - Existing character document (with optional `storageUrl`) when editing; omit to create a new character.
- * @returns The rendered React component containing the character creation/edit form.
+ * @param voices - Available voice definitions used to populate provider and voice selection UI.
+ * @param defaultValues - Existing character document (may include `storageUrl`) when editing; omit to create a new character.
+ * @returns The React component that renders the character creation/edit form.
  */
 export default function CreateCharacterPage({
   voices,

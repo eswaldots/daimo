@@ -47,6 +47,11 @@ import {
 import posthog from "posthog-js";
 import { useRouter } from "next/navigation";
 
+/**
+ * Render a loading skeleton that visually stands in for a character card.
+ *
+ * @returns A JSX element representing the placeholder skeleton for a character card while content loads.
+ */
 export function CharacterCardSkeleton() {
   return (
     <motion.div
@@ -80,6 +85,17 @@ const playVariants = {
   },
 };
 
+/**
+ * Render a responsive character card that links to the character details page.
+ *
+ * Displays the character image, name, short description, a "PRO" badge when premium,
+ * an inline play button that navigates to the playground, and owner-only edit/delete actions.
+ *
+ * @param props - Character document augmented with an optional `storageUrl` for the image.
+ *   The object is expected to include at least `_id`, `name`, `shortDescription`, `creatorId`, and `accessType`.
+ * @returns A JSX element representing a clickable card that navigates to `/characters/{id}`. The card
+ *   adapts layout for mobile and desktop and exposes owner actions and a playground play button.
+ */
 export function CharacterCard(
   props: Doc<"characters"> & { storageUrl?: string | null },
 ) {

@@ -30,6 +30,12 @@ function DialogClose({
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />;
 }
 
+/**
+ * Render a dialog overlay with standardized styling and a data-slot attribute.
+ *
+ * @param className - Additional CSS classes to merge with the overlay's default classes.
+ * @returns A `DialogPrimitive.Overlay` element with `data-slot="dialog-overlay"` and the composed className
+ */
 function DialogOverlay({
   className,
   ...props
@@ -46,6 +52,14 @@ function DialogOverlay({
   );
 }
 
+/**
+ * Renders dialog content inside a portal with an overlay and an optional close button.
+ *
+ * @param className - Additional CSS classes to apply to the dialog content container
+ * @param children - Elements to render inside the dialog content
+ * @param showCloseButton - Whether to include a close button in the dialog (default: `true`)
+ * @returns The rendered dialog content element including its portal and overlay
+ */
 function DialogContent({
   className,
   children,

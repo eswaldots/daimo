@@ -8,6 +8,14 @@ import {
   CharacterCardSkeleton,
 } from "@/components/characters/character-card";
 
+/**
+ * Render an overview section with headings and personalized character recommendations.
+ *
+ * Displays a header and a "Recomendaciones para ti" subsection that shows character cards when data is available
+ * or skeleton placeholders while the recommendations are loading.
+ *
+ * @returns A React element containing the overview headings and a list of character cards or skeleton placeholders.
+ */
 export function Overview() {
   const { isLoading, results } = usePaginatedQuery(
     api.characters.getMyCharacters,

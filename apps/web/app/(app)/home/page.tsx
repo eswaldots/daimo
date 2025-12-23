@@ -5,6 +5,11 @@ export const metadata: Metadata = {
   title: "Inicio - Daimo",
 };
 
+/**
+ * Renders the home page by mounting the Overview component.
+ *
+ * @returns The page's JSX content containing the Overview component.
+ */
 export default function Page() {
   return (
     <>
