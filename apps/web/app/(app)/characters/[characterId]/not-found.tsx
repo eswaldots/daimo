@@ -1,7 +1,3 @@
-export const metadata = {
-  title: "Personaje no encontrado",
-};
-
 /**
  * Render a centered 404 view indicating the requested character was not found.
  *
@@ -27,3 +23,4 @@ export default function NotFound() {
     </div>
   );
 }
+

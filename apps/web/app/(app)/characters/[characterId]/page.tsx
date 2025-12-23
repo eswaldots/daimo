@@ -29,17 +29,25 @@ export async function generateMetadata(
 
   // fetch data
   //
-  const character = await fetchQuery(api.characters.getById, {
-    characterId,
-  });
+  try {
+    const character = await fetchQuery(api.characters.getById, {
+      characterId,
+    });
 
-  if (!character) {
-    notFound();
+    if (!character) {
+      return {
+        title: "Personaje no encontrado - Daimo",
+      };
+    }
+
+    return {
+      title: `${character.name} - Daimo`,
+    };
+  } catch (e) {
+    return {
+      title: "Error en el servidor - Daimo",
+    };
   }
-
-  return {
-    title: `${character.name} - Daimo`,
-  };
 }
 
 /**
@@ -71,4 +79,3 @@ export default async function Page({ params }: Props) {
     notFound();
   }
 }
-

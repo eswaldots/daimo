@@ -61,7 +61,6 @@ export function CharacterCard(
 ) {
   const isMobile = useIsMobile();
   const { data } = authClient.useSession();
-  const isOwner = props.creatorId === (data?.user?.id ?? "");
   const isPremium = props.accessType === "premium";
 
   const router = useRouter();
@@ -103,17 +102,6 @@ export function CharacterCard(
                 >
                   <AudioLines />
                 </Button>
-
-                {isOwner && (
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      className="backdrop-blur-lg bg-black/50 absolute right-2 bottom-2 text-white rounded-full hover:bg-white hover:text-black cursor-pointer duration-75"
-                      size="icon-sm"
-                    >
-                      <Ellipsis />
-                    </Button>
-                  </DropdownMenuTrigger>
-                )}
               </div>
             </CardHeader>
 
@@ -167,8 +155,14 @@ export function CharacterCard(
 
           <CardContent className="md:space-y-2 truncate px-0">
             <CardTitle>
-              <div className="flex items-center w-full justify-between hover:underline md:text-base text-lg">
+              <div className="flex items-center w-full justify-between hover:underline md:text-base text-lg min-h-6">
                 {props.name}
+                {isPremium && (
+                  <div className="font-mono font-medium text-xs text-background tracking-wide flex items-center flex-row gap-1 bg-primary px-2 py-1 rounded-full">
+                    <SparklesIcon className="size-3" />
+                    PRO
+                  </div>
+                )}
               </div>
             </CardTitle>
             <CardDescription className="text-balance max-h-16 text-sm">

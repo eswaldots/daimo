@@ -70,10 +70,13 @@ export function Overview() {
                 <CharacterCard {...result} key={result._id} />
               ))
             )}
-            {!isLoading && results.length === 0 && <EmptyCharacter />}
+            {!isLoading && results && results.length === 0 && (
+              <EmptyCharacter />
+            )}
           </AnimatePresence>
         </motion.div>
       </div>
     </>
   );
 }
+
