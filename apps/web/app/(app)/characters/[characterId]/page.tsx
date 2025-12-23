@@ -1,9 +1,10 @@
 import CharacterView from "@/components/characters/character-view";
+import * as Sentry from "@sentry/nextjs";
 import { getToken } from "@/lib/auth-server";
 import { api, Id } from "@daimo/backend";
 import { fetchQuery, preloadQuery } from "convex/nextjs";
 import { Metadata, ResolvingMetadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 type Props = {
   params: Promise<{ characterId: Id<"characters"> }>;
@@ -31,11 +32,7 @@ export async function generateMetadata(
   };
 }
 
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ characterId: Id<"characters"> }>;
-}) {
+export default async function Page({ params }: Props) {
   const { characterId } = await params;
 
   const token = await getToken();
@@ -50,7 +47,9 @@ export default async function Page({
     );
 
     return <CharacterView preloadedCharacter={character} />;
-  } catch {
+  } catch (e) {
+    Sentry.captureException(e);
+
     notFound();
   }
 }

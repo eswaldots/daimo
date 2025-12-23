@@ -89,7 +89,10 @@ export default function HomeSidebar({ session }: { session: Session }) {
 
             <SidebarMenuItem className="flex items-center gap-2">
               <SidebarMenuButton
-                isActive={pathname.includes("characters")}
+                isActive={
+                  pathname === "/characters" ||
+                  pathname.startsWith("/characters/")
+                }
                 className="rounded-lg text-sm"
                 asChild
               >
@@ -165,4 +168,3 @@ export default function HomeSidebar({ session }: { session: Session }) {
     </Sidebar>
   );
 }
-

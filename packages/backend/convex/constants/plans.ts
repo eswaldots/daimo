@@ -1,4 +1,22 @@
-export const PLAN_FEATURES = {
+type PlanFeatures = {
+  memory: boolean;
+  msLimit: number;
+  characters: "free" | "premium";
+  voiceCloning: boolean;
+};
+
+type Plan = {
+  id: string;
+  name: string;
+  features: PlanFeatures;
+};
+
+type Plans = {
+  free: Plan;
+  plus: Plan;
+};
+
+export const PLAN_FEATURES: Plans = {
   free: {
     id: "free",
     name: "Gratuito",
@@ -10,15 +28,15 @@ export const PLAN_FEATURES = {
       voiceCloning: false,
     },
   },
-  plus: {
-    id: "premium",
-    name: "Premium",
+  pro: {
+    id: "pro",
+    name: "pro",
     features: {
       memory: true,
       // 15 hours
       msLimit: 15 * 60 * 60 * 1000,
       voiceCloning: true,
-      characters: "premium",
+      characters: "pro",
     },
   },
 };

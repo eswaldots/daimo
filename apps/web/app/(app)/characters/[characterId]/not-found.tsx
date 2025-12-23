@@ -12,9 +12,9 @@ export default function NotFound() {
     >
       <section className="text-center space-y-4">
         <h1 className="font-medium tracking-tight text-8xl">404</h1>
-        <h1 className="text-foreground/50 font-light text-xl">
+        <p className="text-foreground/50 font-light text-xl">
           No pudimos encontrar ese personaje
-        </h1>
+        </p>
       </section>
     </div>
   );

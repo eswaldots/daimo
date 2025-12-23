@@ -16,7 +16,6 @@ import {
   Clock,
   Heart,
   LucideCardSim,
-  MemoryStick,
   Mic,
   SparklesIcon,
   XIcon,
@@ -25,7 +24,7 @@ import { authClient } from "@/lib/auth-client";
 import { motion, useScroll, useSpring, useTransform } from "motion/react";
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import ClickSpark from "../ClickSpark";
+import { ClickSpark } from "../ClickSpark";
 import {
   Dialog,
   DialogClose,
@@ -41,10 +40,8 @@ import {
   DrawerClose,
   DrawerContent,
   DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-  DrawerTrigger,
 } from "../ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import DaimoIcon from "../icons/daimo";
@@ -132,12 +129,15 @@ export default function CharacterView({
     >
       <div className="absolute left-0 top-0 md:h-96 w-full" ref={container}>
         <div className="absolute inset-0 z-20 backdrop-blur-2xl bg-black/20" />
-        <Image
-          src={character.storageUrl ?? ""}
-          fill
-          alt={character.name}
-          className="object-cover object-[50%_25%] z-10 backdrop-blur-2xl sm:size-48 sm:bg-transparent"
-        />
+        {/* TODO: storageUrl never has to be undefined or null */}
+        {character.storageUrl && (
+          <Image
+            src={character.storageUrl}
+            fill
+            alt={character.name}
+            className="object-cover object-[50%_25%] z-10 backdrop-blur-2xl sm:size-48 sm:bg-transparent"
+          />
+        )}
         <div className="md:bg-black/20 absolute inset-0 sm:backdrop-blur-2xl" />
 
         <div className="flex flex-col items-start pt-18 md:pt-0 md:h-96 justify-center gap-4 md:gap-18 z-20">
@@ -146,13 +146,15 @@ export default function CharacterView({
               className="relative overflow-visible h-56 md:size-48 md:aspect-square"
               style={{ y: isMobile ? y : undefined }}
             >
-              <Image
-                src={character.storageUrl ?? ""}
-                width={2000}
-                height={2000}
-                alt={character.name}
-                className="object-cover md:object-[50%_25%] md:bg-secondary size-112 md:size-48 bg-transparent md:rounded-full"
-              />
+              {character.storageUrl && (
+                <Image
+                  src={character.storageUrl}
+                  width={2000}
+                  height={2000}
+                  alt={character.name}
+                  className="object-cover md:object-[50%_25%] md:bg-secondary size-112 md:size-48 bg-transparent md:rounded-full"
+                />
+              )}
             </motion.div>
             <div className="w-full md:bg-transparent bg-background z-20 rounded-t-3xl py-8 px-4 md:px-0">
               <div className="z-10 flex flex-col gap-8 w-full md:py-0 py-4">
@@ -212,6 +214,12 @@ export default function CharacterView({
                   className="rounded-full z-40 border-primary border md:text-sm text-primary-foreground text-base md:flex-0 flex-1"
                   size="lg"
                   onClick={() => {
+                    if (!session) {
+                      router.push("/sign-up");
+
+                      return;
+                    }
+
                     if (
                       isPremium &&
                       (!subscription || subscription?.planId === "free")
@@ -333,9 +341,7 @@ export default function CharacterView({
                     asChild
                   >
                     <Link
-                      href={
-                        "https://wa.me/04120196456?text='hola,estoyinteraso'"
-                      }
+                      href={`https://wa.me/584120196456?text=${encodeURI("Hola, estoy interesado en actualizarme a Daimo Pro")}`}
                       target="_blank"
                     >
                       Actualizar a pro
