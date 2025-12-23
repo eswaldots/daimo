@@ -23,7 +23,6 @@ import {
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { motion, useScroll, useSpring, useTransform } from "motion/react";
-import { Separator } from "../ui/separator";
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import ClickSpark from "../ClickSpark";
@@ -51,6 +50,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import DaimoIcon from "../icons/daimo";
 import Link from "next/link";
 import { ScrollArea } from "../ui/scroll-area";
+import { toast } from "sonner";
 
 export default function CharacterView({
   preloadedCharacter,
@@ -66,19 +66,47 @@ export default function CharacterView({
   }
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const [isStarred, setIsStarred] = useState(character.isStarredByUser);
-  const starCharacter = useMutation(api.stars.starCharacter);
-  const unstarCharacter = useMutation(api.stars.unstarCharacter);
+  const isStarred = character.isStarredByUser;
+  const starCharacter = useMutation(
+    api.stars.starCharacter,
+  ).withOptimisticUpdate((localStore) => {
+    localStore.setQuery(
+      api.characters.getById,
+      { characterId: character._id },
+      { ...character, isStarredByUser: true },
+    );
+  });
+  const unstarCharacter = useMutation(
+    api.stars.unstarCharacter,
+  ).withOptimisticUpdate((localStore) => {
+    localStore.setQuery(
+      api.characters.getById,
+      { characterId: character._id },
+      { ...character, isStarredByUser: false },
+    );
+  });
   const router = useRouter();
   const isPremium = character.accessType === "premium";
 
-  const toggleStarred = () => {
-    setIsStarred(!isStarred);
-
+  const toggleStarred = async () => {
     if (isStarred) {
-      unstarCharacter({ characterId: character._id });
+      try {
+        await unstarCharacter({ characterId: character._id });
+      } catch {
+        // TODO: Better this message
+        toast.error(
+          "Hubo un error desconocido intentando quitar el like del personaje",
+        );
+      }
     } else {
-      starCharacter({ characterId: character._id });
+      try {
+        await starCharacter({ characterId: character._id });
+      } catch {
+        toast.error(
+          // TODO: Better this message
+          "Hubo un error desconocido darle like del personaje",
+        );
+      }
     }
   };
 
