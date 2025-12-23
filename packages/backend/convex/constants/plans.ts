@@ -13,7 +13,7 @@ type Plan = {
 
 type Plans = {
   free: Plan;
-  plus: Plan;
+  pro: Plan;
 };
 
 export const PLAN_FEATURES: Plans = {

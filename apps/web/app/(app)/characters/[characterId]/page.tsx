@@ -10,6 +10,16 @@ type Props = {
   params: Promise<{ characterId: Id<"characters"> }>;
 };
 
+/**
+ * Build page metadata using the character's name from route params.
+ *
+ * Fetches the character by ID from the provided route params and returns a Metadata
+ * object with the page title formatted as "<character name> - Daimo".
+ * If the character is not found, invokes `notFound()` to render a 404 page.
+ *
+ * @param params - Promise that resolves to route params containing `characterId`
+ * @returns Metadata with `title` set to "<character name> - Daimo"
+ */
 export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata,
@@ -32,6 +42,14 @@ export async function generateMetadata(
   };
 }
 
+/**
+ * Render the character page for the given characterId by preloading its data and mounting CharacterView.
+ *
+ * If the character cannot be loaded or preloading fails, triggers a 404 via `notFound()`.
+ *
+ * @param params - A promise that resolves to an object containing `characterId` (Id<"characters">)
+ * @returns The page React element rendering `CharacterView` with the preloaded character
+ */
 export default async function Page({ params }: Props) {
   const { characterId } = await params;
 
@@ -53,3 +71,4 @@ export default async function Page({ params }: Props) {
     notFound();
   }
 }
+

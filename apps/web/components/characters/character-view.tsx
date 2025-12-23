@@ -49,6 +49,12 @@ import Link from "next/link";
 import { ScrollArea } from "../ui/scroll-area";
 import { toast } from "sonner";
 
+/**
+ * Renders the character profile view including hero image, details, star and conversation actions, memory dialog, and premium upsell UI (modal or drawer).
+ *
+ * @param preloadedCharacter - A Convex preloaded query result for `api.characters.getById` used to read the character data.
+ * @returns The React element representing the character profile page.
+ */
 export default function CharacterView({
   preloadedCharacter,
 }: {
