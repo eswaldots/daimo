@@ -30,6 +30,12 @@ function DialogClose({
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />;
 }
 
+/**
+ * Render a dialog overlay with standardized styling and a data-slot attribute.
+ *
+ * @param className - Additional CSS classes to merge with the overlay's default classes.
+ * @returns A `DialogPrimitive.Overlay` element with `data-slot="dialog-overlay"` and the composed className
+ */
 function DialogOverlay({
   className,
   ...props
@@ -38,7 +44,7 @@ function DialogOverlay({
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 backdrop-blur-sm bg-black/50",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 backdrop-blur-lg bg-black/50",
         className,
       )}
       {...props}
@@ -46,6 +52,14 @@ function DialogOverlay({
   );
 }
 
+/**
+ * Renders dialog content inside a portal with an overlay and an optional close button.
+ *
+ * @param className - Additional CSS classes to apply to the dialog content container
+ * @param children - Elements to render inside the dialog content
+ * @param showCloseButton - Whether to include a close button in the dialog (default: `true`)
+ * @returns The rendered dialog content element including its portal and overlay
+ */
 function DialogContent({
   className,
   children,
@@ -60,7 +74,7 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-3xl border p-6  shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)] duration-200 sm:max-w-lg",
+          "focus:outline-none bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-3xl p-6  shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)] duration-200 sm:max-w-lg",
           className,
         )}
         {...props}
@@ -69,7 +83,7 @@ function DialogContent({
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+            className="bg-border p-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-6 right-6 rounded-full opacity-70 transition-opacity hover:opacity-100 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
           >
             <XIcon />
             <span className="sr-only">Close</span>

@@ -19,6 +19,9 @@ const nextConfig: NextConfig = {
   },
   // Required to support PostHog trailing slash API requests
   skipTrailingSlashRedirect: true,
+  experimental: {
+    viewTransition: true,
+  },
   images: {
     dangerouslyAllowLocalIP: true,
     remotePatterns: [

@@ -37,6 +37,7 @@ import { SelectableVoiceItem } from "../layout/admin/voice-item";
 import { ItemGroup } from "../ui/item";
 import { cn } from "@/lib/utils";
 import posthog from "posthog-js";
+import { Switch } from "../ui/switch";
 
 const characterSchema = z.object({
   name: z
@@ -47,14 +48,14 @@ const characterSchema = z.object({
     .min(10, {
       message: "La descripción corta debe tener al menos 10 caracteres",
     })
-    .max(40, {
-      message: "La descripción corta no puede tener mas de 80 caracteres",
+    .max(120, {
+      message: "La descripción corta no puede tener mas de 120 caracteres",
     }),
   description: z
     .string()
     .min(10, { message: "La descripción debe tener al menos 10 caracteres" })
-    .max(120, {
-      message: "La descripción no puede tener mas de 120 caracteres",
+    .max(800, {
+      message: "La descripción no puede tener mas de 800 caracteres",
     }),
   prompt: z
     .string()
@@ -68,11 +69,11 @@ const characterSchema = z.object({
 type CharacterFormValues = z.infer<typeof characterSchema>;
 
 /**
- * Render a form for creating or editing a character, including fields for name, descriptions, prompts, voice selection, and optional image upload.
+ * Renders the form used to create or edit a character, including fields for name, short and full descriptions, prompts, voice/provider selection, optional image upload, and access type.
  *
- * @param voices - List of available voices used to populate the voice/provider selector.
- * @param defaultValues - Existing character document (with optional `storageUrl`) when editing; omit to create a new character.
- * @returns The rendered React component containing the character creation/edit form.
+ * @param voices - Available voice definitions used to populate provider and voice selection UI.
+ * @param defaultValues - Existing character document (may include `storageUrl`) when editing; omit to create a new character.
+ * @returns The React component that renders the character creation/edit form.
  */
 export default function CreateCharacterPage({
   voices,
@@ -114,6 +115,9 @@ export default function CreateCharacterPage({
       : null,
   );
   const [searchQuery, setSearchQuery] = useState("");
+  const [isPremium, setIsPremium] = useState(
+    defaultValues?.accessType === "premium",
+  );
   const activeProvider = watch("ttsProvider");
 
   const router = useRouter();
@@ -138,7 +142,7 @@ export default function CreateCharacterPage({
   );
 
   const onSubmit = async (data: CharacterFormValues) => {
-    console.log("Form data:", data);
+    const accessType = isPremium ? "premium" : "free";
     const voiceId = voice?.voiceId;
 
     if (!voiceId) {
@@ -172,7 +176,9 @@ export default function CreateCharacterPage({
             ...data,
             voiceId,
             ttsProvider,
+            storageId,
             characterId: defaultValues._id,
+            accessType,
           });
           posthog.capture("character_edited", {
             character_name: data.name,
@@ -180,7 +186,13 @@ export default function CreateCharacterPage({
             has_image: true,
           });
         } else {
-          await create({ storageId, ...data, voiceId, ttsProvider });
+          await create({
+            storageId,
+            ...data,
+            voiceId,
+            ttsProvider,
+            accessType,
+          });
           posthog.capture("character_created", {
             character_name: data.name,
             tts_provider: ttsProvider,
@@ -196,7 +208,6 @@ export default function CreateCharacterPage({
 
         return;
       } catch (error) {
-        console.error(error);
         Sentry.captureException(error);
         toast.error("Failed to create character");
 
@@ -209,6 +220,7 @@ export default function CreateCharacterPage({
         await edit({
           ...data,
           voiceId,
+          accessType,
           ttsProvider,
           characterId: defaultValues._id,
         });
@@ -218,7 +230,7 @@ export default function CreateCharacterPage({
           has_image: false,
         });
       } else {
-        await create({ ...data, voiceId, ttsProvider });
+        await create({ ...data, voiceId, ttsProvider, accessType });
         posthog.capture("character_created", {
           character_name: data.name,
           tts_provider: ttsProvider,
@@ -232,7 +244,6 @@ export default function CreateCharacterPage({
 
       router.push("/admin/characters");
     } catch (error) {
-      console.error(error);
       Sentry.captureException(error);
       toast.error("Failed to create character");
     }
@@ -259,11 +270,9 @@ export default function CreateCharacterPage({
               <Avatar className="size-24 transition-colors cursor-pointer">
                 <AvatarImage
                   src={
-                    defaultValues
-                      ? (defaultValues.storageUrl ?? "")
-                      : image
-                        ? URL.createObjectURL(image)
-                        : ""
+                    image
+                      ? URL.createObjectURL(image)
+                      : defaultValues && (defaultValues.storageUrl ?? "")
                   }
                   className="object-cover object-center"
                 ></AvatarImage>
@@ -273,30 +282,25 @@ export default function CreateCharacterPage({
                   </AvatarFallback>
                 )}
               </Avatar>
-              {!defaultValues && (
-                <Button
-                  type="button"
-                  className="absolute bottom-0 right-0 z-40 rounded-full dark:bg-accent"
-                  variant="outline"
-                  size="icon-sm"
-                  onClick={() => {
-                    console.log("hi");
-                    inputRef.current?.click();
-                  }}
-                >
-                  <PlusIcon />
-                </Button>
-              )}
+              <Button
+                type="button"
+                className="absolute bottom-0 right-0 z-40 rounded-full dark:bg-accent"
+                variant="outline"
+                size="icon-sm"
+                onClick={() => {
+                  inputRef.current?.click();
+                }}
+              >
+                <PlusIcon />
+              </Button>
 
-              {!defaultValues && (
-                <input
-                  className="w-full h-full opacity-0 cursor-pointer absolute inset-0"
-                  ref={inputRef}
-                  type="file"
-                  // Event handler to capture file selection and update the state
-                  onChange={handleImage}
-                />
-              )}
+              <input
+                className="w-full h-full opacity-0 cursor-pointer absolute inset-0"
+                ref={inputRef}
+                type="file"
+                // Event handler to capture file selection and update the state
+                onChange={handleImage}
+              />
             </div>
             <h1 className="tracking-tight text-4xl font-medium">{title}</h1>
           </div>
@@ -440,6 +444,22 @@ export default function CreateCharacterPage({
             </Dialog>
           </Field>
 
+          <div className="flex my-6 justify-between items-center">
+            <section className="space-y-1">
+              <h1 className="text-sm font-medium">Premium</h1>
+              <p className="text-sm text-muted-foreground md:max-w-xs max-w-64">
+                Al activar esta opción solo los usuarios Premium podran usar el
+                personaje
+              </p>
+            </section>
+
+            <Switch
+              className="scale-125"
+              onCheckedChange={setIsPremium}
+              checked={isPremium}
+            />
+          </div>
+
           <Button
             type="submit"
             disabled={isSubmitting}
@@ -454,4 +474,3 @@ export default function CreateCharacterPage({
     </>
   );
 }
-
