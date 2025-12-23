@@ -30,13 +30,13 @@ export const PLAN_FEATURES: Plans = {
   },
   pro: {
     id: "pro",
-    name: "pro",
+    name: "Pro",
     features: {
       memory: true,
       // 15 hours
       msLimit: 15 * 60 * 60 * 1000,
       voiceCloning: true,
-      characters: "pro",
+      characters: "premium",
     },
   },
 };
