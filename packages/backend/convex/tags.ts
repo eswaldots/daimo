@@ -10,9 +10,9 @@ export const list = query({
       return await ctx.db
         .query("tags")
         .withSearchIndex("search_by_name", (q) => q.search("name", searchTerm))
-        .collect();
+        .take(10);
     } else {
-      return await ctx.db.query("tags").take(10);
+      return await ctx.db.query("tags").order("desc").take(10);
     }
   },
 });

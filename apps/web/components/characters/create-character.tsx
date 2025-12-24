@@ -313,17 +313,19 @@ export default function CreateCharacterPage({
               <FieldError errors={[errors.name]} />
             </Field>
 
-            {defaultValues && (
-              <Field>
-                <FieldLabel className="text-foreground">Tags</FieldLabel>
-                <TagInput />
-                <FieldDescription>
-                  Seran usadas para poder categorizar al personaje de manera más
-                  fácil
-                </FieldDescription>
-                <FieldError errors={[errors.name]} />
-              </Field>
-            )}
+            {/* TODO: Add tag edition */}
+
+            {/* {defaultValues && ( */}
+            {/*   <Field> */}
+            {/*     <FieldLabel className="text-foreground">Tags</FieldLabel> */}
+            {/*     <TagInput /> */}
+            {/*     <FieldDescription> */}
+            {/*       Seran usadas para poder categorizar al personaje de manera más */}
+            {/*       fácil */}
+            {/*     </FieldDescription> */}
+            {/*     <FieldError errors={[errors.name]} /> */}
+            {/*   </Field> */}
+            {/* )} */}
 
             <Field>
               <FieldLabel className="text-foreground">
@@ -425,6 +427,14 @@ export default function CreateCharacterPage({
                             setVoice(voice);
                             setValue("ttsProvider", voice.source);
                             setIsOpen(false);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setVoice(voice);
+                              setValue("ttsProvider", voice.source);
+                              setIsOpen(false);
+                            }
                           }}
                         >
                           <SelectableVoiceItem {...voice} />

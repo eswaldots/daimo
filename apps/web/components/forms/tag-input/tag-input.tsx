@@ -2,13 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
@@ -25,6 +18,7 @@ import { api } from "@daimo/backend";
 import { XIcon } from "lucide-react";
 import { ComponentProps, useMemo, useRef, useState } from "react";
 
+// TODO: Expose values to parent
 function TagInput() {
   const [value, setValue] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -33,7 +27,7 @@ function TagInput() {
     searchTerm: value ?? undefined,
   });
   const [isOpen, setIsOpen] = useState(false);
-  const { wrapperRef: ref } = useClickOutside({
+  const { wrapperRef: ref } = useClickOutside<HTMLDivElement>({
     clickOutsideFn: () => {
       setIsOpen(false);
     },
@@ -70,12 +64,7 @@ function TagInput() {
             setIsOpen(true);
 
             if (e.key === "Backspace" && value.length === 0) {
-              if (values.length === 1) {
-                setValues([]);
-
-                return;
-              }
-              setValues(values.filter((_, i) => i !== value.length + 1));
+              setValues(values.slice(0, -1));
             }
 
             if (e.key === "Escape") {
@@ -126,7 +115,7 @@ function TagInput() {
           />
         </InputGroup>
       </PopoverTrigger>
-      {filteredTags.length !== 0 && !isPending && (
+      {(isPending || filteredTags.length !== 0) && (
         <PopoverContent
           className="md:w-64 outline-none p-1 flex flex-col space-y-1"
           ref={ref}
@@ -140,8 +129,7 @@ function TagInput() {
             ? Array.from({ length: 5 }).map((_, i) => (
                 <PopoverMenuSkeletonItem key={i} />
               ))
-            : filteredTags &&
-              filteredTags.map(({ name }) => (
+            : filteredTags.map(({ name }) => (
                 <PopoverMenuItem
                   onClick={() => {
                     setValues([...values, name]);
