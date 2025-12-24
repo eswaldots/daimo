@@ -18,7 +18,14 @@ import { api } from "@daimo/backend";
 import { XIcon } from "lucide-react";
 import { ComponentProps, useMemo, useRef, useState } from "react";
 
-// TODO: Expose values to parent
+/**
+ * Renders a tag input UI that lets users type, select suggested tags, and manage selected tags as removable chips.
+ *
+ * The component fetches tag suggestions based on the current input, shows a popover list of suggestions, allows
+ * adding suggestions or freeform values as tags, and supports keyboard interactions for completion and removal.
+ *
+ * @returns A JSX element containing the tag input control with selected tag chips, an input, and a suggestion popover.
+ */
 function TagInput() {
   const [value, setValue] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -147,10 +154,21 @@ function TagInput() {
   );
 }
 
+/**
+ * Renders a skeleton placeholder sized and styled to match a popover menu item.
+ *
+ * @returns A Skeleton element with full width, rounded corners, and a fixed height to represent a loading menu row.
+ */
 function PopoverMenuSkeletonItem() {
   return <Skeleton className="w-full rounded-lg h-8" />;
 }
 
+/**
+ * Renders a styled button suitable for use as an item inside a popover menu.
+ *
+ * @param props - Standard button props (including `children`) forwarded to the underlying Button.
+ * @returns A Button element styled as a compact, left-aligned popover menu item.
+ */
 function PopoverMenuItem({ children, ...props }: ComponentProps<"button">) {
   return (
     <Button
