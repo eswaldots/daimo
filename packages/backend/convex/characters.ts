@@ -3,7 +3,7 @@ import { mutation, query } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
 import { Doc, Id } from "./_generated/dataModel";
 import { authComponent } from "./auth";
-import { api, internal } from "./_generated/api";
+import { internal } from "./_generated/api";
 
 export const getMyCharacters = query({
   args: {
@@ -96,7 +96,19 @@ export const create = mutation({
       throw new Error("User not authorized");
     }
 
-    return await ctx.db.insert("characters", { ...args, origin: "official" });
+    const id = await ctx.db.insert("characters", {
+      ...args,
+      origin: "official",
+    });
+
+    // Dejaremos en un segundo proceso que la IA vaya creando las tags del personaje
+    await ctx.scheduler.runAt(
+      0,
+      internal.characters.internal.createTagsForCharacter,
+      { characterId: id },
+    );
+
+    return id;
   },
 });
 

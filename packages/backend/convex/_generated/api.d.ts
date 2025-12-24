@@ -10,11 +10,14 @@
 
 import type * as auth from "../auth.js";
 import type * as characters from "../characters.js";
+import type * as characters_internal from "../characters/internal.js";
 import type * as constants_plans from "../constants/plans.js";
 import type * as http from "../http.js";
 import type * as stars from "../stars.js";
 import type * as storage from "../storage.js";
 import type * as subscriptions from "../subscriptions.js";
+import type * as tags from "../tags.js";
+import type * as tags_internal from "../tags/internal.js";
 
 import type {
   ApiFromModules,
@@ -25,11 +28,14 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   characters: typeof characters;
+  "characters/internal": typeof characters_internal;
   "constants/plans": typeof constants_plans;
   http: typeof http;
   stars: typeof stars;
   storage: typeof storage;
   subscriptions: typeof subscriptions;
+  tags: typeof tags;
+  "tags/internal": typeof tags_internal;
 }>;
 
 /**
@@ -1038,6 +1044,92 @@ export declare const components: {
           onUpdateHandle?: string;
         },
         any
+      >;
+    };
+  };
+  migrations: {
+    lib: {
+      cancel: FunctionReference<
+        "mutation",
+        "internal",
+        { name: string },
+        {
+          batchSize?: number;
+          cursor?: string | null;
+          error?: string;
+          isDone: boolean;
+          latestEnd?: number;
+          latestStart: number;
+          name: string;
+          next?: Array<string>;
+          processed: number;
+          state: "inProgress" | "success" | "failed" | "canceled" | "unknown";
+        }
+      >;
+      cancelAll: FunctionReference<
+        "mutation",
+        "internal",
+        { sinceTs?: number },
+        Array<{
+          batchSize?: number;
+          cursor?: string | null;
+          error?: string;
+          isDone: boolean;
+          latestEnd?: number;
+          latestStart: number;
+          name: string;
+          next?: Array<string>;
+          processed: number;
+          state: "inProgress" | "success" | "failed" | "canceled" | "unknown";
+        }>
+      >;
+      clearAll: FunctionReference<
+        "mutation",
+        "internal",
+        { before?: number },
+        null
+      >;
+      getStatus: FunctionReference<
+        "query",
+        "internal",
+        { limit?: number; names?: Array<string> },
+        Array<{
+          batchSize?: number;
+          cursor?: string | null;
+          error?: string;
+          isDone: boolean;
+          latestEnd?: number;
+          latestStart: number;
+          name: string;
+          next?: Array<string>;
+          processed: number;
+          state: "inProgress" | "success" | "failed" | "canceled" | "unknown";
+        }>
+      >;
+      migrate: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          batchSize?: number;
+          cursor?: string | null;
+          dryRun: boolean;
+          fnHandle: string;
+          name: string;
+          next?: Array<{ fnHandle: string; name: string }>;
+          oneBatchOnly?: boolean;
+        },
+        {
+          batchSize?: number;
+          cursor?: string | null;
+          error?: string;
+          isDone: boolean;
+          latestEnd?: number;
+          latestStart: number;
+          name: string;
+          next?: Array<string>;
+          processed: number;
+          state: "inProgress" | "success" | "failed" | "canceled" | "unknown";
+        }
       >;
     };
   };

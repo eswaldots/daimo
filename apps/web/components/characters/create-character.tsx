@@ -8,12 +8,13 @@ import {
   FieldGroup,
   FieldLabel,
   FieldError,
+  FieldDescription,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import * as Sentry from "@sentry/nextjs";
 import { Textarea } from "@/components/ui/textarea";
 import { ChevronDown, ChevronLeft, PlusIcon, Search } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation } from "convex/react";
@@ -38,6 +39,7 @@ import { ItemGroup } from "../ui/item";
 import { cn } from "@/lib/utils";
 import posthog from "posthog-js";
 import { Switch } from "../ui/switch";
+import { TagInput } from "../forms/tag-input";
 
 const characterSchema = z.object({
   name: z
@@ -87,13 +89,7 @@ export default function CreateCharacterPage({
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-    watch,
-    setValue,
-  } = useForm<CharacterFormValues>({
+  const form = useForm<CharacterFormValues>({
     resolver: zodResolver(characterSchema),
     defaultValues: defaultValues
       ? {
@@ -104,6 +100,14 @@ export default function CreateCharacterPage({
           ttsProvider: "inworld",
         },
   });
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    watch,
+    setValue,
+  } = form;
 
   const [isOpen, setIsOpen] = useState(false);
   const [voice, setVoice] = useState<Voice | null>(
@@ -251,224 +255,235 @@ export default function CreateCharacterPage({
   return (
     <>
       <div className="absolute left-8 top-8 md:block hidden">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="dark:hover:bg-border rounded-full"
-          onClick={() => router.back()}
-        >
-          <ChevronLeft className="size-5" />
+        <Button variant="ghost" size="icon" onClick={() => router.back()}>
+          <ChevronLeft />
         </Button>
       </div>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <FieldGroup className="max-w-2xl mx-auto gap-8 mt-8">
-          <div className="w-full flex items-center gap-6">
-            <div className="relative w-fit">
-              <Avatar className="size-24 transition-colors cursor-pointer">
-                <AvatarImage
-                  src={
-                    image
-                      ? URL.createObjectURL(image)
-                      : defaultValues && (defaultValues.storageUrl ?? "")
-                  }
-                  className="object-cover object-center"
-                ></AvatarImage>
-                {!image && (
-                  <AvatarFallback className="text-4xl dark:bg-border z-10">
-                    {title?.charAt(0).toUpperCase() ?? "?"}
-                  </AvatarFallback>
-                )}
-              </Avatar>
-              <Button
-                type="button"
-                className="absolute bottom-0 right-0 z-40 rounded-full dark:bg-accent"
-                variant="outline"
-                size="icon-sm"
-                onClick={() => {
-                  inputRef.current?.click();
-                }}
-              >
-                <PlusIcon />
-              </Button>
+      <FormProvider {...form}>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <FieldGroup className="max-w-2xl mx-auto gap-8 mt-8">
+            <div className="w-full flex items-center gap-6">
+              <div className="relative w-fit">
+                <Avatar className="size-24 transition-colors cursor-pointer">
+                  <AvatarImage
+                    src={
+                      image
+                        ? URL.createObjectURL(image)
+                        : defaultValues && (defaultValues.storageUrl ?? "")
+                    }
+                    className="object-cover object-center"
+                  ></AvatarImage>
+                  {!image && (
+                    <AvatarFallback className="text-4xl dark:bg-border z-10">
+                      {title?.charAt(0).toUpperCase() ?? "?"}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <Button
+                  type="button"
+                  className="absolute bottom-0 right-0 z-40 rounded-full dark:bg-accent"
+                  variant="outline"
+                  size="icon-sm"
+                  onClick={() => {
+                    inputRef.current?.click();
+                  }}
+                >
+                  <PlusIcon />
+                </Button>
 
-              <input
-                className="w-full h-full opacity-0 cursor-pointer absolute inset-0"
-                ref={inputRef}
-                type="file"
-                // Event handler to capture file selection and update the state
-                onChange={handleImage}
-              />
+                <input
+                  className="w-full h-full opacity-0 cursor-pointer absolute inset-0"
+                  ref={inputRef}
+                  type="file"
+                  // Event handler to capture file selection and update the state
+                  onChange={handleImage}
+                />
+              </div>
+              <h1 className="tracking-tight text-4xl font-medium">{title}</h1>
             </div>
-            <h1 className="tracking-tight text-4xl font-medium">{title}</h1>
-          </div>
 
-          <Field>
-            <FieldLabel className="text-foreground">Nombre</FieldLabel>
-            <Input
-              placeholder="eg: John Doe"
-              className="rounded-lg bg-secondary dark:bg-border border-border/20 hover:bg-input transition-colors"
-              {...register("name")}
-              aria-invalid={!!errors.name}
-            />
-            <FieldError errors={[errors.name]} />
-          </Field>
+            <Field>
+              <FieldLabel className="text-foreground">Nombre</FieldLabel>
+              <Input
+                placeholder="eg: John Doe"
+                className="rounded-lg bg-secondary dark:bg-border border-border/20 hover:bg-input transition-colors"
+                {...register("name")}
+                aria-invalid={!!errors.name}
+              />
+              <FieldError errors={[errors.name]} />
+            </Field>
 
-          <Field>
-            <FieldLabel className="text-foreground">
-              Descripción corta
-            </FieldLabel>
-            <Textarea
-              placeholder="Agrega una corta descripción del personaje, esta se usara en la presentación del mismo"
-              className="rounded-lg bg-secondary dark:bg-border border-border/20 hover:bg-input transition-colors resize-none h-27"
-              {...register("shortDescription")}
-              aria-invalid={!!errors.shortDescription}
-            />
-            <FieldError errors={[errors.shortDescription]} />
-          </Field>
+            {defaultValues && (
+              <Field>
+                <FieldLabel className="text-foreground">Tags</FieldLabel>
+                <TagInput />
+                <FieldDescription>
+                  Seran usadas para poder categorizar al personaje de manera más
+                  fácil
+                </FieldDescription>
+                <FieldError errors={[errors.name]} />
+              </Field>
+            )}
 
-          <Field>
-            <FieldLabel className="text-foreground">Descripción</FieldLabel>
-            <Textarea
-              placeholder="Agrega una descripción del personaje"
-              className="rounded-lg bg-secondary dark:bg-border border-border/20 hover:bg-input transition-colors resize-none h-27"
-              {...register("description")}
-              aria-invalid={!!errors.description}
-            />
-            <FieldError errors={[errors.description]} />
-          </Field>
+            <Field>
+              <FieldLabel className="text-foreground">
+                Descripción corta
+              </FieldLabel>
+              <Textarea
+                placeholder="Agrega una corta descripción del personaje, esta se usara en la presentación del mismo"
+                className="rounded-lg bg-secondary dark:bg-border border-border/20 hover:bg-input transition-colors resize-none h-27"
+                {...register("shortDescription")}
+                aria-invalid={!!errors.shortDescription}
+              />
+              <FieldError errors={[errors.shortDescription]} />
+            </Field>
 
-          <Field>
-            <FieldLabel className="text-foreground">Prompt</FieldLabel>
-            <Textarea
-              placeholder="Escribe un prompt para el personaje"
-              className="rounded-lg bg-secondary dark:bg-border border-border/20 hover:bg-input transition-colors resize-none h-27"
-              {...register("prompt")}
-              aria-invalid={!!errors.prompt}
-            />
-            <FieldError errors={[errors.prompt]} />
-          </Field>
+            <Field>
+              <FieldLabel className="text-foreground">Descripción</FieldLabel>
+              <Textarea
+                placeholder="Agrega una descripción del personaje"
+                className="rounded-lg bg-secondary dark:bg-border border-border/20 hover:bg-input transition-colors resize-none h-27"
+                {...register("description")}
+                aria-invalid={!!errors.description}
+              />
+              <FieldError errors={[errors.description]} />
+            </Field>
 
-          <Field>
-            <FieldLabel className="text-foreground">Saludo</FieldLabel>
-            <Textarea
-              placeholder="Escribe un saludo para el personaje, funcionara como un mensaje de bienvenida"
-              className="rounded-lg bg-secondary dark:bg-border border-border/20 hover:bg-input transition-colors resize-none h-27"
-              {...register("firstMessagePrompt")}
-              aria-invalid={!!errors.firstMessagePrompt}
-            />
-            <FieldError errors={[errors.firstMessagePrompt]} />
-          </Field>
+            <Field>
+              <FieldLabel className="text-foreground">Prompt</FieldLabel>
+              <Textarea
+                placeholder="Escribe un prompt para el personaje"
+                className="rounded-lg bg-secondary dark:bg-border border-border/20 hover:bg-input transition-colors resize-none h-27"
+                {...register("prompt")}
+                aria-invalid={!!errors.prompt}
+              />
+              <FieldError errors={[errors.prompt]} />
+            </Field>
 
-          <Field>
-            <FieldLabel className="text-foreground">Voz</FieldLabel>
-            <Dialog open={isOpen} onOpenChange={setIsOpen}>
-              <DialogContent showCloseButton={false} className="transition-all">
-                <DialogTitle>Voces</DialogTitle>
-                <div className="my-2 space-y-4">
-                  {providers.length > 1 && (
-                    <div className="flex gap-2">
-                      {providers.map((provider) => (
-                        <Button
-                          key={provider}
-                          type="button"
-                          variant={
-                            activeProvider === provider ? "default" : "ghost"
-                          }
-                          size="sm"
-                          className={cn(
-                            activeProvider !== provider
-                              ? "border-foreground/10"
-                              : "border-primary",
-                            "rounded-full border",
-                          )}
+            <Field>
+              <FieldLabel className="text-foreground">Saludo</FieldLabel>
+              <Textarea
+                placeholder="Escribe un saludo para el personaje, funcionara como un mensaje de bienvenida"
+                className="rounded-lg bg-secondary dark:bg-border border-border/20 hover:bg-input transition-colors resize-none h-27"
+                {...register("firstMessagePrompt")}
+                aria-invalid={!!errors.firstMessagePrompt}
+              />
+              <FieldError errors={[errors.firstMessagePrompt]} />
+            </Field>
+
+            <Field>
+              <FieldLabel className="text-foreground">Voz</FieldLabel>
+              <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                <DialogContent
+                  showCloseButton={false}
+                  className="transition-all"
+                >
+                  <DialogTitle>Voces</DialogTitle>
+                  <div className="my-2 space-y-4">
+                    {providers.length > 1 && (
+                      <div className="flex gap-2">
+                        {providers.map((provider) => (
+                          <Button
+                            key={provider}
+                            type="button"
+                            variant={
+                              activeProvider === provider ? "default" : "ghost"
+                            }
+                            size="sm"
+                            className={cn(
+                              activeProvider !== provider
+                                ? "border-foreground/10"
+                                : "border-primary",
+                              "rounded-full border",
+                            )}
+                            onClick={() => {
+                              setValue("ttsProvider", provider);
+                              setVoice(null);
+                            }}
+                          >
+                            {providerDisplayNames[provider] || provider}
+                          </Button>
+                        ))}
+                      </div>
+                    )}
+                    <InputGroup className="border-0 shadow-none bg-transparent">
+                      <InputGroupAddon align="inline-start">
+                        <Search className="size-4" />
+                      </InputGroupAddon>
+                      <InputGroupInput
+                        placeholder="Busca una voz"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                      />
+                    </InputGroup>
+
+                    <ItemGroup className="max-h-[40vh] overflow-y-scroll gap-2">
+                      {filteredVoices.map((voice) => (
+                        <div
+                          key={voice.voiceId}
                           onClick={() => {
-                            setValue("ttsProvider", provider);
-                            setVoice(null);
+                            setVoice(voice);
+                            setValue("ttsProvider", voice.source);
+                            setIsOpen(false);
                           }}
                         >
-                          {providerDisplayNames[provider] || provider}
-                        </Button>
+                          <SelectableVoiceItem {...voice} />
+                        </div>
                       ))}
-                    </div>
-                  )}
-                  <InputGroup className="border-0 shadow-none bg-transparent">
-                    <InputGroupAddon align="inline-start">
-                      <Search className="size-4" />
-                    </InputGroupAddon>
+                    </ItemGroup>
+                  </div>
+                </DialogContent>
+                <DialogTrigger>
+                  <InputGroup className="rounded-lg bg-secondary dark:bg-border border-border/20  hover:bg-input transition-colors cursor-default">
+                    {voice?.source && (
+                      <InputGroupAddon align="inline-start">
+                        <span className="text-xs px-2 py-1 rounded-md bg-primary/10 text-primary">
+                          {providerDisplayNames[voice.source] || voice.source}
+                        </span>
+                      </InputGroupAddon>
+                    )}
                     <InputGroupInput
-                      placeholder="Busca una voz"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Seleccione una voz"
+                      readOnly
+                      value={voice?.displayName}
+                      className="cursor-default"
                     />
-                  </InputGroup>
-
-                  <ItemGroup className="max-h-[40vh] overflow-y-scroll gap-2">
-                    {filteredVoices.map((voice) => (
-                      <div
-                        key={voice.voiceId}
-                        onClick={() => {
-                          setVoice(voice);
-                          setValue("ttsProvider", voice.source);
-                          setIsOpen(false);
-                        }}
-                      >
-                        <SelectableVoiceItem {...voice} />
-                      </div>
-                    ))}
-                  </ItemGroup>
-                </div>
-              </DialogContent>
-              <DialogTrigger>
-                <InputGroup className="rounded-lg bg-secondary dark:bg-border border-border/20  hover:bg-input transition-colors cursor-default">
-                  {voice?.source && (
-                    <InputGroupAddon align="inline-start">
-                      <span className="text-xs px-2 py-1 rounded-md bg-primary/10 text-primary">
-                        {providerDisplayNames[voice.source] || voice.source}
-                      </span>
+                    <InputGroupAddon align="inline-end">
+                      <ChevronDown className="size-4" />
                     </InputGroupAddon>
-                  )}
-                  <InputGroupInput
-                    placeholder="Seleccione una voz"
-                    readOnly
-                    value={voice?.displayName}
-                    className="cursor-default"
-                  />
-                  <InputGroupAddon align="inline-end">
-                    <ChevronDown className="size-4" />
-                  </InputGroupAddon>
-                </InputGroup>
-              </DialogTrigger>
-            </Dialog>
-          </Field>
+                  </InputGroup>
+                </DialogTrigger>
+              </Dialog>
+            </Field>
 
-          <div className="flex my-6 justify-between items-center">
-            <section className="space-y-1">
-              <h1 className="text-sm font-medium">Premium</h1>
-              <p className="text-sm text-muted-foreground md:max-w-xs max-w-64">
-                Al activar esta opción solo los usuarios Premium podran usar el
-                personaje
-              </p>
-            </section>
+            <div className="flex my-6 justify-between items-center">
+              <section className="space-y-1">
+                <h1 className="text-sm font-medium">Premium</h1>
+                <p className="text-sm text-muted-foreground md:max-w-xs max-w-64">
+                  Al activar esta opción solo los usuarios Premium podran usar
+                  el personaje
+                </p>
+              </section>
 
-            <Switch
-              className="scale-125"
-              onCheckedChange={setIsPremium}
-              checked={isPremium}
-            />
-          </div>
+              <Switch
+                className="scale-125"
+                onCheckedChange={setIsPremium}
+                checked={isPremium}
+              />
+            </div>
 
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            variant="default"
-            className="rounded-full w-fit ml-auto shadow-none mt-8"
-          >
-            {isSubmitting && <Spinner />}{" "}
-            {defaultValues ? "Guardar cambios" : "Crear personaje"}
-          </Button>
-        </FieldGroup>
-      </form>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              variant="default"
+              className="rounded-full w-fit ml-auto shadow-none mt-8"
+            >
+              {isSubmitting && <Spinner />}{" "}
+              {defaultValues ? "Guardar cambios" : "Crear personaje"}
+            </Button>
+          </FieldGroup>
+        </form>
+      </FormProvider>
     </>
   );
 }
-
