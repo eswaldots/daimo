@@ -15,7 +15,7 @@ interface ConfigProps {
 export default function useClickOutside<ElementType extends HTMLElement>({
   clickOutsideFn,
 }: ConfigProps) {
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const wrapperRef = useRef<ElementType | null>(null);
   const callbackRef = useRef<ClickOutsideCallback | null>(null);
 
   useEffect(() => {
@@ -26,7 +26,8 @@ export default function useClickOutside<ElementType extends HTMLElement>({
 
   useEffect(() => {
     const listenerCallback = (event: MouseEvent) => {
-      if (!wrapperRef.current?.contains(event.target as Node)) {
+      const target = event.target;
+      if (target && !wrapperRef.current?.contains(target as Node)) {
         callbackRef.current?.(event);
       }
     };

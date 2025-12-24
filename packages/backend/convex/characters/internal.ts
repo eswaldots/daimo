@@ -33,12 +33,14 @@ export const createTagsForCharacter = internalAction({
         }),
       }),
       prompt: `
-<context>
-Tienes que crear 10 tags para el siguiente personaje: ${character.name} - ${character.description}
-</context>
-<tag_rules>
-Las tags se usan para alimentar nuestro motor de busqueda para nuestra plataforma de personajes de IA conversacionales (parecido a character.ai), CREA LAS TAGS PENSANDO EN LOS POSIBLES PARAMETROS DE BUSQUEDA QUE USARA UNA PERSONA AL BUSCAR ESTE PERSONAJE.
-</tag_rules>
+        Genera 10 etiquetas de búsqueda internas para el personaje de IA de voz: "${character.name}".
+        Descripción: "${character.description}"
+
+        REGLAS DE ORO PARA EL BUSCADOR:
+        1. Incluye SINÓNIMOS (ej: si es robot, pon 'bot', 'androide', 'ia').
+        2. Incluye INTENCIÓN (ej: 'aprender', 'compañia', 'tarea', 'jugar').
+        3. Incluye ATRIBUTOS DE VOZ (ej: 'calma', 'aguda', 'robotica').
+        4. Solo minúsculas, sin acentos ni caracteres especiales.
 `,
     });
 
@@ -48,6 +50,11 @@ Las tags se usan para alimentar nuestro motor de busqueda para nuestra plataform
       });
 
       if (existing) {
+        await ctx.runMutation(internal.tags.internal.relateTag, {
+          tagId: existing._id,
+          characterId: character._id,
+        });
+
         return;
       }
 

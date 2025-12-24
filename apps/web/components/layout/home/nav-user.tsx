@@ -31,6 +31,9 @@ import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
 import { useQuery } from "convex/react";
 import { api } from "@daimo/backend";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useQueryWithStatus } from "@/lib/convex/use-query-with-status";
+import { motion } from "motion/react";
 
 /**
  * Renders a sidebar user button with an avatar and a centered dropdown menu of account actions.
@@ -53,7 +56,9 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar();
   const [isLoading, setIsLoading] = useState(false);
-  const subscription = useQuery(api.subscriptions.getCurrentSubscription);
+  const { data: subscription, isPending } = useQueryWithStatus(
+    api.subscriptions.getCurrentSubscription,
+  );
   const router = useRouter();
 
   return (
@@ -76,7 +81,25 @@ export function NavUser({
                   {user.name}
                 </span>
                 <span className="truncate text-xs text-foreground font-normal">
-                  {!subscription ? "Gratuito" : "Pro"}
+                  {!isPending ? (
+                    !subscription ? (
+                      <motion.span
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                      >
+                        Gratuito
+                      </motion.span>
+                    ) : (
+                      <motion.span
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                      >
+                        Pro
+                      </motion.span>
+                    )
+                  ) : (
+                    <Skeleton className="w-34 h-4" />
+                  )}
                 </span>
               </div>
             </SidebarMenuButton>
@@ -103,6 +126,7 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
+              {/* TODO: Add upgrade to pro dialog*/}
               <DropdownMenuItem
                 onSelect={() => {
                   posthog.capture("upgrade_to_pro_clicked", {
@@ -113,6 +137,7 @@ export function NavUser({
                 <Sparkles className="text-foreground" />
                 Actualizar a pro
               </DropdownMenuItem>
+              {/* TODO: Add a Dialog to include settings*/}
               <DropdownMenuItem>
                 <Settings className="text-foreground" />
                 Ajustes

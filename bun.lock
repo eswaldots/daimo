@@ -4,9 +4,6 @@
   "workspaces": {
     "": {
       "name": "daimo",
-      "dependencies": {
-        "react-markdown": "^10.1.0",
-      },
       "devDependencies": {
         "@tailwindcss/typography": "^0.5.19",
         "prettier": "^3.6.2",
@@ -67,6 +64,7 @@
         "react": "19.2.0",
         "react-dom": "19.2.0",
         "react-hook-form": "^7.68.0",
+        "react-markdown": "^10.1.0",
         "require-in-the-middle": "^8.0.1",
         "sonner": "^2.0.7",
         "swr": "^2.3.7",
@@ -100,6 +98,7 @@
         "@ai-sdk/google-vertex": "^3.0.86",
         "@ai-sdk/groq": "^3.0.1",
         "@ai-sdk/openai": "^2.0.79",
+        "@convex-dev/aggregate": "^0.2.0",
         "@convex-dev/better-auth": "^0.9.11",
         "@convex-dev/migrations": "^0.3.1",
         "ai": "^6.0.3",
@@ -209,6 +208,8 @@
     "@bufbuild/protobuf": ["@bufbuild/protobuf@1.10.1", "", {}, "sha512-wJ8ReQbHxsAfXhrf9ixl0aYbZorRuOWpBNzm8pL8ftmSxQx/wnJD5Eg861NwJU/czy2VXFIebCeZnZrI9rktIQ=="],
 
     "@cartesia/cartesia-js": ["@cartesia/cartesia-js@2.2.9", "", { "dependencies": { "emittery": "0.13.1", "form-data": "4.0.5", "form-data-encoder": "4.1.0", "formdata-node": "6.0.3", "human-id": "4.1.3", "node-fetch": "2.7.0", "qs": "6.14.0", "readable-stream": "4.7.0", "url-join": "4.0.1", "ws": "8.18.3" } }, "sha512-mstq5EobmlN+Y/awHJS3H2ZXEX1LNpUNVn2JckaZD00iBIKQoBhsmeiVGGjisny/IcTYsucwpI3Hksk5Uo+/tQ=="],
+
+    "@convex-dev/aggregate": ["@convex-dev/aggregate@0.2.0", "", { "peerDependencies": { "convex": "^1.24.8" } }, "sha512-AKHa6SilQ9w1gnqBghCbQj77sdE2SJSZ8n3FHH/0PX/MSHsvmDT6Z+ZzIVK6EnmqItwxyRAIfA2E+znnHQVvOQ=="],
 
     "@convex-dev/better-auth": ["@convex-dev/better-auth@0.9.11", "", { "dependencies": { "common-tags": "1.8.2", "convex-helpers": "0.1.106", "jose": "6.1.3", "remeda": "2.32.0", "semver": "7.7.3", "type-fest": "4.41.0", "zod": "3.25.76" }, "peerDependencies": { "better-auth": "1.3.27", "convex": "1.30.0", "react": "19.2.0", "react-dom": "19.2.0" } }, "sha512-SZHuh/rgLxDydAG8fRMm6H6SECGt9FfgRMPR6/k+cR8MKsksr0YWvPhAVpe7hAwuuXAachP+9SqG/YIwBVNUZA=="],
 

@@ -2,13 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
@@ -38,10 +31,10 @@ function TagInput() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [values, setValues] = useState<string[]>([]);
   const { data: tags, isPending } = useQueryWithStatus(api.tags.list, {
-    searchTerm: value ?? undefined,
+    searchTerm: value || undefined,
   });
   const [isOpen, setIsOpen] = useState(false);
-  const { wrapperRef: ref } = useClickOutside({
+  const { wrapperRef: ref } = useClickOutside<HTMLDivElement>({
     clickOutsideFn: () => {
       setIsOpen(false);
     },
@@ -78,12 +71,7 @@ function TagInput() {
             setIsOpen(true);
 
             if (e.key === "Backspace" && value.length === 0) {
-              if (values.length === 1) {
-                setValues([]);
-
-                return;
-              }
-              setValues(values.filter((_, i) => i !== value.length + 1));
+              setValues(values.slice(0, -1));
             }
 
             if (e.key === "Escape") {
@@ -92,23 +80,21 @@ function TagInput() {
               inputRef?.current?.blur();
             }
 
-            if (e.key === "Enter") {
+            if (e.key === "Enter" || e.key === "Tab") {
               e.preventDefault();
               e.stopPropagation();
 
               handleCompletion();
             }
-            if (e.key === "Tab") {
-              e.preventDefault();
-              e.stopPropagation();
 
-              handleCompletion();
-            }
             if (e.key === " ") {
               e.preventDefault();
-              if (value.length === 0 || value.includes(" ")) return;
+              const trimmedValue = value.trim();
+              if (trimmedValue.length === 0 || trimmedValue.includes(" "))
+                return;
+              if (values.includes(trimmedValue)) return;
 
-              setValues([...values, value]);
+              setValues([...values, trimmedValue]);
               setValue("");
             }
           }}
@@ -134,7 +120,7 @@ function TagInput() {
           />
         </InputGroup>
       </PopoverTrigger>
-      {filteredTags.length !== 0 && !isPending && (
+      {(isPending || filteredTags.length !== 0) && (
         <PopoverContent
           className="md:w-64 outline-none p-1 flex flex-col space-y-1"
           ref={ref}
@@ -148,19 +134,18 @@ function TagInput() {
             ? Array.from({ length: 5 }).map((_, i) => (
                 <PopoverMenuSkeletonItem key={i} />
               ))
-            : filteredTags &&
-              filteredTags.map(({ slug }) => (
+            : filteredTags.map(({ name }) => (
                 <PopoverMenuItem
                   onClick={() => {
-                    setValues([...values, slug]);
+                    setValues([...values, name]);
 
                     setIsOpen(false);
 
                     inputRef?.current?.focus();
                   }}
-                  key={slug}
+                  key={name}
                 >
-                  {slug}
+                  {name}
                 </PopoverMenuItem>
               ))}
         </PopoverContent>

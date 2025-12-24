@@ -36,5 +36,5 @@ export default defineSchema({
   characterTags: defineTable({
     characterId: v.id("characters"),
     tagId: v.id("tags"),
-  }),
+  }).index("by_character_and_tag", ["characterId", "tagId"]),
 });

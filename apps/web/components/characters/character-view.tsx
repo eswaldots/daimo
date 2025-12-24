@@ -12,26 +12,17 @@ import {
 import { notFound, useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import {
-  AudioLines,
   AudioWaveform,
-  Book,
-  BookA,
-  BookHeadphones,
-  BotIcon,
   Brain,
-  BrainIcon,
   CheckIcon,
-  CircleQuestionMark,
   Clock,
   Heart,
-  Laugh,
   LockIcon,
   LucideCardSim,
   Mic,
-  NotebookPen,
-  PlayIcon,
-  Smile,
+  MicVocal,
   SparklesIcon,
+  User,
   XIcon,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
@@ -90,7 +81,11 @@ export default function CharacterView({
     localStore.setQuery(
       api.characters.getById,
       { characterId: character._id },
-      { ...character, isStarredByUser: true },
+      {
+        ...character,
+        isStarredByUser: true,
+        starCount: character.starCount + 1,
+      },
     );
   });
   const unstarCharacter = useMutation(
@@ -99,7 +94,11 @@ export default function CharacterView({
     localStore.setQuery(
       api.characters.getById,
       { characterId: character._id },
-      { ...character, isStarredByUser: false },
+      {
+        ...character,
+        isStarredByUser: false,
+        starCount: character.starCount - 1,
+      },
     );
   });
   const router = useRouter();
@@ -297,7 +296,7 @@ export default function CharacterView({
                 POPULARIDAD
               </span>
               <h1 className="text-2xl font-bold text-foreground/80 font-mono tracking-tighter">
-                420
+                {character.starCount}
               </h1>
 
               <span className="text-muted-foreground text-xs -mt-1 tracking-wide">
@@ -308,11 +307,12 @@ export default function CharacterView({
             <div className="bg-muted-foreground/10 w-px h-16" />
 
             <div className="flex flex-col items-center space-y-2">
+              {/* TODO: Count number of sessions of a character */}
               <span className="text-muted-foreground tracking-wider text-xs font-semibold">
                 SESIONES
               </span>
               <h1 className="text-2xl text-foreground/80 font-bold font-mono tracking-tighter">
-                420
+                ???
               </h1>
               <span className="text-muted-foreground text-xs -mt-1">
                 sesiones
@@ -321,25 +321,16 @@ export default function CharacterView({
 
             <div className="bg-muted-foreground/10 w-px h-16" />
             <div className="flex flex-col items-center space-y-2">
-              <span className="text-muted-foreground tracking-wide text-xs font-semibold">
-                ACCESO
-              </span>
-              <h1 className="text-2xl text-foreground/80 font-bold font-mono tracking-tighter">
-                PRO
-              </h1>
-              <span className="text-muted-foreground text-xs -mt-1">
-                acceso de alta prioridad
-              </span>
-            </div>
-
-            <div className="bg-muted-foreground/10 w-px h-16" />
-            <div className="flex flex-col items-center space-y-2">
               <span className="text-muted-foreground tracking-wider text-xs font-semibold">
                 VOZ
               </span>
-              <AudioWaveform className="size-8 text-foreground/80" />
+              {character.ttsProvider === "gemini" ? (
+                <AudioWaveform className="size-8 text-foreground/80" />
+              ) : (
+                <MicVocal />
+              )}
               <span className="text-muted-foreground text-xs -mt-1">
-                original
+                {character.ttsProvider === "gemini" ? "original" : "clonada"}
               </span>
             </div>
 
@@ -348,9 +339,15 @@ export default function CharacterView({
               <span className="text-muted-foreground tracking-wider text-xs font-semibold">
                 ESTADO
               </span>
-              <CheckIcon className="size-8 text-foreground/80" />
+              {character.origin === "official" ? (
+                <CheckIcon className="size-8 text-foreground/80" />
+              ) : (
+                <User className="size-8 text-foreground/80" />
+              )}
               <span className="text-muted-foreground text-xs -mt-1">
-                personaje oficial
+                {character.origin === "official"
+                  ? "personaje oficial"
+                  : "de la comunidad"}
               </span>
             </div>
           </div>
