@@ -32,7 +32,14 @@ export const createTagsForCharacter = internalAction({
             ),
         }),
       }),
-      prompt: `Crea 10 tags para el siguiente personaje: ${character.name} - ${character.description}`,
+      prompt: `
+<context>
+Tienes que crear 10 tags para el siguiente personaje: ${character.name} - ${character.description}
+</context>
+<tag_rules>
+Las tags se usan para alimentar nuestro motor de busqueda para nuestra plataforma de personajes de IA conversacionales (parecido a character.ai), CREA LAS TAGS PENSANDO EN LOS POSIBLES PARAMETROS DE BUSQUEDA QUE USARA UNA PERSONA AL BUSCAR ESTE PERSONAJE.
+</tag_rules>
+`,
     });
 
     const promises = output.map(async ({ name }) => {
