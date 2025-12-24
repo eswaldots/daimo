@@ -24,7 +24,7 @@ function TagInput() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [values, setValues] = useState<string[]>([]);
   const { data: tags, isPending } = useQueryWithStatus(api.tags.list, {
-    searchTerm: value ?? undefined,
+    searchTerm: value || undefined,
   });
   const [isOpen, setIsOpen] = useState(false);
   const { wrapperRef: ref } = useClickOutside<HTMLDivElement>({
@@ -73,23 +73,21 @@ function TagInput() {
               inputRef?.current?.blur();
             }
 
-            if (e.key === "Enter") {
+            if (e.key === "Enter" || e.key === "Tab") {
               e.preventDefault();
               e.stopPropagation();
 
               handleCompletion();
             }
-            if (e.key === "Tab") {
-              e.preventDefault();
-              e.stopPropagation();
 
-              handleCompletion();
-            }
             if (e.key === " ") {
               e.preventDefault();
-              if (value.length === 0 || value.includes(" ")) return;
+              const trimmedValue = value.trim();
+              if (trimmedValue.length === 0 || trimmedValue.includes(" "))
+                return;
+              if (values.includes(trimmedValue)) return;
 
-              setValues([...values, value]);
+              setValues([...values, trimmedValue]);
               setValue("");
             }
           }}
