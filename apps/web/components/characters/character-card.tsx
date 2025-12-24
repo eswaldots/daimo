@@ -48,13 +48,13 @@ export function CharacterCardSkeleton() {
 /**
  * Render a responsive character card that links to the character details page.
  *
- * Displays the character image, name, short description, a "PRO" badge when premium,
- * an inline play button that navigates to the playground, and owner-only edit/delete actions.
+ * The card displays the character image (using `storageUrl` when present), name, short description,
+ * and a "PRO" badge when `accessType` is `"premium"`. On non-mobile layouts an inline play button
+ * overlays the image and navigates to the playground for the character.
  *
  * @param props - Character document augmented with an optional `storageUrl` for the image.
- *   The object is expected to include at least `_id`, `name`, `shortDescription`, `creatorId`, and `accessType`.
- * @returns A JSX element representing a clickable card that navigates to `/characters/{id}`. The card
- *   adapts layout for mobile and desktop and exposes owner actions and a playground play button.
+ *   Expected fields include `_id`, `name`, `shortDescription`, `creatorId`, and `accessType`.
+ * @returns A JSX element for a responsive character card that navigates to `/characters/{_id}` when clicked.
  */
 export function CharacterCard(
   props: Doc<"characters"> & { storageUrl?: string | null },

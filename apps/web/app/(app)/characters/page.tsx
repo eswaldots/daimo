@@ -11,6 +11,13 @@ import { EmptyCharacter } from "@/components/layout/home/empty-character";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
+/**
+ * Renders the "Tus personajes" page: header with a "Crear personaje" button and an animated list of the user's characters.
+ *
+ * The list displays loading skeletons while data is being fetched, an empty-state component when there are no characters, and a CharacterCard for each fetched result.
+ *
+ * @returns The page's JSX element containing the header and the animated character list.
+ */
 export default function Page() {
   const { isLoading, results } = usePaginatedQuery(
     api.characters.getMyCharacters,

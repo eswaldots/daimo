@@ -8,6 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
+/**
+ * Renders a styled container that groups inputs, addons, buttons, and text into a single input group.
+ *
+ * The element receives all passed div props and exposes data-slot="input-group" and role="group".
+ * When a nested control inside the group has `aria-invalid="true"`, the container applies the error ring and border styling.
+ *
+ * @returns The input group container element with role `"group"` and `data-slot="input-group"`.
+ */
 function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -125,6 +133,12 @@ function InputGroupText({ className, ...props }: React.ComponentProps<"span">) {
   );
 }
 
+/**
+ * Renders an input control styled for use inside an input group.
+ *
+ * @param className - Additional class names merged with the component's base styling
+ * @returns The input element with a `data-slot="input-group-control"` attribute and merged styling
+ */
 function InputGroupInput({
   className,
   ...props

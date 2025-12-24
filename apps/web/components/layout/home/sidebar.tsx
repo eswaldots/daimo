@@ -44,13 +44,13 @@ import { Separator } from "@/components/ui/separator";
 import { authClient } from "@/lib/auth-client";
 
 /**
- * Renders the application's left sidebar with header, primary navigation, and settings/logout controls.
+ * Render the application's left sidebar with header, primary navigation, and current-user footer.
  *
- * The sidebar includes a clickable title linking to "/home", a navigation item for "Inicio" that is active when the pathname is "/home",
- * and a settings menu that allows selecting the UI theme (light, dark, system) and signing out.
+ * The sidebar includes a title linking to /home, navigation entries for "Inicio" and "Personajes" whose active
+ * state is derived from the current pathname, and a footer showing the current user's avatar, name, and email.
  *
- * @param session - The user's session object used to derive user-specific UI (e.g., avatar, email, name) where applicable.
- * @returns The sidebar JSX element containing header, navigation content, and footer controls.
+ * @param session - The user's session object; used to populate the footer's avatar, name, and email.
+ * @returns The sidebar JSX element containing header, navigation content, and footer user display.
  */
 export default function HomeSidebar({ session }: { session: Session }) {
   const router = useRouter();

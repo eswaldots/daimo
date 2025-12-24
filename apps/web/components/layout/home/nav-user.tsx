@@ -32,6 +32,16 @@ import posthog from "posthog-js";
 import { useQuery } from "convex/react";
 import { api } from "@daimo/backend";
 
+/**
+ * Renders a sidebar user button with an avatar and a centered dropdown menu of account actions.
+ *
+ * The menu shows the user's name, email, and current plan status, and exposes actions for upgrading,
+ * opening settings, and signing out. Selecting "Cerrar sesión" signs the user out, records an analytics
+ * event, and navigates to the root path.
+ *
+ * @param user - The user profile to display (`name`, `email`, `avatar`).
+ * @returns The sidebar user menu React element.
+ */
 export function NavUser({
   user,
 }: {

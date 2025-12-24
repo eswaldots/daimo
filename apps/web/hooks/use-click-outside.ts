@@ -6,6 +6,12 @@ interface ConfigProps {
   clickOutsideFn: ClickOutsideCallback;
 }
 
+/**
+ * Provides a ref to attach to an element and invokes a callback when a mousedown occurs outside that element.
+ *
+ * @param clickOutsideFn - Function called with the originating `MouseEvent` when a mousedown happens outside the attached element
+ * @returns An object containing `wrapperRef`, a ref that should be attached to the element to monitor for outside clicks
+ */
 export default function useClickOutside<ElementType extends HTMLElement>({
   clickOutsideFn,
 }: ConfigProps) {
