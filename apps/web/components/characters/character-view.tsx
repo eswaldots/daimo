@@ -312,7 +312,7 @@ export default function CharacterView({
                 SESIONES
               </span>
               <h1 className="text-2xl text-foreground/80 font-bold font-mono tracking-tighter">
-                ???
+                -
               </h1>
               <span className="text-muted-foreground text-xs -mt-1">
                 sesiones

@@ -8,7 +8,7 @@
  * @module
  */
 
-import type * as agreggate from "../agreggate.js";
+import type * as aggregate from "../aggregate.js";
 import type * as auth from "../auth.js";
 import type * as characters from "../characters.js";
 import type * as characters_internal from "../characters/internal.js";
@@ -27,7 +27,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  agreggate: typeof agreggate;
+  aggregate: typeof aggregate;
   auth: typeof auth;
   characters: typeof characters;
   "characters/internal": typeof characters_internal;

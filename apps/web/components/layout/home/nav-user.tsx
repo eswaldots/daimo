@@ -29,7 +29,6 @@ import { authClient } from "@/lib/auth-client";
 import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
-import { useQuery } from "convex/react";
 import { api } from "@daimo/backend";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQueryWithStatus } from "@/lib/convex/use-query-with-status";
@@ -179,3 +178,4 @@ export function NavUser({
     </SidebarMenu>
   );
 }
+

@@ -16,7 +16,7 @@ export const createTagsForCharacter = internalAction({
     });
 
     if (!character) {
-      throw new ConvexError("The character has not founded");
+      throw new ConvexError("The character has not found");
     }
 
     const { output } = await generateText({
