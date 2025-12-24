@@ -141,18 +141,18 @@ function TagInput() {
                 <PopoverMenuSkeletonItem key={i} />
               ))
             : filteredTags &&
-              filteredTags.map(({ slug }) => (
+              filteredTags.map(({ name }) => (
                 <PopoverMenuItem
                   onClick={() => {
-                    setValues([...values, slug]);
+                    setValues([...values, name]);
 
                     setIsOpen(false);
 
                     inputRef?.current?.focus();
                   }}
-                  key={slug}
+                  key={name}
                 >
-                  {slug}
+                  {name}
                 </PopoverMenuItem>
               ))}
         </PopoverContent>
