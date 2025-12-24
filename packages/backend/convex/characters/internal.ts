@@ -50,6 +50,11 @@ export const createTagsForCharacter = internalAction({
       });
 
       if (existing) {
+        await ctx.runMutation(internal.tags.internal.relateTag, {
+          tagId: existing._id,
+          characterId: character._id,
+        });
+
         return;
       }
 
