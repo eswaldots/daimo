@@ -28,4 +28,13 @@ export default defineSchema({
     endsAt: v.number(),
     updatedAt: v.number(),
   }).index("by_user_id", ["userId"]),
+  tags: defineTable({
+    name: v.string(),
+  })
+    .index("by_name", ["name"])
+    .searchIndex("search_by_name", { searchField: "name" }),
+  characterTags: defineTable({
+    characterId: v.id("characters"),
+    tagId: v.id("tags"),
+  }).index("by_character_and_tag", ["characterId", "tagId"]),
 });

@@ -44,13 +44,13 @@ import { Separator } from "@/components/ui/separator";
 import { authClient } from "@/lib/auth-client";
 
 /**
- * Renders the application's left sidebar with header, primary navigation, and settings/logout controls.
+ * Render the application's left sidebar with header, primary navigation, and current-user footer.
  *
- * The sidebar includes a clickable title linking to "/home", a navigation item for "Inicio" that is active when the pathname is "/home",
- * and a settings menu that allows selecting the UI theme (light, dark, system) and signing out.
+ * The sidebar includes a title linking to /home, navigation entries for "Inicio" and "Personajes" whose active
+ * state is derived from the current pathname, and a footer showing the current user's avatar, name, and email.
  *
- * @param session - The user's session object used to derive user-specific UI (e.g., avatar, email, name) where applicable.
- * @returns The sidebar JSX element containing header, navigation content, and footer controls.
+ * @param session - The user's session object; used to populate the footer's avatar, name, and email.
+ * @returns The sidebar JSX element containing header, navigation content, and footer user display.
  */
 export default function HomeSidebar({ session }: { session: Session }) {
   const router = useRouter();
@@ -77,7 +77,7 @@ export default function HomeSidebar({ session }: { session: Session }) {
             <SidebarMenuItem className="flex items-center gap-2">
               <SidebarMenuButton
                 isActive={pathname === "/home"}
-                className="rounded-lg text-sm"
+                className="rounded-md text-sm tracking-wide font-medium"
                 asChild
               >
                 <Link href="/home">
@@ -93,7 +93,7 @@ export default function HomeSidebar({ session }: { session: Session }) {
                   pathname === "/characters" ||
                   pathname.startsWith("/characters/")
                 }
-                className="rounded-lg text-sm"
+                className="rounded-md text-sm tracking-wide font-medium"
                 asChild
               >
                 <Link href="/characters">
@@ -106,64 +106,13 @@ export default function HomeSidebar({ session }: { session: Session }) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="pb-4 px-4">
-        <SidebarMenuItem className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <SidebarMenuButton className="rounded-full text-sm px-4 font-medium items-center text-muted-foreground">
-                <Settings
-                  className="size-5 text-muted-foreground"
-                  strokeWidth={1.5}
-                />
-                Configuración
-              </SidebarMenuButton>
-            </DropdownMenuTrigger>
-
-            <DropdownMenuContent side="top" className="w-70" align="start">
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger className="w-full">
-                  Tema de la interfaz
-                </DropdownMenuSubTrigger>
-                <DropdownMenuPortal>
-                  <DropdownMenuSubContent className="w-64">
-                    <DropdownMenuRadioGroup
-                      value={theme}
-                      onValueChange={(value) => setTheme(value)}
-                    >
-                      <DropdownMenuRadioItem value="light">
-                        <SunIcon /> Claro
-                      </DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem value="dark">
-                        <MoonIcon /> Oscuro
-                      </DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem value="system">
-                        <Monitor /> Sistema
-                      </DropdownMenuRadioItem>
-                    </DropdownMenuRadioGroup>
-                  </DropdownMenuSubContent>
-                </DropdownMenuPortal>
-              </DropdownMenuSub>
-              <div className="px-2 my-1 flex-1">
-                <Separator />
-              </div>
-              <DropdownMenuItem
-                onClick={async () => {
-                  await authClient.signOut();
-
-                  router.push("/");
-                }}
-              >
-                Cerrar sesión
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </SidebarMenuItem>
-
-        {/* <NavUser user={{ */}
-        {/*     avatar: session.user.image ?? "", */}
-        {/*     email: session.user.email, */}
-        {/*     name: session.user.name, */}
-        {/*   }} */}
-        {/* /> */}
+        <NavUser
+          user={{
+            avatar: session.user.image ?? "",
+            email: session.user.email,
+            name: session.user.name,
+          }}
+        />
       </SidebarFooter>
     </Sidebar>
   );

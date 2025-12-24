@@ -25,23 +25,21 @@ export default async function Layout({ children }: { children: ReactNode }) {
       <SidebarProvider
         style={
           {
-            "--sidebar-width": "calc(var(--spacing) * 72)",
+            "--sidebar-width": "calc(var(--spacing) * 60)",
             "--header-height": "calc(var(--spacing) * 12)",
           } as React.CSSProperties
         }
       >
         <HomeSidebar session={data} />
         <SidebarInset className="relative dark:bg-muted bg-background">
-          <ViewTransition>
-            <div className="flex flex-1 flex-col max-w-7xl mx-auto w-full">
-              <div className="@container/main flex flex-1 flex-col gap-2">
-                <div className="flex flex-col gap-4 py-4 md:gap-4 md:py-14 md:pt-14 pt-18 md:px-12 px-4">
-                  <Trigger />
-                  {children}
-                </div>
+          <div className="flex flex-1 flex-col mx-auto w-full">
+            <div className="@container/main flex flex-1 flex-col gap-2">
+              <div className="flex flex-col gap-4 py-4 md:gap-4 md:py-10 md:pt-8 pt-18 md:px-10 px-4">
+                <Trigger />
+                {children}
               </div>
             </div>
-          </ViewTransition>
+          </div>
         </SidebarInset>
       </SidebarProvider>
     );
@@ -49,3 +47,4 @@ export default async function Layout({ children }: { children: ReactNode }) {
     redirect("/");
   }
 }
+

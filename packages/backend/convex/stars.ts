@@ -1,8 +1,9 @@
-import { internalQuery, mutation, query } from "./_generated/server";
+import { internalQuery } from "./_generated/server";
 import { authComponent } from "./auth";
 import { ConvexError, v } from "convex/values";
+import { mutationWithAgreggateTrigger } from "./aggregate";
 
-export const starCharacter = mutation({
+export const starCharacter = mutationWithAgreggateTrigger({
   args: {
     characterId: v.id("characters"),
   },
@@ -31,7 +32,7 @@ export const starCharacter = mutation({
   },
 });
 
-export const unstarCharacter = mutation({
+export const unstarCharacter = mutationWithAgreggateTrigger({
   args: {
     characterId: v.id("characters"),
   },

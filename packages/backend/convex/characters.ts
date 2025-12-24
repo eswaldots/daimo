@@ -1,9 +1,11 @@
 import { paginationOptsValidator } from "convex/server";
 import { mutation, query } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
-import { Doc, Id } from "./_generated/dataModel";
+import { DataModel, Doc, Id } from "./_generated/dataModel";
 import { authComponent } from "./auth";
-import { api, internal } from "./_generated/api";
+import { TableAggregate } from "@convex-dev/aggregate";
+import { components, internal } from "./_generated/api";
+import { Triggers } from "convex-helpers/server/triggers";
 
 export const getMyCharacters = query({
   args: {
@@ -34,6 +36,22 @@ export const getMyCharacters = query({
   },
 });
 
+const aggregateStarsByCharacter = new TableAggregate<{
+  Namespace: Id<"characters">;
+  Key: Id<"characters">;
+  DataModel: DataModel;
+  TableName: "stars";
+}>(components.aggregateStarsByCharacter, {
+  sortKey: (doc) => doc.starredCharacter,
+  // Only a number because the existence of the table sums one star
+  sumValue: () => 1,
+  namespace: (doc) => doc.starredCharacter,
+});
+
+// This will update the stars count
+const triggers = new Triggers<DataModel>();
+triggers.register("stars", aggregateStarsByCharacter.trigger());
+
 export const getById = query({
   args: {
     characterId: v.id("characters"),
@@ -56,15 +74,21 @@ export const getById = query({
       });
     }
 
+    const starCount = await aggregateStarsByCharacter.count(ctx, {
+      namespace: character._id,
+    });
+
     const characterWithUrl: Doc<"characters"> & {
       storageUrl?: string | null;
       isStarredByUser: undefined | boolean;
+      starCount: number;
     } = {
       ...character,
       storageUrl: character.storageId
         ? await ctx.storage.getUrl(character.storageId as Id<"_storage">)
         : undefined,
       isStarredByUser,
+      starCount,
     };
 
     return characterWithUrl;
@@ -96,7 +120,19 @@ export const create = mutation({
       throw new Error("User not authorized");
     }
 
-    return await ctx.db.insert("characters", { ...args, origin: "official" });
+    const id = await ctx.db.insert("characters", {
+      ...args,
+      origin: "official",
+    });
+
+    // Dejaremos en un segundo proceso que la IA vaya creando las tags del personaje
+    await ctx.scheduler.runAt(
+      0,
+      internal.characters.internal.createTagsForCharacter,
+      { characterId: id },
+    );
+
+    return id;
   },
 });
 
