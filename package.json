@@ -2,7 +2,9 @@
   "name": "daimo",
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.19",
+    "@types/node": "^25.0.3",
     "prettier": "^3.6.2",
+    "tsx": "^4.21.0",
     "turbo": "^2.6.3",
     "typescript": "5.9.2"
   },
@@ -14,6 +16,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "gen:types": "tsx scripts/generate-backend-python-types.ts --convex-dir packages/backend/ --out apps/live/src/convex_client.py",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "typecheck": "turbo run typecheck"

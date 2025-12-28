@@ -1,5 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { parentalSchema } from "./parental/schema";
+import { authSchema } from "./auth/schema";
 
 export default defineSchema({
   characters: defineTable({
@@ -37,4 +39,6 @@ export default defineSchema({
     characterId: v.id("characters"),
     tagId: v.id("tags"),
   }).index("by_character_and_tag", ["characterId", "tagId"]),
+  ...parentalSchema,
+  ...authSchema
 });

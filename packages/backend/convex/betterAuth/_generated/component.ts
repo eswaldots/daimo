@@ -34,6 +34,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   banExpires?: null | number;
                   banReason?: null | string;
                   banned?: null | boolean;
+                  completedOnboarding?: null | boolean;
                   createdAt: number;
                   email: string;
                   emailVerified: boolean;
@@ -120,6 +121,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "banned"
                     | "banReason"
                     | "banExpires"
+                    | "completedOnboarding"
                     | "_id";
                   operator?:
                     | "lt"
@@ -308,6 +310,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "banned"
                     | "banReason"
                     | "banExpires"
+                    | "completedOnboarding"
                     | "_id";
                   operator?:
                     | "lt"
@@ -554,6 +557,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   banExpires?: null | number;
                   banReason?: null | string;
                   banned?: null | boolean;
+                  completedOnboarding?: null | boolean;
                   createdAt?: number;
                   email?: string;
                   emailVerified?: boolean;
@@ -577,6 +581,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "banned"
                     | "banReason"
                     | "banExpires"
+                    | "completedOnboarding"
                     | "_id";
                   operator?:
                     | "lt"
@@ -791,6 +796,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                   banExpires?: null | number;
                   banReason?: null | string;
                   banned?: null | boolean;
+                  completedOnboarding?: null | boolean;
                   createdAt?: number;
                   email?: string;
                   emailVerified?: boolean;
@@ -814,6 +820,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
                     | "banned"
                     | "banReason"
                     | "banExpires"
+                    | "completedOnboarding"
                     | "_id";
                   operator?:
                     | "lt"

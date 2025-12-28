@@ -97,6 +97,7 @@ export async function POST(req: Request) {
         emptyTimeout: 60, // La sala se cierra si nadie entra en 60s
         metadata: JSON.stringify({
           characterId, // <--- AQUÍ VA TU METADATA PARA EL AGENTE
+		  userId: session.user.id
         }),
       });
     }
