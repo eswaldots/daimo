@@ -1,18 +1,12 @@
 import AdminSidebar from "@/components/layout/admin/sidebar";
-import HomeSidebar from "@/components/layout/home/sidebar";
 import { Trigger } from "@/components/layout/home/trigger";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { authClient } from "@/lib/auth-client";
-import { headers } from "next/headers";
+import { getServerSession } from "@/lib/auth/session-server";
 import { redirect } from "next/navigation";
 import { ReactNode } from "react";
 
 export default async function Layout({ children }: { children: ReactNode }) {
-  const { data } = await authClient.getSession({
-    fetchOptions: {
-      headers: await headers(),
-    },
-  });
+  const data = await getServerSession();
 
   if (data?.user.role === "admin")
     return (

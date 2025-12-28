@@ -1,16 +1,14 @@
 import LandingPage from "@/components/layout/landing";
-import { authClient } from "@/lib/auth-client";
-import { fetchAuthQuery } from "@/lib/auth-server";
+import { fetchAuthQuery } from "@/lib/auth/auth-server";
+import { getServerSession } from "@/lib/auth/session-server";
 import { api } from "@daimo/backend";
-import { headers } from "next/headers";
+import logger from "@daimo/logger";
 import { redirect } from "next/navigation";
 
+const log = logger.getSubLogger({ prefix: ["getServerSession"] });
+
 export default async function Home() {
-  const { data: session } = await authClient.getSession({
-    fetchOptions: {
-      headers: await headers(),
-    },
-  });
+  const  session  = await getServerSession();
 
   if (!session?.user) {
     return <LandingPage />

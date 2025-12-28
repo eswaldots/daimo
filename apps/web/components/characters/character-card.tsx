@@ -12,11 +12,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "motion/react";
 import { Doc } from "../../../../packages/backend/convex/_generated/dataModel";
 import Image from "next/image";
-import { AudioLines, Ellipsis, SparklesIcon } from "lucide-react";
+import { AudioLines, SparklesIcon } from "lucide-react";
 import Link from "next/link";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { authClient } from "@/lib/auth-client";
-import { DropdownMenu, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { authClient } from "@/lib/auth/auth-client";
 import { useRouter } from "next/navigation";
 
 /**

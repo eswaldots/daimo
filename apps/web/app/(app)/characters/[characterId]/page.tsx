@@ -1,6 +1,6 @@
 import CharacterView from "@/components/characters/character-view";
 import * as Sentry from "@sentry/nextjs";
-import { getToken } from "@/lib/auth-server";
+import { getToken } from "@/lib/auth/auth-server";
 import { api, Id } from "@daimo/backend";
 import { fetchQuery, preloadQuery } from "convex/nextjs";
 import { Metadata, ResolvingMetadata } from "next";

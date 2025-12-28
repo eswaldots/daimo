@@ -11,7 +11,8 @@ import { authClient } from "@/lib/auth-client";
 import { headers } from "next/headers";
 import { fetchQuery } from "convex/nextjs";
 import { api, Id } from "@daimo/backend";
-import { fetchAuthQuery } from "@/lib/auth-server";
+import { fetchAuthQuery } from "@/lib/auth/auth-server";
+import { getServerSession } from "@/lib/auth/session-server";
 
 type ConnectionDetails = {
   serverUrl: string;
@@ -32,11 +33,7 @@ export async function POST(req: Request) {
       throw new Error("Missing LiveKit environment variables");
     }
 
-    const { data: session } = await authClient.getSession({
-      fetchOptions: {
-        headers: await headers(),
-      },
-    });
+    const  session = await getServerSession();
 
     if (!session) {
       return new NextResponse("El usuario no esta autenticado", {
