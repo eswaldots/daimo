@@ -2,6 +2,7 @@
 exclude:
   - "dist/**"
   - "_generated/**"
+  - "./apps/web/components/animated-icons/*"
   - "node_modules/**"
   - "**/*.min.js"
   - "docs/**"
