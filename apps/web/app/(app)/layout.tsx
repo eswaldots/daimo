@@ -12,7 +12,11 @@ import { ReactNode } from "react";
  * @returns The layout element containing the sidebar and main content when a session exists; otherwise triggers a redirect to `/`
  */
 export default async function Layout({ children }: { children: ReactNode }) {
-  const  data  = await getServerSession();
+  const data = await getServerSession();
+
+  if (!data.user.completedOnboarding) {
+    redirect("/onboarding/getting-started");
+  }
 
   if (data)
     return (
@@ -41,4 +45,3 @@ export default async function Layout({ children }: { children: ReactNode }) {
     redirect("/");
   }
 }
-

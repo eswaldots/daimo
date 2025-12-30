@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { startTransition, useEffect, useRef, useState } from "react";
 import { motion, MotionProps } from "motion/react";
 import {
   ControlBarControls,
@@ -15,6 +15,7 @@ import { PreConnectMessage } from "./preconnect-message";
 import { TileLayout } from "./tile-layout";
 import { AgentControlBar } from "./agent-control-bar/agent-control-bar";
 import posthog from "posthog-js";
+import { useParams, useRouter } from "next/navigation";
 
 const MotionBottom = motion.create("div");
 
@@ -69,6 +70,7 @@ export const SessionView = ({
   const session = useSessionContext();
   const { messages } = useSessionMessages(session);
   const [chatOpen, setChatOpen] = useState(false);
+  const { characterId } = useParams();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const controls: ControlBarControls = {
@@ -87,6 +89,8 @@ export const SessionView = ({
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
     }
   }, [messages]);
+
+  const router = useRouter();
 
   return (
     <section
@@ -132,11 +136,15 @@ export const SessionView = ({
           <AgentControlBar
             controls={controls}
             isConnected={session.isConnected}
-            onDisconnect={() => {
+            onDisconnect={async () => {
               posthog.capture("session_ended", {
                 message_count: messages.length,
               });
-              session.end();
+              await session.end();
+
+              startTransition(() => {
+                router.push(`/characters/${characterId}?hasEndedSession=true`);
+              });
             }}
             onChatOpenChange={setChatOpen}
           />

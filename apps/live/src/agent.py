@@ -125,6 +125,7 @@ async def my_agent(ctx: JobContext):
     metadata = json.loads(ctx.job.room.metadata)
 
     character_id = metadata.get("characterId")
+    is_first_time = metadata.get("isFirstTime")
     user_id = metadata.get("userId")
 
     if not user_id:
@@ -233,11 +234,7 @@ async def my_agent(ctx: JobContext):
     # Start the session, which initializes the voice pipeline and warms up the models
     await session.start(
         agent=Assistant(
-                instructions=Template(CHILDREN_TEMPLATE).render(
-                    backstory=character["prompt"], name=character["name"],
-                    user_age=children["age"],
-                    user_name=children["name"],
-                ),
+                instructions=instructions,
         ),
         room=ctx.room,
         room_options=room_io.RoomOptions(
@@ -248,6 +245,10 @@ async def my_agent(ctx: JobContext):
             ),
         ),
     )
+
+    if is_first_time:
+        await session.generate_reply(user_input="Es la primera vez de este niño hablando contigo. Saludalo con su nombre y sus gustos preguntadole que quiere hacer ahora!")
+
 
     # Join the room and connect to the user
     await ctx.connect()

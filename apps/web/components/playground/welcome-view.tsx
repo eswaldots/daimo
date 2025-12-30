@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
 import { AnimatePresence, motion } from "motion/react";
-import { useQuery } from "convex/react";
+import { Preloaded, usePreloadedQuery, useQuery } from "convex/react";
 import Image from "next/image";
 import { api, Id } from "@daimo/backend";
 import { useParams } from "next/navigation";
@@ -34,6 +34,7 @@ function WelcomeImage() {
 interface WelcomeViewProps {
   startButtonText: string;
   onStartCall: () => void;
+  preloadedCharacter: Preloaded<typeof api.characters.getById>;
 }
 
 const MotionSpinner = motion.create(Spinner);
@@ -41,59 +42,93 @@ const MotionSpinner = motion.create(Spinner);
 export const WelcomeView = ({
   startButtonText,
   onStartCall,
+  preloadedCharacter,
   ref,
 }: React.ComponentProps<"div"> & WelcomeViewProps) => {
-  const { characterId } = useParams();
-  const character = useQuery(api.characters.getById, {
-    characterId: characterId as Id<"characters">,
-  });
+  const character = usePreloadedQuery(preloadedCharacter);
+
   const [isLoading, setIsLoading] = useState(false);
 
   return (
-    <div ref={ref}>
-      <section className="bg-background flex flex-col items-center justify-center text-center">
-        <div className="flex items-center gap-6 my-4 flex-col">
-          {character?.storageUrl ? (
-            <Image
-              className="size-36 rounded-full object-cover"
-              src={character?.storageUrl ?? ""}
-              alt="image"
-              width={2000}
-              height={2000}
-            />
-          ) : (
-            <Skeleton className="size-36 rounded-full object-cover" />
-          )}
+    <div ref={ref} className="w-full">
+      <section className="bg-background flex flex-col items-center justify-center text-center w-full">
+        <div className="flex items-center gap-8 my-6 flex-col w-full">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              delay: 0.3,
+              ease: "backOut",
+              type: "spring",
+              damping: 20,
+            }}
+          >
+            {character?.storageUrl ? (
+              <Image
+                className="size-48 rounded-full object-cover bg-secondary p-4"
+                src={character?.storageUrl ?? ""}
+                alt="image"
+                width={2000}
+                height={2000}
+              />
+            ) : (
+              <Skeleton className="size-36 rounded-full object-cover" />
+            )}
+          </motion.div>
 
-          <div className="text-foreground max-w-prose pt-1 leading-6 font-medium tracking-tight text-4xl">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              delay: 0.5,
+              ease: "backOut",
+              type: "spring",
+              damping: 20,
+            }}
+            className="text-foreground max-w-prose pt-1 leading-6 font-medium tracking-tight text-4xl"
+          >
             Habla con{" "}
             {character?.name || (
               <Skeleton className="h-7 ml-1 w-32 inline-block" />
             )}
-          </div>
+          </motion.div>
         </div>
-        <Button
-          variant="default"
-          onClick={() => {
-            setIsLoading(true);
-
-            onStartCall();
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full px-4"
+          transition={{
+            delay: 0.6,
+            ease: "backOut",
+            type: "spring",
+            damping: 20,
           }}
-          className="mt-6 rounded-full"
         >
-          <AnimatePresence>
-            {isLoading && (
-              <MotionSpinner
-                key="spinner"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              />
-            )}
-            <motion.span key="span">{startButtonText}</motion.span>
-          </AnimatePresence>
-        </Button>
+          <Button
+            variant="accent"
+            size="lg"
+            onClick={() => {
+              setIsLoading(true);
+
+              onStartCall();
+            }}
+            className="mt-6 rounded-full text-base md:w-fit w-full h-12"
+          >
+            <AnimatePresence>
+              {isLoading && (
+                <MotionSpinner
+                  key="spinner"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                />
+              )}
+              <motion.span key="span">Conversar</motion.span>
+            </AnimatePresence>
+          </Button>
+        </motion.div>
       </section>
     </div>
   );
 };
+

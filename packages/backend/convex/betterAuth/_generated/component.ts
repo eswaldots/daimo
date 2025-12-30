@@ -1017,4 +1017,13 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
         Name
       >;
     };
+    user: {
+      setCompletedOnboarding: FunctionReference<
+        "mutation",
+        "internal",
+        { completedOnboarding: boolean; userId: string },
+        any,
+        Name
+      >;
+    };
   };

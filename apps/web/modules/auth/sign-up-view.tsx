@@ -12,7 +12,7 @@ import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth/auth-client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import posthog from "posthog-js";
@@ -45,7 +45,7 @@ export default function SignUp() {
   const onSubmit = async (data: SignUpFormValues) => {
     const { error } = await authClient.signUp.email({
       ...data,
-	  callbackURL: "/welcome-redirect"
+      callbackURL: "/",
     });
 
     if (error) {
@@ -116,16 +116,11 @@ export default function SignUp() {
               });
               await authClient.signIn.social({
                 provider: "google",
-				newUserCallbackURL: "/welcome-redirect",
-				callbackURL: "/"
+                callbackURL: "/",
               });
             }}
           >
-            {isSocialLoading ? (
-              <Spinner className="size-4" />
-            ) : (
-              <GoogleIcon />
-            )}
+            {isSocialLoading ? <Spinner className="size-4" /> : <GoogleIcon />}
             Continuar con google
           </Button>
 
@@ -140,7 +135,7 @@ export default function SignUp() {
             <Input
               placeholder="Ingresa tu nombre completo"
               type="text"
-              className="h-9 rounded-2xl text-base md:text-base py-5 bg-secondary border-secondary"
+              className="h-9 rounded-xl text-base md:text-base py-5 bg-secondary border-secondary"
               {...register("name")}
               aria-invalid={!!errors.name}
             />
@@ -152,7 +147,7 @@ export default function SignUp() {
             <Input
               placeholder="Ingresa tu email"
               type="email"
-              className="h-9 rounded-2xl text-base md:text-base py-5 bg-secondary border-secondary"
+              className="h-9 rounded-xl text-base md:text-base py-5 bg-secondary border-secondary"
               {...register("email")}
               aria-invalid={!!errors.email}
             />
@@ -164,7 +159,7 @@ export default function SignUp() {
             <Input
               placeholder="Ingresa tu contraseña"
               type="password"
-              className="h-9 rounded-2xl text-base md:text-base py-5 bg-secondary border-secondary"
+              className="h-9 rounded-xl text-base md:text-base py-5 bg-secondary border-secondary"
               {...register("password")}
               aria-invalid={!!errors.password}
             />

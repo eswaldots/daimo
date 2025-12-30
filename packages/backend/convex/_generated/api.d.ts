@@ -1063,6 +1063,14 @@ export declare const components: {
         any
       >;
     };
+    user: {
+      setCompletedOnboarding: FunctionReference<
+        "mutation",
+        "internal",
+        { completedOnboarding: boolean; userId: string },
+        any
+      >;
+    };
   };
   aggregateStarsByCharacter: {
     btree: {

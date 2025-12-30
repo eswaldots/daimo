@@ -12,7 +12,7 @@ import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth/auth-client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
@@ -42,7 +42,7 @@ export default function SignIn() {
   const onSubmit = async (data: SignUpFormValues) => {
     const { error } = await authClient.signIn.email({
       ...data,
-	  callbackURL: "/"
+      callbackURL: "/",
     });
 
     if (error) {
@@ -68,7 +68,7 @@ export default function SignIn() {
   };
 
   return (
-    <main className="h-screen p-6 md:flex-row flex-col flex items-center">
+    <main className="h-screen p-6 md:flex-row flex-col flex items-center dark:bg-secondary/50">
       <div className="rounded-3xl bg-secondary md:flex hidden w-[40vw] h-full text-center gap-6 relative items-center flex-col justify-center">
         <Image
           src="/bg-glass.webp"
@@ -108,8 +108,7 @@ export default function SignIn() {
               });
               await authClient.signIn.social({
                 provider: "google",
-				newUserCallbackURL: "/welcome-redirect",
-				callbackURL: "/"
+                callbackURL: "/",
               });
             }}
           >

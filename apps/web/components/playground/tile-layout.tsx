@@ -6,6 +6,7 @@ import {
   type TrackReference,
   VideoTrack,
   useLocalParticipant,
+  useSessionContext,
   useTracks,
   useVoiceAssistant,
 } from "@livekit/components-react";
@@ -97,6 +98,7 @@ export function TileLayout({ chatOpen }: TileLayoutProps) {
     videoTrack: agentVideoTrack,
   } = useVoiceAssistant();
   const [screenShareTrack] = useTracks([Track.Source.ScreenShare]);
+  const { isConnected } = useSessionContext();
   const cameraTrack: TrackReference | undefined = useLocalTrackRef(
     Track.Source.Camera,
   );
@@ -153,7 +155,7 @@ export function TileLayout({ chatOpen }: TileLayoutProps) {
                 >
                   <BarVisualizer
                     barCount={5}
-                    state={agentState}
+                    state={!isConnected ? "connecting" : agentState}
                     options={{ minHeight: 5 }}
                     trackRef={agentAudioTrack}
                     className={cn(
