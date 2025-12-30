@@ -21,10 +21,10 @@ export function Hero() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{
-            delay: 2.5,
+            delay: 2.25,
             type: "spring",
-            ease: [0.33, 1, 0.68, 1],
             damping: 20,
+            stiffness: 120,
           }}
         >
           <Button
@@ -36,7 +36,7 @@ export function Hero() {
             <Link href="/sign-up">Probar beta</Link>
           </Button>
           <Button
-            className="tracking-normal text-base rounded-full bg-transparent border-accent border text-accent hover:text-neutral-50 shadow-none"
+            className="tracking-normal text-base rounded-full dark:hover:text-neutral-50 dark:text-accent bg-transparent border-accent border text-accent hover:text-neutral-50 shadow-none"
             size="lg"
             variant="accent"
             asChild
