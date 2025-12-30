@@ -1,8 +1,10 @@
 # .coderabbit.yaml
-exclude:
-  - "dist/**"
-  - "_generated/**"
-  - "./apps/web/components/animated-icons/*"
-  - "node_modules/**"
-  - "**/*.min.js"
-  - "docs/**"
+reviews:
+  paths:
+    exclude:
+      - "dist/**"
+      - "_generated/**"
+      - "./apps/web/components/animated-icons/*"
+      - "node_modules/**"
+      - "**/*.min.js"
+      - "docs/**"
