@@ -27,9 +27,28 @@ from livekit.plugins import (
 )
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
 
-MASTER_TEMPLATE = """
+PARENT_TEMPLATE = """
 ### CONTEXTO E IDENTIDAD
 {{ backstory }}
+
+### INSTRUCCIONES DE VOZ Y ESTILO (CRUCIAL)
+- Aun asi tu principal forma de respuesta sea por audio, NO TE LIMITES a dar respuestas vagas a preguntas no tan simples como "tips para tocar guitarra" o "por que el cielo es azul". Tus respuestas tienen que ser lo suficientemente informativas como para que el usuario pueda entender y resolver su problema.
+- Habla de forma natural y coloquial, como un humano en una conversación casual.
+- No uses listas numeradas ni estructuras de texto rígidas; habla en párrafos fluidos.
+- Varía tu entonación según el contenido emocional de lo que dices.
+- Si no entiendes algo, reacciona de forma natural, no como un error de sistema.
+- IMPORTANTE: Tu respuesta debe ser para ser OÍDA, no leída. Evita símbolos extraños o formato markdown.
+"""
+
+CHILDREN_TEMPLATE = """
+### CONTEXTO E IDENTIDAD
+{{ backstory }}
+
+### IDENTIFICACION DEL USUARIO
+Estas a punto de hablar con {{ user_name }}, es {{ user_gender }} de {{ user_age }}, adapta tu contexto y tus respuestas, a su edad.
+
+Aqui hay algunas etiquetas de lo que le gustan:
+{{ user_likes }}
 
 ### INSTRUCCIONES DE VOZ Y ESTILO (CRUCIAL)
 - Aun asi tu principal forma de respuesta sea por audio, NO TE LIMITES a dar respuestas vagas a preguntas no tan simples como "tips para tocar guitarra" o "por que el cielo es azul". Tus respuestas tienen que ser lo suficientemente informativas como para que el usuario pueda entender y resolver su problema.
@@ -45,12 +64,13 @@ logger = logging.getLogger("agent")
 load_dotenv(".env.local")
 
 CONVEX_URL = os.getenv("CONVEX_URL")
+CONVEX_API_KEY = os.getenv("CONVEX_API_KEY")
 
 client = ConvexClient(CONVEX_URL or "http://127.0.0.1:8000")
 
 
-def get_character(character_id: str) -> dict:
-    return client.query("characters:getById", dict(characterId=character_id))
+def get_metadata(character_id: str, user_id: str) -> dict:
+    return client.query("room:getMetadataRoom", dict(characterId=character_id, userId=user_id, key=CONVEX_API_KEY))
 
 
 class Assistant(Agent):
@@ -79,7 +99,6 @@ class Assistant(Agent):
 
 server = AgentServer()
 
-
 def prewarm(proc: JobProcess):
     """
     Load a Silero voice-activity detector (VAD) and attach it to the given job process.
@@ -95,8 +114,6 @@ server.setup_fnc = prewarm
 
 @server.rtc_session()
 async def my_agent(ctx: JobContext):
-    # Logging setup
-    # Add any other context you want in all log entries here
     """
     Initialize and run a voice AI AgentSession for the job's room using the character specified in room metadata.
 
@@ -105,36 +122,39 @@ async def my_agent(ctx: JobContext):
     Parameters:
         ctx (JobContext): Job execution context containing the room, process userdata (e.g., prewarmed VAD), and connection helpers.
     """
-    ctx.log_context_fields = {
-        "room": ctx.room.name,
-    }
-
     metadata = json.loads(ctx.job.room.metadata)
 
-    character_id = metadata["characterId"]
-    character = get_character(character_id)
+    character_id = metadata.get("characterId")
+    is_first_time = metadata.get("isFirstTime")
+    user_id = metadata.get("userId")
 
-    # Set up a voice AI pipeline using OpenAI, Cartesia, AssemblyAI, and the LiveKit turn detector
-    # session = AgentSession(
-    #     # Speech-to-text (STT) is your agent's ears, turning the user's speech into text that the LLM can understand
-    #     # See all available models at https://docs.livekit.io/agents/models/stt/
-    #     stt=deepgram.STT(model="nova-3-general"),
-    #     # A Large Language Model (LLM) is your agent's brain, processing user input and generating a response
-    #     llm=groq.LLM(
-    #         model="openai/gpt-oss-120b",
-    #     ),
-    #     # Text-to-speech (TTS) is your agent's voice, turning the LLM's text into speech that the user can hear
-    #     # See all available models as well as voice selections at https://docs.livekit.io/agents/models/tts/
-    #     tts=deepgram.TTS(model="aura-2-celeste-es"),
-    #     # VAD and turn detection are used to determine when the user is speaking and when the agent should respond
-    #     # See more at https://docs.livekit.io/agents/build/turns
-    #     turn_detection=MultilingualModel(),
-    #     vad=ctx.proc.userdata["vad"],
-    #     # allow the LLM to generate a response while waiting for the end of turn
-    #     # See more at https://docs.livekit.io/agents/build/audio/#preemptive-generation
-    #     preemptive_generation=True,
-    #     resume_false_interruption=True,
-    # )
+    if not user_id:
+        raise ValueError(
+            f"Missing userId on metadata"
+        )
+
+    if not character_id:
+        raise ValueError(
+            f"Missing characterId on metadata"
+        )
+
+    ctx.log_context_fields = {
+        "room": ctx.room.name,
+        "userId": user_id,
+        "character_id": character_id
+    }
+
+    logger.info("Agent initializing with following info: room: " + ctx.room.name + " user_id: " + user_id + " character_id: " + character_id)
+
+    logger.info("Getting metadata from the room...")
+    try:
+        metadata = get_metadata(character_id, user_id)
+    except Exception as inst:
+        logger.error("Error getting metadata from Convex " + str(Exception))
+
+    logger.info("Metadata obtained!")
+
+    character = metadata["character"]
 
     tts_provider = character.get("ttsProvider", "deepgram")
     voice_id = character.get("voiceId")
@@ -153,6 +173,19 @@ async def my_agent(ctx: JobContext):
 
     voice = voice_id.split(":", 1)[1]
 
+    children = metadata.get("children")
+    children_tags = children.get("childrenTags")
+
+    instructions = Template(CHILDREN_TEMPLATE).render(
+                    backstory=character["prompt"], name=character["name"],
+                    user_age=children["age"],
+                    user_name=children["name"],
+                    user_gender="un niño" if children["name"] == "niño" else "una niña",
+                    user_likes=children_tags if children_tags else []
+                ) if children else Template(PARENT_TEMPLATE).render(
+                    backstory=character["prompt"], name=character["name"],
+                )
+
     if not voice:
         raise ValueError(f"Invalid voiceId: '{voice_id}'. Voice name cannot be empty.")
 
@@ -160,9 +193,7 @@ async def my_agent(ctx: JobContext):
         session = AgentSession(
             llm=google.realtime.RealtimeModel(
                 voice=voice,
-                instructions=Template(MASTER_TEMPLATE).render(
-                    backstory=character["prompt"], name=character["name"]
-                ),
+                instructions=instructions,
                 enable_affective_dialog=True,
                 model="gemini-2.5-flash-native-audio-preview-12-2025",
             ),
@@ -203,9 +234,7 @@ async def my_agent(ctx: JobContext):
     # Start the session, which initializes the voice pipeline and warms up the models
     await session.start(
         agent=Assistant(
-            instructions=Template(MASTER_TEMPLATE).render(
-                backstory=character["prompt"], name=character["name"]
-            )
+                instructions=instructions,
         ),
         room=ctx.room,
         room_options=room_io.RoomOptions(
@@ -216,6 +245,10 @@ async def my_agent(ctx: JobContext):
             ),
         ),
     )
+
+    if is_first_time:
+        await session.generate_reply(user_input="Es la primera vez de este niño hablando contigo. Saludalo con su nombre y sus gustos preguntadole que quiere hacer ahora!")
+
 
     # Join the room and connect to the user
     await ctx.connect()
