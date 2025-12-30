@@ -7,7 +7,7 @@ import { api, Id } from "@daimo/backend";
 export default async function Page({
   params,
 }: {
-  params: Promise<{ characterId: Id<"characters "> }>;
+  params: Promise<{ characterId: Id<"characters"> }>;
 }) {
   const { characterId } = await params;
   const query = await preloadQuery(api.characters.getById, { characterId });

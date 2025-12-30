@@ -13,35 +13,10 @@ import {
 } from "@/components/ui/sidebar";
 import { NavUser } from "./nav-user";
 import { Session } from "@/lib/types";
-import {
-  Compass,
-  Ellipsis,
-  Home,
-  Monitor,
-  MoonIcon,
-  PaletteIcon,
-  Settings,
-  SunIcon,
-  User,
-  User2Icon,
-} from "lucide-react";
+import { Home, User } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  DropdownMenu,
-  DropdownMenuSubTrigger,
-  DropdownMenuContent,
-  DropdownMenuPortal,
-  DropdownMenuSub,
-  DropdownMenuTrigger,
-  DropdownMenuSubContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
 import { useTheme } from "next-themes";
-import { Separator } from "@/components/ui/separator";
-import { authClient } from "@/lib/auth-client";
 
 /**
  * Render the application's left sidebar with header, primary navigation, and current-user footer.
@@ -117,3 +92,4 @@ export default function HomeSidebar({ session }: { session: Session }) {
     </Sidebar>
   );
 }
+

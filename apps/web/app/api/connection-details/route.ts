@@ -1,14 +1,12 @@
 import { NextResponse } from "next/server";
 import {
   AccessToken,
-  RoomServiceClient, // <--- 1. IMPORTANTE: Importar esto
+  RoomServiceClient,
   type AccessTokenOptions,
   type VideoGrant,
 } from "livekit-server-sdk";
 import { RoomConfiguration } from "@livekit/protocol";
 import * as Sentry from "@sentry/nextjs";
-import { authClient } from "@/lib/auth-client";
-import { headers } from "next/headers";
 import { fetchQuery } from "convex/nextjs";
 import { api, Id } from "@daimo/backend";
 import { fetchAuthQuery } from "@/lib/auth/auth-server";

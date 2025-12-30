@@ -25,7 +25,7 @@ const CleanLoader = () => {
     if (index >= LOADING_STEPS.length - 1) {
       setProgress(100);
       setTimeout(() => {
-        if (data?.length !== 0) {
+        if (data && data?.length !== 0) {
           setIsLoaded(true);
 
           startTransition(() => {

@@ -116,7 +116,9 @@ export const OnboardingTagForm = ({ children }: { children: ReactNode }) => {
                         variant="secondary"
                         className="rounded-full "
                       >
-                        {createElement(ICON_MAP.get(animatedIcon?.name) ?? "D")}
+                        {createElement(
+                          ICON_MAP.get(animatedIcon?.name ?? "D") ?? "span",
+                        )}
                       </Button>
                     </PopoverTrigger>
                   </Popover>

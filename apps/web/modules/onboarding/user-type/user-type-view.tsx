@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import React, { useRef, useTransition } from "react";
+import React, { RefObject, useRef, useTransition } from "react";
 import { StepTitle } from "../components/step";
 import { useRouter } from "next/navigation";
 import { BlocksIcon } from "../components/icons/animated-blocks";

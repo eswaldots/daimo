@@ -1,0 +1,7 @@
+# .coderabbit.yaml
+exclude:
+  - "dist/**"
+  - "_generated/**"
+  - "node_modules/**"
+  - "**/*.min.js"
+  - "docs/**"
