@@ -7,6 +7,26 @@ import { TableAggregate } from "@convex-dev/aggregate";
 import { components, internal } from "./_generated/api";
 import { Triggers } from "convex-helpers/server/triggers";
 
+export const searchCharacters = query({
+  args: {
+    search: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.auth.getUserIdentity();
+
+    if (!user) {
+      throw new ConvexError("Unautenticado");
+    }
+
+    const characters = await ctx.db
+      .query("characters")
+      .withSearchIndex("search_by_name", (q) => q.search("name", args.search))
+      .collect();
+
+    return characters;
+  },
+});
+
 export const getMyCharacters = query({
   args: {
     paginationOpts: paginationOptsValidator,

@@ -38,6 +38,14 @@ export const createAuth = (
     },
     baseURL: siteUrl,
     database: authComponent.adapter(ctx),
+	user: {
+			additionalFields: {
+					completedOnboarding: {
+							type: "boolean",
+							defaultValue: false
+					}
+			}
+	},
     // Configure simple, non-verified email/password to get started
     emailAndPassword: {
       enabled: true,
