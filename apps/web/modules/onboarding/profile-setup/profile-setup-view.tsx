@@ -156,13 +156,13 @@ export const ProfileSetupView = () => {
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
-                    setValue("gender", "niño");
-                    setGender("niño");
+                    setValue("gender", "niña");
+                    setGender("niña");
                   }
                 }}
                 role="button"
                 tabIndex={0}
-                aria-pressed={gender === "niño"}
+                aria-pressed={gender === "niña"}
                 onClick={() => {
                   setValue("gender", "niña");
                   setGender("niña");

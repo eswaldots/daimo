@@ -16,8 +16,10 @@ export default async function Home() {
     redirect("/home");
   }
 
+  let onboardingStep: string;
+
   try {
-    const onboardingStep = await fetchAuthQuery(
+    onboardingStep = await fetchAuthQuery(
       api.auth.onboarding.checkOnboardingRedirect,
     );
 
@@ -25,6 +27,8 @@ export default async function Home() {
   } catch (e) {
     Sentry.captureException(e);
 
-    redirect("/onboarding/getting-started");
+    onboardingStep = "/onboarding/getting-started";
+
+    redirect(onboardingStep);
   }
 }

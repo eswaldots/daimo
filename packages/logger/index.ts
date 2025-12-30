@@ -10,6 +10,13 @@ export const loggerConfig: ISettingsParam<unknown> = {
     "passwordConfirmation",
     "credentials",
     "credential",
+    "apiKey",
+    "token",
+    "secret",
+    "authorization",
+    "accessToken",
+    "refreshToken",
+    "sessionId",
   ],
   prettyLogTimeZone: IS_PRODUCTION ? "UTC" : "local",
   prettyErrorStackTemplate:
