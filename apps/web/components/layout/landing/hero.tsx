@@ -13,31 +13,32 @@ import Link from "next/link";
 export function Hero() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-white">
-      <section className="flex flex-col gap-12 items-center">
+      <section className="flex flex-col gap-10 items-center">
         <AnimatedText text="daimo" />
 
         <motion.div
           className="flex items-center gap-4 z-10"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{
-            delay: 2.4,
-            ease: "easeOut",
-            damping: 20,
+            delay: 2.5,
             type: "spring",
+            ease: [0.33, 1, 0.68, 1],
+            damping: 20,
           }}
         >
           <Button
-            className="tracking-normal text-base rounded-full bg-neutral-950 hover:bg-neutral-900 text-neutral-50"
+            className="tracking-normal text-base rounded-full"
+            variant="accent"
             size="lg"
             asChild
           >
             <Link href="/sign-up">Probar beta</Link>
           </Button>
           <Button
-            className="tracking-normal text-base rounded-full bg-transparent border-neutral-950 dark:border hover:text-neutral-50 hover:bg-neutral-950 text-neutral-950 shadow-none"
+            className="tracking-normal text-base rounded-full bg-transparent border-accent border text-accent hover:text-neutral-50 shadow-none"
             size="lg"
-            variant="secondary"
+            variant="accent"
             asChild
           >
             <Link href="/sign-in">Iniciar sesión</Link>
@@ -66,8 +67,8 @@ function AnimatedText({ text }: { text: string }) {
           <motion.span
             key={`${word}-${idx}`}
             className={cn(
-              "inline-block text-8xl font-medium text-neutral-950 tracking-tight",
-              (word === "a" || word === "i") && "",
+              "inline-block text-8xl font-medium text-neutral-950 tracking-tight leading-[0.8]",
+              (word === "a" || word === "i") && "text-accent",
             )}
             initial={{
               translateY: 120,
@@ -81,10 +82,8 @@ function AnimatedText({ text }: { text: string }) {
             }}
             transition={{
               delay: 1.8 + idx * 0.05,
-              ease: "easeOut",
-              damping: 20,
-              type: "spring",
-              duration: 1,
+              duration: 0.5,
+              ease: [0.33, 1, 0.68, 1],
             }}
           >
             {word}
@@ -94,3 +93,4 @@ function AnimatedText({ text }: { text: string }) {
     </div>
   );
 }
+
