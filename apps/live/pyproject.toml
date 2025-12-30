@@ -15,6 +15,7 @@ dependencies = [
     "python-dotenv",
     "nltk>=3.9.2",
     "jinja2>=3.1.6",
+    "dataclass-wizard>=0.38.2",
 ]
 
 [dependency-groups]

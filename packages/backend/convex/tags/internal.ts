@@ -51,3 +51,24 @@ export const relateTag = internalMutation({
     return await ctx.db.insert("characterTags", { ...args });
   },
 });
+
+export const relateChildrenTag = internalMutation({
+  args: {
+    tagId: v.id("tags"),
+    childrenId: v.id("childrens"),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("childrenTags")
+      .withIndex("by_children_and_tag", (q) =>
+        q.eq("childrenId", args.childrenId).eq("tagId", args.tagId),
+      )
+      .unique();
+
+    if (existing) {
+      throw new ConvexError("Tag already related to this children");
+    }
+
+    return await ctx.db.insert("childrenTags", { ...args });
+  },
+});

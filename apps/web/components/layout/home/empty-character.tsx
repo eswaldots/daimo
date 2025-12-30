@@ -7,7 +7,7 @@ import {
   EmptyDescription,
   EmptyContent,
 } from "@/components/ui/empty";
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth/auth-client";
 import { User2Icon, PlusIcon } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";

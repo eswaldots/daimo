@@ -1,3 +1,3 @@
-import { authClient } from "./auth-client";
+import { authClient } from "./auth/auth-client";
 
 export type Session = typeof authClient.$Infer.Session;

@@ -1,17 +1,16 @@
 import { NextResponse } from "next/server";
 import {
   AccessToken,
-  RoomServiceClient, // <--- 1. IMPORTANTE: Importar esto
+  RoomServiceClient,
   type AccessTokenOptions,
   type VideoGrant,
 } from "livekit-server-sdk";
 import { RoomConfiguration } from "@livekit/protocol";
 import * as Sentry from "@sentry/nextjs";
-import { authClient } from "@/lib/auth-client";
-import { headers } from "next/headers";
 import { fetchQuery } from "convex/nextjs";
 import { api, Id } from "@daimo/backend";
-import { fetchAuthQuery } from "@/lib/auth-server";
+import { fetchAuthQuery } from "@/lib/auth/auth-server";
+import { getServerSession } from "@/lib/auth/session-server";
 
 type ConnectionDetails = {
   serverUrl: string;
@@ -32,11 +31,7 @@ export async function POST(req: Request) {
       throw new Error("Missing LiveKit environment variables");
     }
 
-    const { data: session } = await authClient.getSession({
-      fetchOptions: {
-        headers: await headers(),
-      },
-    });
+    const session = await getServerSession();
 
     if (!session) {
       return new NextResponse("El usuario no esta autenticado", {
@@ -54,6 +49,7 @@ export async function POST(req: Request) {
     // 1. Obtenemos el ID que manda el frontend
     const { searchParams } = new URL(req.url);
     const characterId = searchParams.get("characterId");
+    const isFirstTime = searchParams.get("isFirstTime");
 
     if (!characterId) {
       return new NextResponse("characterId es requerido", { status: 404 });
@@ -97,6 +93,8 @@ export async function POST(req: Request) {
         emptyTimeout: 60, // La sala se cierra si nadie entra en 60s
         metadata: JSON.stringify({
           characterId, // <--- AQUÍ VA TU METADATA PARA EL AGENTE
+          userId: session.user.id,
+          isFirstTime,
         }),
       });
     }

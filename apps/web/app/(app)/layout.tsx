@@ -1,11 +1,9 @@
 import HomeSidebar from "@/components/layout/home/sidebar";
 import { Trigger } from "@/components/layout/home/trigger";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { authClient } from "@/lib/auth-client";
-import { headers } from "next/headers";
+import { getServerSession } from "@/lib/auth/session-server";
 import { redirect } from "next/navigation";
 import { ReactNode } from "react";
-import { ViewTransition } from "react";
 
 /**
  * Render the authenticated home layout (sidebar, header sizing, and main content) or redirect to the root path when no session is found.
@@ -14,11 +12,11 @@ import { ViewTransition } from "react";
  * @returns The layout element containing the sidebar and main content when a session exists; otherwise triggers a redirect to `/`
  */
 export default async function Layout({ children }: { children: ReactNode }) {
-  const { data } = await authClient.getSession({
-    fetchOptions: {
-      headers: await headers(),
-    },
-  });
+  const data = await getServerSession();
+
+  if (!data.user.completedOnboarding) {
+    redirect("/onboarding/getting-started");
+  }
 
   if (data)
     return (
@@ -47,4 +45,3 @@ export default async function Layout({ children }: { children: ReactNode }) {
     redirect("/");
   }
 }
-

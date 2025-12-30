@@ -1,0 +1,4 @@
+# .coderabbit.yaml
+reviews:
+  paths_filters:
+    - "!apps/web/components/animated-icons/**"
