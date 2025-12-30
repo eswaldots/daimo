@@ -15,7 +15,7 @@ export const SentryIdentify = () => {
         username: session.user.name,
       });
     }
-  });
+  }, [session]);
 
   return null;
 };

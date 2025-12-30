@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import * as Sentry from "@sentry/nextjs";
 import DaimoIcon from "@/components/icons/daimo";
 import { Button } from "@/components/ui/button";
 import GoogleIcon from "@/components/icons/google";
@@ -13,9 +14,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { authClient } from "@/lib/auth/auth-client";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import posthog from "posthog-js";
+import { useRouter } from "next/navigation";
 
 const signUpSchema = z.object({
   name: z
@@ -30,6 +31,7 @@ const signUpSchema = z.object({
 type SignUpFormValues = z.infer<typeof signUpSchema>;
 
 export default function SignUp() {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -40,8 +42,6 @@ export default function SignUp() {
   });
   const [isSocialLoading, setIsSocialLoading] = useState(false);
 
-  const router = useRouter();
-
   const onSubmit = async (data: SignUpFormValues) => {
     const { error } = await authClient.signUp.email({
       ...data,
@@ -49,6 +49,8 @@ export default function SignUp() {
     });
 
     if (error) {
+      Sentry.captureException(error);
+
       setError("root", {
         message:
           error.message ||
@@ -69,6 +71,8 @@ export default function SignUp() {
     posthog.capture("user_signed_up", {
       signup_method: "email",
     });
+
+    router.push("/");
   };
 
   return (
@@ -114,10 +118,22 @@ export default function SignUp() {
               posthog.capture("user_signed_up", {
                 signup_method: "google",
               });
-              await authClient.signIn.social({
+              const { error } = await authClient.signIn.social({
                 provider: "google",
                 callbackURL: "/",
               });
+
+              if (error) {
+                Sentry.captureException(error);
+
+                setIsSocialLoading(false);
+
+                setError("root", {
+                  message:
+                    error.message ||
+                    "Hubo un error desconocido. Intente de nuevo mas tarde",
+                });
+              }
             }}
           >
             {isSocialLoading ? <Spinner className="size-4" /> : <GoogleIcon />}

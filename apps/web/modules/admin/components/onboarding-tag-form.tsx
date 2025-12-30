@@ -29,12 +29,13 @@ import { useMutation } from "convex/react";
 import { api } from "@daimo/backend";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const ICON_MAP = new Map(ICON_LIST.map((item) => [item.name, item.icon]));
 
 const schema = z.object({
-  name: z.string(),
-  tags: z.array(z.string()),
+  name: z.string().min(1, { error: "El nombre es requerido" }),
+  tags: z.array(z.string()).min(1, { error: "Necesitas seleccionar una tag" }),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -55,9 +56,10 @@ export const OnboardingTagForm = ({ children }: { children: ReactNode }) => {
     register,
     setValue,
     handleSubmit,
-    formState: { isSubmitting, errors },
-  } = useForm<FormValues>();
-  console.log(errors);
+    formState: { isSubmitting },
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+  });
 
   const onSubmit = async (data: FormValues) => {
     if (!animatedIcon) {
@@ -89,7 +91,7 @@ export const OnboardingTagForm = ({ children }: { children: ReactNode }) => {
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
           <DialogHeader>
             <DialogTitle className="font-medium">
-              Agregar onboaring tag
+              Agregar onboarding tag
             </DialogTitle>
             <DialogDescription className="tracking-normal">
               Un onboarding tag representa un posible gusto que podria tener un

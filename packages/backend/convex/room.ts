@@ -9,49 +9,59 @@ import { internal } from "./_generated/api";
 import { Doc } from "./_generated/dataModel";
 import { ConvexUser } from "./betterAuth/types";
 
-
-type ReturnValue = { user: ConvexUser, children: Doc<"childrens"> | null, childrenTags: string[] | null, character: Doc<"characters"> }
+type ReturnValue = {
+  user: ConvexUser;
+  children: Doc<"childrens"> | null;
+  childrenTags: string[];
+  character: Doc<"characters">;
+};
 
 export const getMetadataRoom = query({
-		args: {
-				key: v.string(),
-				characterId: v.id("characters"),
-				userId: v.string(),
-		},
-		handler: async (ctx, { key, characterId, userId }): Promise<ReturnValue> => {
-				const isValidKey = await verifyApiKey(ctx, key);
+  args: {
+    key: v.string(),
+    characterId: v.id("characters"),
+    userId: v.string(),
+  },
+  handler: async (ctx, { key, characterId, userId }): Promise<ReturnValue> => {
+    const isValidKey = await verifyApiKey(ctx, key);
 
-				if (!isValidKey) throw new ConvexError("apiKey invalida o expirada");
+    if (!isValidKey) throw new ConvexError("apiKey invalida o expirada");
 
-				const character = await ctx.db.get(characterId);
+    const character = await ctx.db.get(characterId);
 
-				if (!character) {
-						throw new ConvexError("Personaje no encontrado")
-				}
+    if (!character) {
+      throw new ConvexError("Personaje no encontrado");
+    }
 
-				const user = await authComponent.getAnyUserById(ctx, userId);
+    const user = await authComponent.getAnyUserById(ctx, userId);
 
-				if (!user) {
-						throw new ConvexError("Usuario no encontrado");
-				}
+    if (!user) {
+      throw new ConvexError("Usuario no encontrado");
+    }
 
-				const children: Doc<"childrens"> | null = await ctx.runQuery(internal.parental.children.getByFatherId, { fatherId: user._id });
+    const children: Doc<"childrens"> | null = await ctx.runQuery(
+      internal.parental.children.getByFatherId,
+      { fatherId: user._id },
+    );
 
-				// if user doesn't have children only returns the user data
-				if (!children) {
-						return { user, character, childrenTags: [], children: null }
-				}
+    // if user doesn't have children only returns the user data
+    if (!children) {
+      return { user, character, childrenTags: [], children: null };
+    }
 
-				type Tag = Doc<"tags"> | null
+    type Tag = Doc<"tags"> | null;
 
-				const childrenTags: Tag[] | null = await ctx.runQuery(internal.parental.children.getChildrenTags, { childrenId: children._id });
+    const childrenTags: Tag[] | null = await ctx.runQuery(
+      internal.parental.children.getChildrenTags,
+      { childrenId: children._id },
+    );
 
-				if (!childrenTags) {
-						return { children, user, childrenTags: [], character }
-				}
-				const mappedTags = childrenTags.filter(tag => !!tag).map(tag => tag.name) ?? []
+    if (!childrenTags) {
+      return { children, user, childrenTags: [], character };
+    }
+    const mappedTags =
+      childrenTags.filter((tag) => !!tag).map((tag) => tag.name) ?? [];
 
-				return { children, user, childrenTags: mappedTags, character }
-		}
-})
-
+    return { children, user, childrenTags: mappedTags, character };
+  },
+});

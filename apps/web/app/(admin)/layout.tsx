@@ -8,7 +8,7 @@ import { ReactNode } from "react";
 export default async function Layout({ children }: { children: ReactNode }) {
   const data = await getServerSession();
 
-  if (data?.user.role === "admin")
+  if (data?.user?.role === "admin")
     return (
       <SidebarProvider
         style={

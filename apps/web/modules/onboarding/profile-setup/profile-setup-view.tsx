@@ -7,7 +7,6 @@ import {
   FieldDescription,
   FieldError,
   FieldGroup,
-  FieldLabel,
 } from "@/components/ui/field";
 import {
   Select,
@@ -18,11 +17,7 @@ import {
 } from "@/components/ui/select";
 import { StepDescription, StepTitle } from "../components/step";
 import { ComponentProps, ReactNode, useEffect, useState } from "react";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group";
+import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { LockIcon, Mars, Venus } from "lucide-react";
@@ -129,6 +124,16 @@ export const ProfileSetupView = () => {
 
             <div className="mb-1 mt-2 flex flex-row justify-center gap-4 w-full">
               <div
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setValue("gender", "niño");
+                    setGender("niño");
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-pressed={gender === "niño"}
                 onClick={() => {
                   setValue("gender", "niño");
                   setGender("niño");
@@ -148,6 +153,16 @@ export const ProfileSetupView = () => {
                 <Label className="text-sm pointer-events-none">Niño</Label>
               </div>
               <div
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setValue("gender", "niño");
+                    setGender("niño");
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-pressed={gender === "niño"}
                 onClick={() => {
                   setValue("gender", "niña");
                   setGender("niña");
@@ -253,7 +268,10 @@ const FormInput = ({ placeholder, ...props }: ComponentProps<"input">) => {
       <InputGroupInput
         {...props}
         className="mt-4.5 mb-1.5 md:text-sm"
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => {
+          setValue(e.target.value);
+          props.onChange?.(e);
+        }}
       />
       <motion.span
         animate={{

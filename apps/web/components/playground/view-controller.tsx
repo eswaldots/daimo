@@ -1,15 +1,14 @@
 "use client";
 
 import { AnimatePresence, motion, MotionProps } from "motion/react";
+import * as Sentry from "@sentry/nextjs";
 import { useSessionContext } from "@livekit/components-react";
 import type { AppConfig } from "@/app-config";
 import { SessionView } from "./session-view";
-import { WelcomeView } from "./welcome-view";
 import { toast } from "sonner";
 import { Preloaded, usePreloadedQuery } from "convex/react";
 import { api } from "@daimo/backend";
-import { Spinner } from "../ui/spinner";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -20,8 +19,8 @@ import {
 } from "../ui/dialog";
 import { Mic, Mic2 } from "lucide-react";
 import { Button } from "../ui/button";
+import posthog from "posthog-js";
 
-const MotionWelcomeView = motion.create(WelcomeView);
 const MotionSessionView = motion.create(SessionView);
 
 const VIEW_MOTION_PROPS: MotionProps = {
@@ -55,9 +54,8 @@ export function ViewController({
   const character = usePreloadedQuery(preloadedCharacter);
   const [modal, setModal] = useState(false);
 
-  const checkMicPermission = async () => {
+  const checkMicPermission = useCallback(async () => {
     try {
-      // Consultamos el estado específicamente para el micrófono
       const status = await navigator.permissions.query({ name: "microphone" });
 
       if (status.state === "granted") {
@@ -68,13 +66,17 @@ export function ViewController({
         }, 1000);
       }
     } catch (error) {
-      return "prompt"; // Por si acaso, asumimos que hay que preguntar
+      Sentry.captureException(error);
+
+      setTimeout(() => {
+        setModal(true);
+      }, 1000);
     }
-  };
+  }, [start]);
 
   useEffect(() => {
     checkMicPermission();
-  }, []);
+  }, [checkMicPermission]);
 
   return (
     <AnimatePresence mode="wait">
@@ -108,7 +110,11 @@ export function ViewController({
 
                   start();
                   setModal(false);
-                } catch {
+                } catch (e) {
+                  Sentry.captureException(e);
+
+                  posthog.capture("user_denied_micro_permission");
+
                   toast.error(
                     "Debes dar permiso para que Daimo pueda acceder a tu microfono para poder usar la aplicación.",
                   );

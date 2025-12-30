@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import * as Sentry from "@sentry/nextjs";
 import DaimoIcon from "@/components/icons/daimo";
 import { Button } from "@/components/ui/button";
 import GoogleIcon from "@/components/icons/google";
@@ -14,7 +15,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { authClient } from "@/lib/auth/auth-client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
 
 const signUpSchema = z.object({
@@ -36,7 +36,6 @@ export default function SignIn() {
     resolver: zodResolver(signUpSchema),
   });
 
-  const router = useRouter();
   const [isSocialLoading, setIsSocialLoading] = useState(false);
 
   const onSubmit = async (data: SignUpFormValues) => {
@@ -51,6 +50,7 @@ export default function SignIn() {
           error.message ||
           "Hubo un error desconocido. Intente de nuevo mas tarde",
       });
+      Sentry.captureException(error);
       posthog.capture("user_signin_failed", {
         error_message: error.message,
         signin_method: "email",

@@ -106,30 +106,29 @@ export const createOnboardingTag = mutation({
       throw new ConvexError("No autorizado");
     }
 
-    const tagsId: Id<"tags">[] = [];
+    const tagsId = await Promise.all(
+      args.tags.map(async (name): Promise<Id<"tags">> => {
+        const existing: Doc<"tags"> | null = await ctx.runQuery(
+          internal.tags.internal.getTagByName,
+          {
+            name,
+          },
+        );
 
-    const promises = args.tags.map(async (name) => {
-      const existing = await ctx.runQuery(internal.tags.internal.getTagByName, {
-        name,
-      });
+        if (existing) {
+          return existing._id;
+        }
 
-      if (existing) {
-        tagsId.push(existing._id);
+        const id: Id<"tags"> = await ctx.runMutation(
+          internal.tags.internal.createTag,
+          {
+            name,
+          },
+        );
 
-        return;
-      }
-
-      const id: Id<"tags"> = await ctx.runMutation(
-        internal.tags.internal.createTag,
-        {
-          name,
-        },
-      );
-
-      tagsId.push(id);
-    });
-
-    await Promise.all(promises);
+        return id;
+      }),
+    );
 
     const { tags: _, ...onboardingTag } = args;
 

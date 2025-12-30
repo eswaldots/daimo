@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { useQuery } from "convex/react";
 import { api } from "@daimo/backend";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const LOADING_STEPS = [
   "Iniciando Daimo Core...", // 0% -> 25%
@@ -25,12 +26,16 @@ const CleanLoader = () => {
     if (index >= LOADING_STEPS.length - 1) {
       setProgress(100);
       setTimeout(() => {
-        if (data && data?.length !== 0) {
+        if (data && data?.length > 0) {
           setIsLoaded(true);
 
           startTransition(() => {
             router.push(`/playground/${data[0]?._id}?isFirstTime=true`);
           });
+        } else if (data !== undefined) {
+          toast.error(
+            "Parece que Daimo esta descansando, intenta de nuevo más tarde",
+          );
         }
       }, 800); // Pequeña pausa al 100% antes de cambiar pantalla
       return;

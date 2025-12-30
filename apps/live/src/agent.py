@@ -149,8 +149,9 @@ async def my_agent(ctx: JobContext):
     logger.info("Getting metadata from the room...")
     try:
         metadata = get_metadata(character_id, user_id)
-    except Exception as inst:
-        logger.error("Error getting metadata from Convex " + str(Exception))
+    except Exception as e:
+        logger.error(f"Error getting metadata from Convex {e}")
+        raise
 
     logger.info("Metadata obtained!")
 
@@ -174,13 +175,13 @@ async def my_agent(ctx: JobContext):
     voice = voice_id.split(":", 1)[1]
 
     children = metadata.get("children")
-    children_tags = children.get("childrenTags")
+    children_tags = children.get("childrenTags") if children else None
 
     instructions = Template(CHILDREN_TEMPLATE).render(
                     backstory=character["prompt"], name=character["name"],
                     user_age=children["age"],
                     user_name=children["name"],
-                    user_gender="un niño" if children["name"] == "niño" else "una niña",
+                    user_gender="un niño" if children.get("gender") == "niño" else "una niña",
                     user_likes=children_tags if children_tags else []
                 ) if children else Template(PARENT_TEMPLATE).render(
                     backstory=character["prompt"], name=character["name"],
@@ -246,8 +247,11 @@ async def my_agent(ctx: JobContext):
         ),
     )
 
-    if is_first_time:
+    if is_first_time and children:
         await session.generate_reply(user_input="Es la primera vez de este niño hablando contigo. Saludalo con su nombre y sus gustos preguntadole que quiere hacer ahora!")
+    elif is_first_time and not children:
+        # TODO: MAKE DOC ACCESS TO PLATFORM
+        await session.generate_reply(user_input="Es la primera vez de este usuario hablando contigo. Dale un cordial saludo a quien eres y a la plataforma")
 
 
     # Join the room and connect to the user

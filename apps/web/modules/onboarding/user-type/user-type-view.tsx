@@ -74,7 +74,7 @@ function UserCard({
   title,
   description,
   onClick,
-  ...props
+  icon: Icon,
 }: {
   title: string;
   description: string;
@@ -86,12 +86,20 @@ function UserCard({
   return (
     <div
       onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      }}
       onMouseEnter={() => animationRef.current?.startAnimation()}
       onMouseLeave={() => animationRef.current?.stopAnimation()}
+      role="button"
+      tabIndex={0}
       className="relative rounded-2xl gap-6 transition-colors cursor-pointer h-50 md:h-64 w-72 hover:border-accent border-[1px] border-border shadow-none flex hover:bg-secondary items-center justify-center flex-col"
     >
       <div className="[&_svg]:size-16">
-        <props.icon ref={animationRef} />
+        <Icon ref={animationRef} />
       </div>
       <div className="text-center">
         <h1 className="font-medium text-lg">{title}</h1>

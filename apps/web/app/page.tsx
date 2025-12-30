@@ -1,24 +1,30 @@
 import LandingPage from "@/components/layout/landing";
 import { fetchAuthQuery } from "@/lib/auth/auth-server";
+import * as Sentry from "@sentry/nextjs";
 import { getServerSession } from "@/lib/auth/session-server";
 import { api } from "@daimo/backend";
-import logger from "@daimo/logger";
 import { redirect } from "next/navigation";
 
-const log = logger.getSubLogger({ prefix: ["getServerSession"] });
-
 export default async function Home() {
-  const  session  = await getServerSession();
+  const session = await getServerSession();
 
   if (!session?.user) {
-    return <LandingPage />
+    return <LandingPage />;
   }
 
   if (session.user.completedOnboarding) {
-		  redirect("/home")
+    redirect("/home");
   }
 
-const onboardingStep = await fetchAuthQuery(api.auth.onboarding.checkOnboardingRedirect); 
+  try {
+    const onboardingStep = await fetchAuthQuery(
+      api.auth.onboarding.checkOnboardingRedirect,
+    );
 
-redirect(onboardingStep);
+    redirect(onboardingStep);
+  } catch (e) {
+    Sentry.captureException(e);
+
+    redirect("/onboarding/getting-started");
+  }
 }

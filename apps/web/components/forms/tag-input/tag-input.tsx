@@ -14,7 +14,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import useClickOutside from "@/hooks/use-click-outside";
 import { useQueryWithStatus } from "@/lib/convex/use-query-with-status";
-import { api, Id } from "@daimo/backend";
+import { api } from "@daimo/backend";
 import { XIcon } from "lucide-react";
 import { ComponentProps, useEffect, useMemo, useRef, useState } from "react";
 
@@ -42,7 +42,7 @@ function TagInput({ setTags }: { setTags: (tags: string[]) => void }) {
 
   useEffect(() => {
     setTags(values);
-  }, [values]);
+  }, [values, setTags]);
 
   const filteredTags = useMemo(() => {
     if (!tags) return [];
@@ -188,4 +188,3 @@ function PopoverMenuItem({ children, ...props }: ComponentProps<"button">) {
 }
 
 export { TagInput };
-

@@ -91,7 +91,7 @@ export const ProfileTagsView = ({ icons }: { icons: Icons }) => {
             >
               <Button
                 size="lg"
-                disabled={selectedTags.length === 0}
+                disabled={selectedTags.length === 0 || isLoadingMutation}
                 variant="accent"
                 className="w-full text-base h-12"
                 onClick={async () => {

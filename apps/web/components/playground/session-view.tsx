@@ -1,6 +1,7 @@
 "use client";
 
 import React, { startTransition, useEffect, useRef, useState } from "react";
+import * as Sentry from "@sentry/nextjs";
 import { motion, MotionProps } from "motion/react";
 import {
   ControlBarControls,
@@ -92,6 +93,11 @@ export const SessionView = ({
 
   const router = useRouter();
 
+  if (!characterId) {
+    console.error("characterId is missing from route params");
+    return null;
+  }
+
   return (
     <section
       className="bg-background relative z-10 h-full w-full overflow-hidden"
@@ -137,14 +143,31 @@ export const SessionView = ({
             controls={controls}
             isConnected={session.isConnected}
             onDisconnect={async () => {
-              posthog.capture("session_ended", {
-                message_count: messages.length,
-              });
-              await session.end();
+              await Sentry.startSpan(
+                {
+                  name: "session.disconnect",
+                  op: "user.action",
+                  attributes: {
+                    message_count: messages.length,
+                  },
+                },
+                async () => {
+                  posthog.capture("session_ended", {
+                    message_count: messages.length,
+                  });
+                  try {
+                    await session.end();
+                  } catch (e) {
+                    Sentry.captureException(e);
+                  }
 
-              startTransition(() => {
-                router.push(`/characters/${characterId}?hasEndedSession=true`);
-              });
+                  startTransition(() => {
+                    router.push(
+                      `/characters/${characterId}?hasEndedSession=true`,
+                    );
+                  });
+                },
+              );
             }}
             onChatOpenChange={setChatOpen}
           />

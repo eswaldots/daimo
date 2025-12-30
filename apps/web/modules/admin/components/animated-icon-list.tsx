@@ -85,14 +85,18 @@ const AnimatedIconsList = ({ icons, setAnimatedIcon }: Props) => {
               No se encontraron iconos
             </div>
           )}
-          {filteredAnimatedIcons.map((icon) => (
-            <AnimatedIconItem
-              setAnimatedIcon={setAnimatedIcon}
-              key={icon.name}
-              icon={icon}
-              AnimatedIcon={ICON_MAP.get(icon.name)!}
-            />
-          ))}
+          {filteredAnimatedIcons.map((icon) => {
+            const IconComponent = ICON_MAP.get(icon.name);
+            if (!IconComponent) return null;
+            return (
+              <AnimatedIconItem
+                setAnimatedIcon={setAnimatedIcon}
+                key={icon.name}
+                icon={icon}
+                AnimatedIcon={IconComponent}
+              />
+            );
+          })}
         </div>
       </ScrollArea>
     </div>
