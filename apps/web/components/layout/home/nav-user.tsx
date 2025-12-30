@@ -25,7 +25,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useState } from "react";
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth/auth-client";
 import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";

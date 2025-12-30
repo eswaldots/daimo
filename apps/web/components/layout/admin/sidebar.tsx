@@ -15,6 +15,7 @@ import {
 import { Session } from "@/lib/types";
 import {
   AudioLines,
+  Home,
   Monitor,
   MoonIcon,
   PaletteIcon,
@@ -71,7 +72,7 @@ export default function AdminSidebar({ session }: { session: Session }) {
             <SidebarMenuItem className="flex items-center gap-2">
               <SidebarMenuButton isActive={pathname === "/admin/users"} asChild>
                 <Link href="/admin/users">
-                  <Users2Icon />
+                  <Users2Icon strokeWidth={1.5} />
                   Usuarios
                 </Link>
               </SidebarMenuButton>
@@ -82,7 +83,7 @@ export default function AdminSidebar({ session }: { session: Session }) {
                 asChild
               >
                 <Link href="/admin/characters">
-                  <ToyBrickIcon />
+                  <ToyBrickIcon strokeWidth={1.5} />
                   Personajes
                 </Link>
               </SidebarMenuButton>
@@ -93,8 +94,19 @@ export default function AdminSidebar({ session }: { session: Session }) {
                 asChild
               >
                 <Link href="/admin/voices">
-                  <AudioLines />
+                  <AudioLines strokeWidth={1.5} />
                   Voces
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem className="flex items-center gap-2">
+              <SidebarMenuButton
+                isActive={pathname === "/admin/onboarding"}
+                asChild
+              >
+                <Link href="/admin/onboarding">
+                  <Home strokeWidth={1.5} />
+                  Onboarding
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -159,3 +171,4 @@ export default function AdminSidebar({ session }: { session: Session }) {
     </Sidebar>
   );
 }
+

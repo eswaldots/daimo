@@ -8,21 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-/**
- * Renders a styled container that groups inputs, addons, buttons, and text into a single input group.
- *
- * The element receives all passed div props and exposes data-slot="input-group" and role="group".
- * When a nested control inside the group has `aria-invalid="true"`, the container applies the error ring and border styling.
- *
- * @returns The input group container element with role `"group"` and `data-slot="input-group"`.
- */
 function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="input-group"
       role="group"
       className={cn(
-        "group/input-group border-none bg-secondary dark:bg-input/30 relative flex w-full items-center rounded-lg border shadow-xs transition-[color,box-shadow] outline-none",
+        "group/input-group dark:bg-secondary relative flex w-full items-center rounded-lg shadow-xs transition-[color,box-shadow] outline-none",
         "h-9 min-w-0 has-[>textarea]:h-auto",
 
         // Variants based on alignment.
@@ -30,6 +22,9 @@ function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
         "has-[>[data-align=inline-end]]:[&>input]:pr-2",
         "has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>[data-align=block-start]]:[&>input]:pb-3",
         "has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3",
+
+        // Focus state.
+        "has-[[data-slot=input-group-control]:focus-visible]:border-ring has-[[data-slot=input-group-control]:focus-visible]:ring-accent has-[[data-slot=input-group-control]:focus-visible]:ring-[1px]",
 
         // Error state.
         "has-[[data-slot][aria-invalid=true]]:ring-destructive/20 has-[[data-slot][aria-invalid=true]]:border-destructive dark:has-[[data-slot][aria-invalid=true]]:ring-destructive/40",
@@ -42,7 +37,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 const inputGroupAddonVariants = cva(
-  "text-muted-foreground flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-sm font-medium select-none [&>svg:not([class*='size-'])]:size-4 [&>kbd]:rounded-lg group-data-[disabled=true]/input-group:opacity-50",
+  "text-muted-foreground flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-sm font-medium select-none [&>svg:not([class*='size-'])]:size-4 [&>kbd]:rounded-[calc(var(--radius)-5px)] group-data-[disabled=true]/input-group:opacity-50",
   {
     variants: {
       align: {
@@ -133,12 +128,6 @@ function InputGroupText({ className, ...props }: React.ComponentProps<"span">) {
   );
 }
 
-/**
- * Renders an input control styled for use inside an input group.
- *
- * @param className - Additional class names merged with the component's base styling
- * @returns The input element with a `data-slot="input-group-control"` attribute and merged styling
- */
 function InputGroupInput({
   className,
   ...props
@@ -147,7 +136,7 @@ function InputGroupInput({
     <Input
       data-slot="input-group-control"
       className={cn(
-        "flex-1 border-0 bg-secondary shadow-none focus-visible:ring-0 dark:bg-transparent rounded-lg",
+        "flex-1 rounded-lg border-0 bg-transparent shadow-none focus-visible:ring-0 hover:bg-transparent",
         className,
       )}
       {...props}

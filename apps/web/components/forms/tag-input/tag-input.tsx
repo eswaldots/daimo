@@ -16,7 +16,7 @@ import useClickOutside from "@/hooks/use-click-outside";
 import { useQueryWithStatus } from "@/lib/convex/use-query-with-status";
 import { api } from "@daimo/backend";
 import { XIcon } from "lucide-react";
-import { ComponentProps, useMemo, useRef, useState } from "react";
+import { ComponentProps, useEffect, useMemo, useRef, useState } from "react";
 
 /**
  * Renders a tag input UI that lets users type, select suggested tags, and manage selected tags as removable chips.
@@ -26,7 +26,7 @@ import { ComponentProps, useMemo, useRef, useState } from "react";
  *
  * @returns A JSX element containing the tag input control with selected tag chips, an input, and a suggestion popover.
  */
-function TagInput() {
+function TagInput({ setTags }: { setTags: (tags: string[]) => void }) {
   const [value, setValue] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
   const [values, setValues] = useState<string[]>([]);
@@ -39,6 +39,10 @@ function TagInput() {
       setIsOpen(false);
     },
   });
+
+  useEffect(() => {
+    setTags(values);
+  }, [values, setTags]);
 
   const filteredTags = useMemo(() => {
     if (!tags) return [];
@@ -114,6 +118,7 @@ function TagInput() {
             ))}
           </div>
           <InputGroupInput
+            placeholder="Escribe las tags"
             ref={inputRef}
             value={value}
             onChange={(e) => setValue(e.target.value)}
@@ -173,7 +178,7 @@ function PopoverMenuItem({ children, ...props }: ComponentProps<"button">) {
   return (
     <Button
       {...props}
-      className="font-normal justify-start rounded-lg first:bg-accent"
+      className="font-normal justify-start rounded-lg first:bg-secondary dark:hover:bg-secondary"
       variant="ghost"
       size="sm"
     >

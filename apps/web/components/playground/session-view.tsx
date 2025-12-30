@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { startTransition, useEffect, useRef, useState } from "react";
+import * as Sentry from "@sentry/nextjs";
 import { motion, MotionProps } from "motion/react";
 import {
   ControlBarControls,
@@ -15,6 +16,7 @@ import { PreConnectMessage } from "./preconnect-message";
 import { TileLayout } from "./tile-layout";
 import { AgentControlBar } from "./agent-control-bar/agent-control-bar";
 import posthog from "posthog-js";
+import { useParams, useRouter } from "next/navigation";
 
 const MotionBottom = motion.create("div");
 
@@ -69,6 +71,7 @@ export const SessionView = ({
   const session = useSessionContext();
   const { messages } = useSessionMessages(session);
   const [chatOpen, setChatOpen] = useState(false);
+  const { characterId } = useParams();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const controls: ControlBarControls = {
@@ -87,6 +90,13 @@ export const SessionView = ({
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
     }
   }, [messages]);
+
+  const router = useRouter();
+
+  if (!characterId) {
+    console.error("characterId is missing from route params");
+    return null;
+  }
 
   return (
     <section
@@ -132,11 +142,32 @@ export const SessionView = ({
           <AgentControlBar
             controls={controls}
             isConnected={session.isConnected}
-            onDisconnect={() => {
-              posthog.capture("session_ended", {
-                message_count: messages.length,
-              });
-              session.end();
+            onDisconnect={async () => {
+              await Sentry.startSpan(
+                {
+                  name: "session.disconnect",
+                  op: "user.action",
+                  attributes: {
+                    message_count: messages.length,
+                  },
+                },
+                async () => {
+                  posthog.capture("session_ended", {
+                    message_count: messages.length,
+                  });
+                  try {
+                    await session.end();
+                  } catch (e) {
+                    Sentry.captureException(e);
+                  }
+
+                  startTransition(() => {
+                    router.push(
+                      `/characters/${characterId}?hasEndedSession=true`,
+                    );
+                  });
+                },
+              );
             }}
             onChatOpenChange={setChatOpen}
           />

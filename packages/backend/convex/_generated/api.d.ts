@@ -10,10 +10,14 @@
 
 import type * as aggregate from "../aggregate.js";
 import type * as auth from "../auth.js";
+import type * as auth_apiKey from "../auth/apiKey.js";
+import type * as auth_onboarding from "../auth/onboarding.js";
 import type * as characters from "../characters.js";
 import type * as characters_internal from "../characters/internal.js";
 import type * as constants_plans from "../constants/plans.js";
 import type * as http from "../http.js";
+import type * as parental_children from "../parental/children.js";
+import type * as room from "../room.js";
 import type * as stars from "../stars.js";
 import type * as storage from "../storage.js";
 import type * as subscriptions from "../subscriptions.js";
@@ -29,10 +33,14 @@ import type {
 declare const fullApi: ApiFromModules<{
   aggregate: typeof aggregate;
   auth: typeof auth;
+  "auth/apiKey": typeof auth_apiKey;
+  "auth/onboarding": typeof auth_onboarding;
   characters: typeof characters;
   "characters/internal": typeof characters_internal;
   "constants/plans": typeof constants_plans;
   http: typeof http;
+  "parental/children": typeof parental_children;
+  room: typeof room;
   stars: typeof stars;
   storage: typeof storage;
   subscriptions: typeof subscriptions;
@@ -79,6 +87,7 @@ export declare const components: {
                   banExpires?: null | number;
                   banReason?: null | string;
                   banned?: null | boolean;
+                  completedOnboarding?: null | boolean;
                   createdAt: number;
                   email: string;
                   emailVerified: boolean;
@@ -164,6 +173,7 @@ export declare const components: {
                     | "banned"
                     | "banReason"
                     | "banExpires"
+                    | "completedOnboarding"
                     | "_id";
                   operator?:
                     | "lt"
@@ -351,6 +361,7 @@ export declare const components: {
                     | "banned"
                     | "banReason"
                     | "banExpires"
+                    | "completedOnboarding"
                     | "_id";
                   operator?:
                     | "lt"
@@ -594,6 +605,7 @@ export declare const components: {
                   banExpires?: null | number;
                   banReason?: null | string;
                   banned?: null | boolean;
+                  completedOnboarding?: null | boolean;
                   createdAt?: number;
                   email?: string;
                   emailVerified?: boolean;
@@ -617,6 +629,7 @@ export declare const components: {
                     | "banned"
                     | "banReason"
                     | "banExpires"
+                    | "completedOnboarding"
                     | "_id";
                   operator?:
                     | "lt"
@@ -830,6 +843,7 @@ export declare const components: {
                   banExpires?: null | number;
                   banReason?: null | string;
                   banned?: null | boolean;
+                  completedOnboarding?: null | boolean;
                   createdAt?: number;
                   email?: string;
                   emailVerified?: boolean;
@@ -853,6 +867,7 @@ export declare const components: {
                     | "banned"
                     | "banReason"
                     | "banExpires"
+                    | "completedOnboarding"
                     | "_id";
                   operator?:
                     | "lt"
@@ -1045,6 +1060,14 @@ export declare const components: {
               };
           onUpdateHandle?: string;
         },
+        any
+      >;
+    };
+    user: {
+      setCompletedOnboarding: FunctionReference<
+        "mutation",
+        "internal",
+        { completedOnboarding: boolean; userId: string },
         any
       >;
     };
