@@ -4,7 +4,7 @@ import { Logger, type ISettingsParam } from "tslog";
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
 export const loggerConfig: ISettingsParam<unknown> = {
-  minLevel: parseInt(process.env.NEXT_PUBLIC_LOGGER_LEVEL || "4"),
+  minLevel: parseInt(process.env.NEXT_PUBLIC_LOGGER_LEVEL || "4", 10),
   maskValuesOfKeys: [
     "password",
     "passwordConfirmation",

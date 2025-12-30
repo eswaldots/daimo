@@ -66,7 +66,7 @@ export const relateChildrenTag = internalMutation({
       .unique();
 
     if (existing) {
-      throw new ConvexError("Tag already related to this children");
+      throw new ConvexError("Tag already related to this child");
     }
 
     return await ctx.db.insert("childrenTags", { ...args });

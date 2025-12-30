@@ -2,11 +2,11 @@ import { ProfileSetupView } from "@/modules/onboarding/profile-setup/profile-set
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-		title: "¿Quién usará Daimo? - Daimo"
-}
+  title: "Perfil de tu hijo - Daimo",
+};
 
 const ServerPage = () => {
-		return <ProfileSetupView />
-}
+  return <ProfileSetupView />;
+};
 
 export default ServerPage;

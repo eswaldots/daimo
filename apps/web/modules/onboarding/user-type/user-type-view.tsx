@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { motion } from "motion/react";
 import React, { RefObject, useRef, useTransition } from "react";
 import { StepTitle } from "../components/step";
@@ -54,7 +55,9 @@ export const UserTypeView = () => {
                 await finishOnboarding();
 
                 router.push("/home?isFirstTime=true");
-              } catch {
+              } catch (e) {
+                Sentry.captureException(e);
+
                 toast.error("Hubo un error intentando redirigirte al inicio");
               }
             });

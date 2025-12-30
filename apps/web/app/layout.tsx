@@ -65,8 +65,8 @@ export default function RootLayout({
           <ConvexClientProvider>
             {children}
             <Toaster />
+            <SentryIdentify />
           </ConvexClientProvider>
-          <SentryIdentify />
         </ThemeProvider>
       </body>
     </html>

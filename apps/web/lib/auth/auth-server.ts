@@ -1,5 +1,4 @@
 import { convexBetterAuthNextJs } from "@convex-dev/better-auth/nextjs";
-import logger from "@daimo/logger";
 
 const { NEXT_PUBLIC_CONVEX_SITE_URL, NEXT_PUBLIC_CONVEX_URL } = process.env;
 
@@ -14,8 +13,6 @@ if (!NEXT_PUBLIC_CONVEX_URL) {
     "Missing required environment variable: NEXT_PUBLIC_CONVEX_URL",
   );
 }
-
-
 
 export const {
   handler,
