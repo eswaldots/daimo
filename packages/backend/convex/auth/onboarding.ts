@@ -62,6 +62,10 @@ export const saveChildrenTags = mutation({
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
 
+    if (!user) {
+      throw new ConvexError("No autorizado");
+    }
+
     const children = await ctx.runQuery(
       internal.parental.children.getByFatherId,
       { fatherId: user._id },
