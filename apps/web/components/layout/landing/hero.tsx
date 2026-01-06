@@ -13,22 +13,39 @@ import Link from "next/link";
 export function Hero() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-white">
-      <section className="flex flex-col gap-10 items-center">
-        <AnimatedText text="daimo" />
+      <section className="flex flex-col gap-6 items-center">
+        <div className="text-center space-y-4">
+          <AnimatedText text="daimo" />
+          <motion.p
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              delay: 2.25,
+              type: "spring",
+              damping: 15,
+              duration: 0.1,
+              stiffness: 150,
+            }}
+            className="text-2xl md:max-w-full max-w-78"
+          >
+            Agentes conversacionales para niños
+          </motion.p>
+        </div>
 
         <motion.div
           className="flex items-center gap-4 z-10"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{
-            delay: 2.25,
+            delay: 2.5,
             type: "spring",
-            damping: 20,
-            stiffness: 120,
+            damping: 15,
+            duration: 0.1,
+            stiffness: 150,
           }}
         >
           <Button
-            className="tracking-normal text-base rounded-full"
+            className="tracking-wide text-base rounded-full font-normal"
             variant="accent"
             size="lg"
             asChild
@@ -36,7 +53,7 @@ export function Hero() {
             <Link href="/sign-up">Probar beta</Link>
           </Button>
           <Button
-            className="tracking-normal text-base rounded-full dark:hover:text-neutral-50 dark:text-accent bg-transparent border-accent border text-accent hover:text-neutral-50 shadow-none"
+            className="tracking-wide text-base rounded-full dark:hover:text-neutral-50 dark:text-accent bg-transparent border-accent border text-accent hover:text-neutral-50 shadow-none font-normal"
             size="lg"
             variant="accent"
             asChild
@@ -67,23 +84,23 @@ function AnimatedText({ text }: { text: string }) {
           <motion.span
             key={`${word}-${idx}`}
             className={cn(
-              "inline-block text-8xl font-medium text-neutral-950 tracking-tight leading-[0.8]",
-              (word === "a" || word === "i") && "text-accent",
+              "inline-block text-7xl font-medium text-neutral-950 tracking-tight leading-[0.8]",
+              (word === "a" || word === "i") && "",
             )}
             initial={{
               translateY: 120,
-              rotate: 40,
               opacity: 0,
             }}
             animate={{
               translateY: 0,
-              rotate: 0,
               opacity: 1,
             }}
             transition={{
-              delay: 1.8 + idx * 0.05,
-              duration: 0.5,
-              ease: [0.33, 1, 0.68, 1],
+              delay: 1.8,
+              duration: 0.1,
+              type: "spring",
+              damping: 15,
+              stiffness: 150,
             }}
           >
             {word}
@@ -93,4 +110,3 @@ function AnimatedText({ text }: { text: string }) {
     </div>
   );
 }
-
