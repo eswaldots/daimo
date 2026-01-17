@@ -285,7 +285,7 @@ export default function CharacterView({
               </motion.div>
               <motion.div>
                 <div className="my-6 md:my-12 md:hidden">
-                  <Description>{character.description}</Description>
+                  <Description text={character.description ?? ""} />
                 </div>
               </motion.div>
             </div>
@@ -361,7 +361,7 @@ export default function CharacterView({
               </div>
 
               <div className="max-w-4xl prose prose-neutral prose-sm md:prose-sm w-full dark:prose-invert my-6 leading-relaxed">
-                <Description>{character.description}</Description>
+                <Description text={character.description ?? ""} />
               </div>
             </div>
           </div>
@@ -655,12 +655,12 @@ export default function CharacterView({
   );
 }
 
-const Description = ({ children }: { children: string }) => {
+const Description = ({ text }: { text: string }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
 
   return (
     <div className="my-2 prose prose-neutral prose-sm md:prose-sm max-w-4xl dark:prose-invert leading-relaxed">
-      <Markdown>{isCollapsed ? children.slice(0, 360) : children}</Markdown>
+      <Markdown>{isCollapsed ? text.slice(0, 360) : text}</Markdown>
       {isCollapsed && (
         <span
           className="text-sm text-nowrap text-accent cursor-pointer hover:underline"
