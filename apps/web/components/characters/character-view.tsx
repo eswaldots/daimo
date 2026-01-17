@@ -240,7 +240,7 @@ export default function CharacterView({
 
               <motion.div className="z-40 flex-col md:flex-row md:w-auto w-full flex items-start gap-3 md:bg-transparent bg-background md:my-4 -mt-8">
                 <Button
-                  className="w-full md:w-fit h-12 rounded-full z-40 border-primary border md:text-base text-primary-foreground text-base md:flex-0 md:rounded-full rounded-xl"
+                  className="w-full md:w-fit md:rounded-full rounded-xl squircle md:font-medium font-semibold h-12 md:h-10 text-base"
                   size="lg"
                   onClick={() => {
                     if (!session) {
@@ -260,10 +260,8 @@ export default function CharacterView({
                     router.push(`/playground/${character._id}`);
                   }}
                 >
-                  {!subscription && isPremium ? (
+                  {!subscription && isPremium && (
                     <LockIcon className="size-5" />
-                  ) : (
-                    <Mic className="size-5" />
                   )}
                   {!isPending && !session
                     ? "Iniciar sesión para conversar"
@@ -294,9 +292,16 @@ export default function CharacterView({
                     </ClickSpark>
                   </Button>
                   <Button
-                    className="rounded-full z-40 md:bg-white/50 md:dark:bg-border md:dark:hover:bg-border/50 md:p-3 size-12"
+                    className="rounded-full z-40 md:bg-white/50 md:dark:bg-border md:dark:hover:bg-border/50 md:p-3 size-12 md:hidden"
                     variant="secondary"
                     size="icon-lg"
+                    onClick={() => {
+                      navigator.share({
+                        url: `${process.env.NEXT_PUBLIC_SITE_URL}/characters/${character._id}`,
+                        title: character.name,
+                        text: `Ven a hablar con ${character.name} en Daimo`,
+                      });
+                    }}
                   >
                     <ShareIcon />
                   </Button>

@@ -3,7 +3,7 @@ import { Trigger } from "@/components/layout/home/trigger";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { getServerSession } from "@/lib/auth/session-server";
 import { redirect } from "next/navigation";
-import { ReactNode } from "react";
+import { ReactNode, ViewTransition } from "react";
 
 /**
  * Render the authenticated home layout (sidebar, header sizing, and main content) or redirect to the root path when no session is found.
@@ -37,7 +37,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-4 md:py-10 md:pt-8 pt-18 md:px-10 px-4">
               <Trigger />
-              {children}
+              <ViewTransition>{children}</ViewTransition>
             </div>
           </div>
         </div>
