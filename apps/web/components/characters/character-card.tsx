@@ -32,12 +32,12 @@ export function CharacterCardSkeleton() {
     >
       <Card className="bg-transparent h-86 border-0 shadow-none w-full md:w-74 rounded-2xl px-0 gap-2 py-4">
         <CardHeader className="px-0">
-          <Skeleton className="w-full h-64 rounded-lg bg-background dark:bg-border" />
+          <Skeleton className="w-full h-64 rounded-lg bg-secondary dark:bg-border" />
         </CardHeader>
 
         <CardContent className="space-y-2 px-0">
-          <Skeleton className="h-5 w-1/2 bg-background dark:bg-border" />
-          <Skeleton className="h-3 w-full bg-background dark:bg-border" />
+          <Skeleton className="h-5 w-1/2 bg-secondary dark:bg-border" />
+          <Skeleton className="h-3 w-full bg-secondary dark:bg-border" />
         </CardContent>
       </Card>
     </motion.div>
@@ -144,7 +144,7 @@ export function CharacterCard(
                   alt="image"
                   width={1028}
                   height={1028}
-                  className="rounded-xl h-72 object-cover object-[50%_25%] bg-secondary"
+                  className="rounded-xl h-96 object-cover object-[50%_25%] bg-secondary"
                 />
               ) : (
                 <h1 className="text-foreground text-4xl font-semibold">?</h1>
