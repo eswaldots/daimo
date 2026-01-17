@@ -175,9 +175,14 @@ export default function CharacterView({
                   />
                 )}
               </motion.div>
-              <motion.h1 className="tracking-tight font-semibold text-4xl md:text-6xl text-white mr-auto -mb-8 z-30 flex md:hidden absolute left-4 bottom-0">
-                {character.name}
-              </motion.h1>
+              <motion.div className="absolute left-4 -bottom-5 flex flex-col h-fit">
+                <motion.h1 className="tracking-tight font-semibold text-4xl md:text-6xl text-white mr-auto z-30 flex md:hidden">
+                  {character.name}
+                </motion.h1>
+                <motion.p className="tracking-tight font-normal text-xl md:text-6xl text-white mr-auto z-30 flex md:hidden">
+                  {character.shortDescription}
+                </motion.p>
+              </motion.div>
             </div>
             <div className="w-full md:bg-transparent bg-background z-20 -pt-4 px-4 md:px-0">
               <div className="z-10 flex flex-col gap-8 w-full md:py-0 py-2 pb-4">
@@ -193,12 +198,12 @@ export default function CharacterView({
                       </div>
                     )}
                   </div>
-                  <motion.p className="text-foreground md:text-white/80 max-w-md font-medium md:text-xl text-base">
+                  <motion.p className="text-foreground md:text-white/80 max-w-md font-medium md:text-xl text-base hidden md:block">
                     {character.shortDescription}
                   </motion.p>
                   <Dialog>
                     <DialogTrigger>
-                      <motion.p className="text-foreground md:text-white/80 max-w-md text-sm hover:underline cursor-pointer">
+                      <motion.p className="text-foreground md:text-white/80 max-w-md text-sm hover:underline cursor-pointer hidden md:block">
                         Aún no te conoce
                       </motion.p>
                     </DialogTrigger>
@@ -232,9 +237,9 @@ export default function CharacterView({
                 </div>
               </div>
 
-              <motion.div className="z-40 flex items-center gap-3 md:bg-transparent bg-background md:my-4">
+              <motion.div className="z-40 flex items-center gap-3 md:bg-transparent bg-background md:my-4 -mt-8">
                 <Button
-                  className="rounded-full z-40 border-primary border md:text-base text-primary-foreground text-base md:flex-0 flex-1"
+                  className="h-12 rounded-full z-40 border-primary border md:text-base text-primary-foreground text-base md:flex-0 flex-1"
                   size="lg"
                   onClick={() => {
                     if (!session) {
@@ -254,7 +259,11 @@ export default function CharacterView({
                     router.push(`/playground/${character._id}`);
                   }}
                 >
-                  {!subscription && isPremium ? <LockIcon /> : <Mic />}
+                  {!subscription && isPremium ? (
+                    <LockIcon className="size-5" />
+                  ) : (
+                    <Mic className="size-5" />
+                  )}
                   {!isPending && !session
                     ? "Iniciar sesión para conversar"
                     : !subscription && isPremium
@@ -262,7 +271,7 @@ export default function CharacterView({
                       : "Conversar"}
                 </Button>
                 <Button
-                  className="rounded-full z-40 md:bg-white/50 md:dark:bg-border md:dark:hover:bg-border/50 md:p-3"
+                  className="rounded-full z-40 md:bg-white/50 md:dark:bg-border md:dark:hover:bg-border/50 md:p-3 size-12"
                   variant="secondary"
                   size="icon-lg"
                   onClick={toggleStarred}
