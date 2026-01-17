@@ -26,7 +26,7 @@ import {
   XIcon,
 } from "lucide-react";
 import { authClient } from "@/lib/auth/auth-client";
-import { motion, useScroll, useSpring, useTransform } from "motion/react";
+import { motion, useScroll, useTransform } from "motion/react";
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { ClickSpark } from "../ClickSpark";
@@ -135,8 +135,7 @@ export default function CharacterView({
   });
   const isMobile = useIsMobile();
 
-  const value = useTransform(scrollYProgress, [0, 1], ["0vh", "100vh"]);
-  const y = useSpring(value, { damping: 40, stiffness: 300 });
+  const value = useTransform(scrollYProgress, [0, 1], ["0vh", "200vh"]);
 
   return (
     <motion.section
@@ -154,34 +153,39 @@ export default function CharacterView({
             src={character.storageUrl}
             fill
             alt={character.name}
-            className="object-cover object-[50%_25%] z-10 backdrop-blur-2xl sm:size-48 sm:bg-transparent"
+            className="object-cover object-[50%_25%] z-10 backdrop-blur-2xl sm:size-48 sm:flex hidden sm:bg-transparent"
           />
         )}
         <div className="md:bg-black/20 absolute inset-0 sm:backdrop-blur-2xl" />
 
-        <div className="flex flex-col items-start pt-18 md:pt-0 md:h-96 justify-center gap-4 md:gap-18 z-20">
+        <div className="flex flex-col items-start md:pt-0 md:h-96 justify-center gap-4 md:gap-18 z-20">
           <section className="flex md:flex-row flex-col items-center gap-12 md:gap-12 w-full z-40 md:px-8 px-0">
-            <motion.div
-              className="relative overflow-visible h-56 md:size-48 md:aspect-square"
-              style={{ y: isMobile ? y : undefined }}
-            >
-              {character.storageUrl && (
-                <Image
-                  src={character.storageUrl}
-                  width={2000}
-                  height={2000}
-                  alt={character.name}
-                  className="object-cover md:object-[50%_25%] md:bg-secondary size-112 md:size-48 bg-transparent md:rounded-full"
-                />
-              )}
-            </motion.div>
-            <div className="w-full md:bg-transparent bg-background z-20 rounded-t-3xl py-8 px-4 md:px-0">
-              <div className="z-10 flex flex-col gap-8 w-full md:py-0 py-4">
+            <div className="md:h-fit h-96 md:w-fit w-full relative">
+              <motion.div
+                className="relative w-full h-[27rem] md:size-48 md:aspect-square"
+                style={{ y: isMobile ? value : undefined }}
+              >
+                {character.storageUrl && (
+                  <Image
+                    src={character.storageUrl}
+                    width={2000}
+                    height={2000}
+                    alt={character.name}
+                    className="object-cover absolute inset-0 md:object-[50%_25%] md:bg-secondary h-full md:size-48 bg-transparent md:rounded-full"
+                  />
+                )}
+              </motion.div>
+              <motion.h1 className="tracking-tight font-semibold text-4xl md:text-6xl text-white mr-auto -mb-8 z-30 flex md:hidden absolute left-4 bottom-0">
+                {character.name}
+              </motion.h1>
+            </div>
+            <div className="w-full md:bg-transparent bg-background z-20 -pt-4 px-4 md:px-0">
+              <div className="z-10 flex flex-col gap-8 w-full md:py-0 py-2 pb-4">
                 <div className="space-y-2">
+                  <motion.h1 className="tracking-tight font-semibold text-4xl md:text-5xl text-white mr-auto mt-auto z-20 hidden md:flex">
+                    {character.name}
+                  </motion.h1>
                   <div className="flex items-center gap-4">
-                    <motion.h1 className="tracking-tight font-semibold text-3xl md:text-6xl text-foreground md:text-white">
-                      {character.name}
-                    </motion.h1>
                     {isPremium && (
                       <div className="font-mono font-medium text-sm text-primary tracking-wide flex items-center flex-row gap-1 bg-background px-3.5 md:px-4 py-1 md:py-1.5 rounded-full">
                         <SparklesIcon className="size-3" />
@@ -280,8 +284,8 @@ export default function CharacterView({
                 </Button>
               </motion.div>
               <motion.div>
-                <div className="my-8 md:my-12 md:hidden">
-                  <div className="my-4 prose prose-neutral prose-sm md:prose-sm max-w-4xl dark:prose-invert leading-relaxed">
+                <div className="my-6 md:my-12 md:hidden">
+                  <div className="my-2 prose prose-neutral prose-sm md:prose-sm max-w-4xl dark:prose-invert leading-relaxed">
                     <Markdown>{character.description}</Markdown>
                   </div>
                 </div>
@@ -289,7 +293,7 @@ export default function CharacterView({
             </div>
           </section>
         </div>
-        <motion.div>
+        <motion.div className="md:block hidden">
           <div className="py-6 flex items-start px-20 justify-between">
             <div className="flex flex-col items-center space-y-2">
               <span className="text-muted-foreground tracking-wider text-xs font-semibold">

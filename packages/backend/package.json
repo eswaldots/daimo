@@ -16,7 +16,7 @@
     }
   },
   "scripts": {
-    "dev": "convex dev",
+    "dev": "convex dev --local",
     "setup": "convex dev --until-success",
     "typecheck": "tsc --noEmit -p convex",
     "test": "vitest",
