@@ -21,6 +21,7 @@ import {
   LucideCardSim,
   Mic,
   MicVocal,
+  ShareIcon,
   SparklesIcon,
   User,
   XIcon,
@@ -237,9 +238,9 @@ export default function CharacterView({
                 </div>
               </div>
 
-              <motion.div className="z-40 flex items-center gap-3 md:bg-transparent bg-background md:my-4 -mt-8">
+              <motion.div className="z-40 flex-col md:flex-row md:w-auto w-full flex items-start gap-3 md:bg-transparent bg-background md:my-4 -mt-8">
                 <Button
-                  className="h-12 rounded-full z-40 border-primary border md:text-base text-primary-foreground text-base md:flex-0 flex-1"
+                  className="w-full md:w-fit h-12 rounded-full z-40 border-primary border md:text-base text-primary-foreground text-base md:flex-0 md:rounded-full rounded-xl"
                   size="lg"
                   onClick={() => {
                     if (!session) {
@@ -270,27 +271,36 @@ export default function CharacterView({
                       ? "Desbloquear"
                       : "Conversar"}
                 </Button>
-                <Button
-                  className="rounded-full z-40 md:bg-white/50 md:dark:bg-border md:dark:hover:bg-border/50 md:p-3 size-12"
-                  variant="secondary"
-                  size="icon-lg"
-                  onClick={toggleStarred}
-                >
-                  <ClickSpark
-                    sparkColor={
-                      !isStarred ? "transparent" : "oklch(64.5% 0.246 16.439)"
-                    }
+                <div className="flex gap-2">
+                  <Button
+                    className="rounded-full z-40 md:bg-white/50 md:dark:bg-border md:dark:hover:bg-border/50 md:p-3 size-12"
+                    variant="secondary"
+                    size="icon-lg"
+                    onClick={toggleStarred}
                   >
-                    <Heart
-                      className={cn(
-                        "transition-all md:size-4 size-5",
-                        isStarred
-                          ? "fill-rose-500 text-rose-500"
-                          : "dark:fill-border fill-transparent",
-                      )}
-                    />
-                  </ClickSpark>
-                </Button>
+                    <ClickSpark
+                      sparkColor={
+                        !isStarred ? "transparent" : "oklch(64.5% 0.246 16.439)"
+                      }
+                    >
+                      <Heart
+                        className={cn(
+                          "transition-all md:size-4 size-5",
+                          isStarred
+                            ? "fill-rose-500 text-rose-500"
+                            : "dark:fill-border fill-transparent",
+                        )}
+                      />
+                    </ClickSpark>
+                  </Button>
+                  <Button
+                    className="rounded-full z-40 md:bg-white/50 md:dark:bg-border md:dark:hover:bg-border/50 md:p-3 size-12"
+                    variant="secondary"
+                    size="icon-lg"
+                  >
+                    <ShareIcon />
+                  </Button>
+                </div>
               </motion.div>
               <motion.div>
                 <div className="my-6 md:my-12 md:hidden">
@@ -672,10 +682,10 @@ const Description = ({ text }: { text: string }) => {
       <Markdown>{isCollapsed ? text.slice(0, 360) : text}</Markdown>
       {isCollapsed && (
         <span
-          className="text-sm text-nowrap text-accent cursor-pointer hover:underline"
+          className="text-sm text-nowrap text-accent cursor-pointer hover:underline uppercase font-semibold"
           onClick={() => setIsCollapsed(false)}
         >
-          Mostrar mas
+          MOSTRAR MAS
         </span>
       )}
     </div>

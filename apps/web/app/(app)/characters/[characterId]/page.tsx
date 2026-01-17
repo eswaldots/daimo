@@ -36,16 +36,16 @@ export async function generateMetadata(
 
     if (!character) {
       return {
-        title: "Personaje no encontrado - Daimo",
+        title: "Personaje no encontrado | Daimo",
       };
     }
 
     return {
-      title: `${character.name} - Daimo`,
+      title: `${character.name} | Daimo`,
     };
   } catch (e) {
     return {
-      title: "Error en el servidor - Daimo",
+      title: "Error en el servidor | Daimo",
     };
   }
 }
