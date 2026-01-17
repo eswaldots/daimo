@@ -46,16 +46,16 @@ export function Hero() {
         >
           <Button
             className="tracking-wide text-base rounded-full font-normal"
-            variant="accent"
+            variant="default"
             size="lg"
             asChild
           >
             <Link href="/sign-up">Probar beta</Link>
           </Button>
           <Button
-            className="tracking-wide text-base rounded-full dark:hover:text-neutral-50 dark:text-accent bg-transparent border-accent border text-accent hover:text-neutral-50 shadow-none font-normal"
+            className="tracking-wide text-base rounded-full dark:hover:text-primary hover:bg-primary dark:text-primary bg-transparent border-primary border text-primary hover:text-background shadow-none font-normal"
             size="lg"
-            variant="accent"
+            variant="default"
             asChild
           >
             <Link href="/sign-in">Iniciar sesión</Link>

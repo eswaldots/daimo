@@ -38,15 +38,17 @@ export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
 // https://posthog.com/docs/libraries/next-js
 import posthog from "posthog-js";
 
-if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) {
-  throw new Error("NEXT_PUBLIC_POSTHOG_KEY env variable is not set");
-}
+if (process.env.NODE_ENV === "production") {
+  if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) {
+    throw new Error("NEXT_PUBLIC_POSTHOG_KEY env variable is not set");
+  }
 
-posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
-  api_host: "/ingest",
-  ui_host: "https://us.posthog.com",
-  defaults: "2025-05-24",
-  disable_compression: true,
-  capture_exceptions: true,
-  debug: process.env.NODE_ENV === "development",
-});
+  posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
+    api_host: "/ingest",
+    ui_host: "https://us.posthog.com",
+    defaults: "2025-05-24",
+    disable_compression: true,
+    capture_exceptions: true,
+    // debug: process.env.NODE_ENV === "development",
+  });
+}

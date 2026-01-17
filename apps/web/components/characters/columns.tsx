@@ -17,6 +17,7 @@ import {
 import Link from "next/link";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -62,6 +63,7 @@ export const charactersColumns: ColumnDef<
     id: "actions",
     cell: ({ row }) => {
       const payment = row.original;
+      const router = useRouter();
 
       const deleteCharacter = useMutation(api.characters.deleteCharacter);
 
@@ -75,9 +77,9 @@ export const charactersColumns: ColumnDef<
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment._id)}
+              onClick={() => router.push(`/characters/${payment._id}`)}
             >
-              Copiar modelo
+              Ver personaje
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>

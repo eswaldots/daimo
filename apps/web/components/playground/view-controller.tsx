@@ -17,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
-import { Mic, Mic2 } from "lucide-react";
+import { Mic } from "lucide-react";
 import { Button } from "../ui/button";
 import posthog from "posthog-js";
 
@@ -120,7 +120,6 @@ export function ViewController({
                   );
                 }
               }}
-              variant="accent"
               size="lg"
             >
               Conceder permisos de voz

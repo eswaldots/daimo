@@ -81,6 +81,7 @@ export default function CreateCharacterPage({
   voices: Voice[];
   defaultValues?: Doc<"characters"> & { storageUrl?: string | null };
 }) {
+  console.log(voices);
   const [image, setImage] = useState<File | null>(null);
 
   const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -497,3 +498,4 @@ export default function CreateCharacterPage({
     </>
   );
 }
+

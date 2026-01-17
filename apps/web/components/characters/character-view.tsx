@@ -179,7 +179,7 @@ export default function CharacterView({
               <div className="z-10 flex flex-col gap-8 w-full md:py-0 py-4">
                 <div className="space-y-2">
                   <div className="flex items-center gap-4">
-                    <motion.h1 className=" tracking-tight font-semibold text-3xl md:text-5xl text-foreground md:text-white">
+                    <motion.h1 className="tracking-tight font-semibold text-3xl md:text-6xl text-foreground md:text-white">
                       {character.name}
                     </motion.h1>
                     {isPremium && (
@@ -230,7 +230,7 @@ export default function CharacterView({
 
               <motion.div className="z-40 flex items-center gap-3 md:bg-transparent bg-background md:my-4">
                 <Button
-                  className="rounded-full z-40 border-primary border md:text-sm text-primary-foreground text-base md:flex-0 flex-1"
+                  className="rounded-full z-40 border-primary border md:text-base text-primary-foreground text-base md:flex-0 flex-1"
                   size="lg"
                   onClick={() => {
                     if (!session) {

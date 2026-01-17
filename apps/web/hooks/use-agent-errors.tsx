@@ -3,9 +3,11 @@ import { useAgent, useSessionContext } from "@livekit/components-react";
 import * as Sentry from "@sentry/nextjs";
 import { toast } from "sonner";
 import posthog from "posthog-js";
+import { useRouter } from "next/navigation";
 
 export function useAgentErrors() {
   const agent = useAgent();
+  const router = useRouter();
   const { isConnected, end } = useSessionContext();
 
   useEffect(() => {
@@ -49,6 +51,8 @@ export function useAgentErrors() {
       });
 
       end();
+
+      router.back();
     }
   }, [agent, isConnected, end]);
 }

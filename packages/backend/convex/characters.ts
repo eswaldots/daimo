@@ -147,7 +147,7 @@ export const create = mutation({
 
     // Dejaremos en un segundo proceso que la IA vaya creando las tags del personaje
     await ctx.scheduler.runAt(
-      0,
+      Date.now(),
       internal.characters.internal.createTagsForCharacter,
       { characterId: id },
     );
