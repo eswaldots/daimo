@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { authClient } from "@/lib/auth/auth-client";
 import { motion, useScroll, useTransform } from "motion/react";
-import { useRef, useState } from "react";
+import { ReactNode, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { ClickSpark } from "../ClickSpark";
 import {
@@ -135,7 +135,7 @@ export default function CharacterView({
   });
   const isMobile = useIsMobile();
 
-  const value = useTransform(scrollYProgress, [0, 1], ["0vh", "200vh"]);
+  const value = useTransform(scrollYProgress, [0, 1], ["0vh", "100vh"]);
 
   return (
     <motion.section
@@ -285,9 +285,7 @@ export default function CharacterView({
               </motion.div>
               <motion.div>
                 <div className="my-6 md:my-12 md:hidden">
-                  <div className="my-2 prose prose-neutral prose-sm md:prose-sm max-w-4xl dark:prose-invert leading-relaxed">
-                    <Markdown>{character.description}</Markdown>
-                  </div>
+                  <Description>{character.description}</Description>
                 </div>
               </motion.div>
             </div>
@@ -363,7 +361,7 @@ export default function CharacterView({
               </div>
 
               <div className="max-w-4xl prose prose-neutral prose-sm md:prose-sm w-full dark:prose-invert my-6 leading-relaxed">
-                <Markdown>{character.description}</Markdown>
+                <Description>{character.description}</Description>
               </div>
             </div>
           </div>
@@ -656,3 +654,21 @@ export default function CharacterView({
     </motion.section>
   );
 }
+
+const Description = ({ children }: { children: string }) => {
+  const [isCollapsed, setIsCollapsed] = useState(true);
+
+  return (
+    <div className="my-2 prose prose-neutral prose-sm md:prose-sm max-w-4xl dark:prose-invert leading-relaxed">
+      <Markdown>{isCollapsed ? children.slice(0, 360) : children}</Markdown>
+      {isCollapsed && (
+        <span
+          className="text-sm text-nowrap text-accent cursor-pointer hover:underline"
+          onClick={() => setIsCollapsed(false)}
+        >
+          Mostrar mas
+        </span>
+      )}
+    </div>
+  );
+};
