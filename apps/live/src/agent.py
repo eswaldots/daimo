@@ -90,6 +90,17 @@ CONVEX_API_KEY = os.getenv("CONVEX_API_KEY")
 
 client = ConvexClient(CONVEX_URL or "http://127.0.0.1:8000")
 
+def format_memories(memories_list):
+    if not memories_list:
+        return "No hay memorias previas."
+    
+    formatted = []
+    for m in memories_list:
+        # Opcional: Convertir _creationTime a fecha legible si es importante
+        formatted.append(f"- {m['description']}")
+    
+    return "\n".join(formatted)
+
 async def run_async(func, *args, **kwargs):
     loop = asyncio.get_running_loop()
     # Usamos partial para pasar argumentos a la función síncrona
@@ -112,11 +123,24 @@ async def retrieve_memories(character_id: str, user_id: str, text: str):
         return "\n".join([f"- {m['description']}" for m in res])
     return ""
 
-async def save_memory(character_id: str, user_id: str, conversation_id: str, text: str):
+async def save_memory(character_id: str, user_id: str, conversation_id: str, text: str, last_assistant_message: str):
+    args = dict(
+        conversationId=conversation_id, 
+        text=text, 
+        userId=user_id, 
+        characterId=character_id, 
+        apiKey=CONVEX_API_KEY
+    )
+    
+    # Solo lo enviamos si existe
+    if last_assistant_message:
+        args["lastAssistantMessage"] = last_assistant_message
+
     return await run_async(
         client.action,
         "agent/memory:createMemory",
-         dict(conversationId=conversation_id, text=text, userId=user_id, characterId=character_id, apiKey=CONVEX_API_KEY))
+        args
+    )
 
 
 def update_conversation_state(conversation_id: str, is_live: bool):
@@ -237,7 +261,7 @@ async def my_agent(ctx: JobContext):
     instructions = Template(CHILDREN_TEMPLATE).render(
                     backstory=character["prompt"], name=character["name"],
                     user_age=children["age"],
-                    core_memories=core_memories,
+                    core_memories=format_memories(core_memories),
                     user_name=children["name"],
                     user_gender="un niño" if children.get("gender") == "niño" else "una niña",
                     user_likes=children_tags if children_tags else []
@@ -324,12 +348,24 @@ async def my_agent(ctx: JobContext):
         2. Inyecta contexto si es necesario.
         3. Guarda el mensaje y memorias nuevas en BD.
         """
+        last_assistant_msg = ""
         
-        await inject_memories_to_context(text)
+        if session.current_agent and session.current_agent.chat_ctx:
+            messages = session.current_agent.chat_ctx.messages
+            # Recorremos hacia atrás para encontrar el último 'assistant'
+            for msg in reversed(messages):
+                if msg.role == "assistant" and msg.content:
+                    if isinstance(msg.content, str):
+                        last_assistant_msg = msg.content
+                    elif isinstance(msg.content, list):
+                        last_assistant_msg = " ".join([str(c) for c in msg.content])
+                    break
+        
+        # await inject_memories_to_context(text)
 
         for coro in (
             add_message(conversation_id, text, "user"),
-            save_memory(character_id, user_id, conversation_id, text),
+            save_memory(character_id, user_id, conversation_id, text, last_assistant_msg),
         ):
             task = asyncio.create_task(coro)
             _active_tasks.add(task)

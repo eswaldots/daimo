@@ -65,7 +65,10 @@ export const getCoreMemories = internalQuery({
       .order("desc")
       .take(3);
 
-    return [...coreMemories, ...recentMemories];
+    const merged = [...coreMemories, ...recentMemories];
+    const unique = Array.from(new Map(merged.map((m) => [m._id, m])).values());
+
+    return unique;
   },
 });
 
@@ -141,9 +144,13 @@ export const createMemory = serverAction({
     conversationId: v.id("conversations"),
     characterId: v.string(),
     text: v.string(),
+    lastAssistantMessage: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // TODO: usar un structured output object
+    const contextStr = args.lastAssistantMessage
+      ? `CONTEXTO PREVIO (Lo que preguntó la IA): "${args.lastAssistantMessage}"`
+      : "CONTEXTO PREVIO: No disponible (Inicio de conversación o silencio).";
+
     const { output } = await generateText({
       model: groq("openai/gpt-oss-120b"),
       output: Output.object({
@@ -190,7 +197,14 @@ export const createMemory = serverAction({
       1. Transforma a TERCERA PERSONA: "Soy enfermero" -> "El usuario es enfermero".
       2. Ignora saludos ("Hola"), confirmaciones cortas ("Vale", "Ok") o risas.
     `,
-      prompt: `Analiza el siguiente input del usuario y extrae la memoria:\n"${args.text}"`,
+      prompt: `
+      ${contextStr}
+      
+      INPUT DEL USUARIO: "${args.text}"
+      
+      Analiza la relación entre lo que preguntó la IA y lo que respondió el usuario para extraer el "fact".
+      Ejemplo: Si IA pregunta "¿Tu color favorito?" y Usuario dice "Azul", el fact es "Su color favorito es el azul".
+      `,
     });
 
     if (!output?.should_save || !output?.fact) {
