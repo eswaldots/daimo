@@ -9,7 +9,7 @@ import { RoomConfiguration } from "@livekit/protocol";
 import * as Sentry from "@sentry/nextjs";
 import { fetchQuery } from "convex/nextjs";
 import { api, Id } from "@daimo/backend";
-import { fetchAuthQuery } from "@/lib/auth/auth-server";
+import { fetchAuthMutation, fetchAuthQuery } from "@/lib/auth/auth-server";
 import { getServerSession } from "@/lib/auth/session-server";
 
 type ConnectionDetails = {
@@ -73,9 +73,20 @@ export async function POST(req: Request) {
       );
     }
 
+    console.log("creating conversation");
+    const conversationId = await fetchAuthMutation(
+      api.agent.conversation.createConversation,
+      {
+        characterId: character._id,
+      },
+    );
+    console.log("conversation created");
+
     const participantName = "user";
-    const participantIdentity = `user_${Math.floor(Math.random() * 10_000)}`;
-    const roomName = `room_${Math.floor(Math.random() * 10_000)}`;
+    // TODO: el padre puede entrar a la misma sala que el usuario en futuras versiones de daimo, asi que arreglar esto
+    const participantIdentity = `user_${session.user.id}`;
+    // TODO: usar id de conversacion
+    const roomName = `${conversationId}`;
 
     // ---------------------------------------------------------
     // 2. NUEVO: Inyectar la Metadata en la Sala usando RoomServiceClient
@@ -94,6 +105,7 @@ export async function POST(req: Request) {
         metadata: JSON.stringify({
           characterId, // <--- AQUÍ VA TU METADATA PARA EL AGENTE
           userId: session.user.id,
+          conversationId,
           isFirstTime,
         }),
       });

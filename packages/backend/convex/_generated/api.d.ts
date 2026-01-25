@@ -8,6 +8,10 @@
  * @module
  */
 
+import type * as agent_conversation from "../agent/conversation.js";
+import type * as agent_llm from "../agent/llm.js";
+import type * as agent_memory from "../agent/memory.js";
+import type * as agent_message from "../agent/message.js";
 import type * as aggregate from "../aggregate.js";
 import type * as auth from "../auth.js";
 import type * as auth_apiKey from "../auth/apiKey.js";
@@ -23,6 +27,7 @@ import type * as storage from "../storage.js";
 import type * as subscriptions from "../subscriptions.js";
 import type * as tags from "../tags.js";
 import type * as tags_internal from "../tags/internal.js";
+import type * as utils from "../utils.js";
 
 import type {
   ApiFromModules,
@@ -31,6 +36,10 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "agent/conversation": typeof agent_conversation;
+  "agent/llm": typeof agent_llm;
+  "agent/memory": typeof agent_memory;
+  "agent/message": typeof agent_message;
   aggregate: typeof aggregate;
   auth: typeof auth;
   "auth/apiKey": typeof auth_apiKey;
@@ -46,6 +55,7 @@ declare const fullApi: ApiFromModules<{
   subscriptions: typeof subscriptions;
   tags: typeof tags;
   "tags/internal": typeof tags_internal;
+  utils: typeof utils;
 }>;
 
 /**
@@ -524,6 +534,7 @@ export declare const components: {
         "query",
         "internal",
         {
+          join?: any;
           limit?: number;
           model: "user" | "session" | "account" | "verification" | "jwks";
           offset?: number;
@@ -566,6 +577,7 @@ export declare const components: {
         "query",
         "internal",
         {
+          join?: any;
           model: "user" | "session" | "account" | "verification" | "jwks";
           select?: Array<string>;
           where?: Array<{

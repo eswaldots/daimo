@@ -14,15 +14,19 @@ type ReturnValue = {
   children: Doc<"childrens"> | null;
   childrenTags: string[];
   character: Doc<"characters">;
+  coreMemories: Doc<"memories">[];
 };
 
 export const getMetadataRoom = query({
   args: {
-    key: v.string(),
+    apiKey: v.string(),
     characterId: v.id("characters"),
     userId: v.string(),
   },
-  handler: async (ctx, { key, characterId, userId }): Promise<ReturnValue> => {
+  handler: async (
+    ctx,
+    { apiKey: key, characterId, userId },
+  ): Promise<ReturnValue> => {
     const isValidKey = await verifyApiKey(ctx, key);
 
     if (!isValidKey) throw new ConvexError("apiKey invalida o expirada");
@@ -44,9 +48,22 @@ export const getMetadataRoom = query({
       { fatherId: user._id },
     );
 
+    const coreMemories =
+      (await ctx.runQuery(internal.agent.memory.getCoreMemories, {
+        characterId: characterId,
+        userId: userId,
+        n: 5,
+      })) ?? [];
+
     // if user doesn't have children only returns the user data
     if (!children) {
-      return { user, character, childrenTags: [], children: null };
+      return {
+        user,
+        character,
+        childrenTags: [],
+        children: null,
+        coreMemories,
+      };
     }
 
     type Tag = Doc<"tags"> | null;
@@ -57,11 +74,17 @@ export const getMetadataRoom = query({
     );
 
     if (!childrenTags) {
-      return { children, user, childrenTags: [], character };
+      return { children, user, childrenTags: [], character, coreMemories };
     }
     const mappedTags =
       childrenTags.filter((tag) => !!tag).map((tag) => tag.name) ?? [];
 
-    return { children, user, childrenTags: mappedTags, character };
+    return {
+      children,
+      user,
+      childrenTags: mappedTags,
+      character,
+      coreMemories,
+    };
   },
 });

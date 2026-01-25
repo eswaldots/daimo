@@ -3,9 +3,10 @@ import { convex } from "@convex-dev/better-auth/plugins";
 import { components } from "./_generated/api";
 import { DataModel } from "./_generated/dataModel";
 import { localization } from "better-auth-localization";
-import { betterAuth } from "better-auth";
+import { betterAuth, BetterAuthOptions } from "better-auth";
 import { admin } from "better-auth/plugins";
 import authSchema from "./betterAuth/schema";
+import authConfig from "./auth.config";
 
 const siteUrl = process.env.SITE_URL!;
 
@@ -20,16 +21,8 @@ export const authComponent = createClient<DataModel, typeof authSchema>(
   },
 );
 
-export const createAuth = (
-  ctx: GenericCtx<DataModel>,
-  { optionsOnly } = { optionsOnly: false },
-) => {
-  return betterAuth({
-    // disable logging when createAuth is called just to generate options.
-    // this is not required, but there's a lot of noise in logs without it.
-    logger: {
-      disabled: optionsOnly,
-    },
+export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
+  return {
     socialProviders: {
       google: {
         clientId: process.env.GOOGLE_CLIENT_ID as string,
@@ -38,14 +31,14 @@ export const createAuth = (
     },
     baseURL: siteUrl,
     database: authComponent.adapter(ctx),
-	user: {
-			additionalFields: {
-					completedOnboarding: {
-							type: "boolean",
-							defaultValue: false
-					}
-			}
-	},
+    user: {
+      additionalFields: {
+        completedOnboarding: {
+          type: "boolean",
+          defaultValue: false,
+        },
+      },
+    },
     // Configure simple, non-verified email/password to get started
     emailAndPassword: {
       enabled: true,
@@ -53,12 +46,19 @@ export const createAuth = (
     },
     plugins: [
       // The Convex plugin is required for Convex compatibility
-      convex(),
+      convex({
+        authConfig,
+        jwksRotateOnTokenGenerationError: true,
+      }),
       admin(),
       localization({
         defaultLocale: "es-ES",
         fallbackLocale: "default",
       }),
     ],
-  });
+  } satisfies BetterAuthOptions;
+};
+
+export const createAuth = (ctx: GenericCtx<DataModel>) => {
+  return betterAuth(createAuthOptions(ctx));
 };

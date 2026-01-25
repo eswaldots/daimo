@@ -2,6 +2,7 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { parentalSchema } from "./parental/schema";
 import { authSchema } from "./auth/schema";
+import { agentSchema } from "./agent/schema";
 
 export default defineSchema({
   characters: defineTable({
@@ -48,4 +49,5 @@ export default defineSchema({
   }),
   ...parentalSchema,
   ...authSchema,
+  ...agentSchema,
 });

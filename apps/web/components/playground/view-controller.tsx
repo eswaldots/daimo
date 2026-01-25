@@ -20,6 +20,7 @@ import {
 import { Mic } from "lucide-react";
 import { Button } from "../ui/button";
 import posthog from "posthog-js";
+import { ConnectionState } from "livekit-client";
 
 const MotionSessionView = motion.create(SessionView);
 
@@ -50,7 +51,7 @@ export function ViewController({
   appConfig,
   preloadedCharacter,
 }: ViewControllerProps) {
-  const { start } = useSessionContext();
+  const { start, room } = useSessionContext();
   const character = usePreloadedQuery(preloadedCharacter);
   const [modal, setModal] = useState(false);
 
@@ -59,7 +60,9 @@ export function ViewController({
       const status = await navigator.permissions.query({ name: "microphone" });
 
       if (status.state === "granted") {
-        start();
+        if (room.state === ConnectionState.Disconnected) {
+          start();
+        }
       } else {
         setTimeout(() => {
           setModal(true);

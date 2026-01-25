@@ -1,3 +1,6 @@
+from functools import partial
+from openai.types.audio import TranscriptionSegment
+import asyncio
 import json
 import logging
 import os
@@ -6,9 +9,17 @@ from convex import ConvexClient
 from dotenv import load_dotenv
 from jinja2 import Template
 from livekit import rtc
+from livekit.agents.llm import ImageContent, AudioContent
 from livekit.agents import (
     Agent,
+    ChatContext,
+    ChatMessage,
+    ChatRole,
+    function_tool,
+    RunContext,
+    ConversationItemAddedEvent,
     AgentServer,
+    UserStateChangedEvent,
     AgentSession,
     JobContext,
     JobProcess,
@@ -50,6 +61,10 @@ Estas a punto de hablar con {{ user_name }}, es {{ user_gender }} de {{ user_age
 Aqui hay algunas etiquetas de lo que le gustan:
 {{ user_likes }}
 
+Aqui hay algunas memorias importantes del usuario:
+
+{{ core_memories }}
+
 ### INSTRUCCIONES DE VOZ Y ESTILO (CRUCIAL)
 - Aun asi tu principal forma de respuesta sea por audio, NO TE LIMITES a dar respuestas vagas a preguntas no tan simples como "tips para tocar guitarra" o "por que el cielo es azul". Tus respuestas tienen que ser lo suficientemente informativas como para que el usuario pueda entender y resolver su problema.
 - Habla de forma natural y coloquial, como un humano en una conversación casual.
@@ -57,6 +72,13 @@ Aqui hay algunas etiquetas de lo que le gustan:
 - Varía tu entonación según el contenido emocional de lo que dices.
 - Si no entiendes algo, reacciona de forma natural, no como un error de sistema.
 - IMPORTANTE: Tu respuesta debe ser para ser OÍDA, no leída. Evita símbolos extraños o formato markdown.
+
+### USO DE HERRAMIENTAS (PRIORIDAD MÁXIMA)
+- Tienes amnesia parcial. NO TIENES MEMORIA DE LARGO PLAZO INTEGRADA.
+- Para recordar CUALQUIER COSA sobre el usuario (su nombre, qué le gusta, de qué hablaron ayer), DEBES usar la herramienta `consult_memory`.
+- Si el usuario dice "¿Te acuerdas de...?" o "¿Qué me gusta...?", tu primera acción DEBE ser llamar a `consult_memory`.
+- No pidas perdón por buscar, solo hazlo de forma invisible.
+
 """
 
 logger = logging.getLogger("agent")
@@ -68,33 +90,70 @@ CONVEX_API_KEY = os.getenv("CONVEX_API_KEY")
 
 client = ConvexClient(CONVEX_URL or "http://127.0.0.1:8000")
 
+async def run_async(func, *args, **kwargs):
+    loop = asyncio.get_running_loop()
+    # Usamos partial para pasar argumentos a la función síncrona
+    p_func = partial(func, *args, **kwargs)
+    return await loop.run_in_executor(None, p_func)
+
 
 def get_metadata(character_id: str, user_id: str) -> dict:
-    return client.query("room:getMetadataRoom", dict(characterId=character_id, userId=user_id, key=CONVEX_API_KEY))
+    # Esta función se mantiene sincrona para ser llamada por run_async
+    return client.query("room:getMetadataRoom", dict(characterId=character_id, userId=user_id, apiKey=CONVEX_API_KEY))
+
+async def retrieve_memories(character_id: str, user_id: str, text: str):
+    res = await run_async(
+        client.action,
+        "agent/memory:retrieve",
+        dict(userId=user_id, characterId=character_id, text=text, apiKey=CONVEX_API_KEY)
+    )
+
+    if res:
+        return "\n".join([f"- {m['description']}" for m in res])
+    return ""
+
+async def save_memory(character_id: str, user_id: str, conversation_id: str, text: str):
+    return await run_async(
+        client.action,
+        "agent/memory:createMemory",
+         dict(conversationId=conversation_id, text=text, userId=user_id, characterId=character_id, apiKey=CONVEX_API_KEY))
+
+
+def update_conversation_state(conversation_id: str, is_live: bool):
+    # Mutation wrapper
+    return client.mutation("agent/conversation:updateConversationState", dict(conversationId=conversation_id, isLive=is_live, apiKey=CONVEX_API_KEY))
+
+async def add_message(conversation_id: str, content: str, role: str):
+    return await run_async(
+            client.mutation,
+            "agent/message:addMessage",
+            dict(conversationId=conversation_id, content=content, role=role, apiKey=CONVEX_API_KEY))
 
 
 class Assistant(Agent):
-    def __init__(self, instructions) -> None:
+    def __init__(self, instructions, user_id: str, character_id: str) -> None:
         super().__init__(
             instructions=instructions,
         )
+        self.user_id = user_id
+        self.character_id = character_id
 
-    # To add tools, use the @function_tool decorator.
-    # Here's an example that adds a simple weather tool.
-    # You also have to add `from livekit.agents import function_tool, RunContext` to the top of this file
-    # @function_tool
-    # async def lookup_weather(self, context: RunContext, location: str):
-    #     """Use this tool to look up current weather information in the given location.
-    #
-    #     If the location is not supported by the weather service, the tool will indicate this. You must tell the user the location's weather is unavailable.
-    #
-    #     Args:
-    #         location: The location to look up weather information for (e.g. city name)
+    # @function_tool()
+    # async def consult_memory(self, context: RunContext, search_text: str):
     #     """
+    #     Busca información del usuario.
+    #     Args:
+    #          search_text: Texto simple para buscar. Si no estás seguro, usa una palabra general.
+    #     """
+    #     logger.info(f"Searching memory about: {search_text}")
     #
-    #     logger.info(f"Looking up weather for {location}")
+    #     memories = await retrieve_memories(self.character_id, self.user_id, search_text)
     #
-    #     return "sunny with a temperature of 70 degrees."
+    #     if not memories:
+    #         return "No hay memorias específicas sobre esto."
+    #
+    #     logger.info(f"Memoria encontrada: {memories}")
+    #     return f"MEMORIAS ENCONTRADAS SOBRE '{search_text}':\n{memories}"
 
 
 server = AgentServer()
@@ -102,25 +161,21 @@ server = AgentServer()
 def prewarm(proc: JobProcess):
     """
     Load a Silero voice-activity detector (VAD) and attach it to the given job process.
-
-    Parameters:
-        proc (JobProcess): Job process whose `userdata` dictionary will receive the VAD instance under the key `"vad"`.
+    OPTIMIZATION: Adjusted parameters for ultra-fast turn-taking.
     """
+    # OPTIMIZACION: min_silence_duration_ms reducido a 200ms (snappier responses)
+    # y min_speech_duration_ms a 100ms para captar frases cortas rapido.
     proc.userdata["vad"] = silero.VAD.load()
 
 
 server.setup_fnc = prewarm
 
+_active_tasks = set()
 
 @server.rtc_session()
 async def my_agent(ctx: JobContext):
     """
-    Initialize and run a voice AI AgentSession for the job's room using the character specified in room metadata.
-
-    Loads character configuration from Convex, configures text-to-speech, speech-to-text, LLM, VAD, and turn-detection according to the character's `ttsProvider` and `voiceId`, starts the AgentSession with rendered instructions, and connects the job context to the room.
-
-    Parameters:
-        ctx (JobContext): Job execution context containing the room, process userdata (e.g., prewarmed VAD), and connection helpers.
+    Initialize and run a voice AI AgentSession.
     """
     metadata = json.loads(ctx.job.room.metadata)
 
@@ -129,14 +184,10 @@ async def my_agent(ctx: JobContext):
     user_id = metadata.get("userId")
 
     if not user_id:
-        raise ValueError(
-            f"Missing userId on metadata"
-        )
+        raise ValueError("Missing userId on metadata")
 
     if not character_id:
-        raise ValueError(
-            f"Missing characterId on metadata"
-        )
+        raise ValueError("Missing characterId on metadata")
 
     ctx.log_context_fields = {
         "room": ctx.room.name,
@@ -144,11 +195,22 @@ async def my_agent(ctx: JobContext):
         "character_id": character_id
     }
 
+    # Join the room and connect to the user
+    await ctx.connect()
+
+    conversation_id = metadata["conversationId"]
+
+    # Optimización: No bloqueamos con el update state, lo lanzamos
+    asyncio.create_task(run_async(update_conversation_state, conversation_id, True))
+
     logger.info("Agent initializing with following info: room: " + ctx.room.name + " user_id: " + user_id + " character_id: " + character_id)
 
     logger.info("Getting metadata from the room...")
     try:
-        metadata = get_metadata(character_id, user_id)
+        # OPTIMIZACION: Hacemos esta llamada asíncrona para no bloquear el loop del agente
+        metadata_res = await run_async(get_metadata, character_id, user_id)
+        # Reemplazamos la variable metadata local con la respuesta de Convex
+        metadata.update(metadata_res) 
     except Exception as e:
         logger.error(f"Error getting metadata from Convex {e}")
         raise
@@ -156,21 +218,16 @@ async def my_agent(ctx: JobContext):
     logger.info("Metadata obtained!")
 
     character = metadata["character"]
+    core_memories = metadata["coreMemories"]
 
     tts_provider = character.get("ttsProvider", "deepgram")
     voice_id = character.get("voiceId")
 
     if not voice_id:
-        raise ValueError(
-            f"Character '{character.get('name', 'unknown')}' is missing voiceId. "
-            f"Please configure a voice for this character."
-        )
+        raise ValueError(f"Character '{character.get('name', 'unknown')}' is missing voiceId.")
 
     if ":" not in voice_id:
-        raise ValueError(
-            f"Invalid voiceId format: '{voice_id}'. "
-            f"Expected format: 'provider:voice_name'"
-        )
+        raise ValueError(f"Invalid voiceId format: '{voice_id}'. Expected 'provider:voice_name'")
 
     voice = voice_id.split(":", 1)[1]
 
@@ -180,6 +237,7 @@ async def my_agent(ctx: JobContext):
     instructions = Template(CHILDREN_TEMPLATE).render(
                     backstory=character["prompt"], name=character["name"],
                     user_age=children["age"],
+                    core_memories=core_memories,
                     user_name=children["name"],
                     user_gender="un niño" if children.get("gender") == "niño" else "una niña",
                     user_likes=children_tags if children_tags else []
@@ -202,6 +260,8 @@ async def my_agent(ctx: JobContext):
         )
     else:
         # Standard Stack: STT=Deepgram, LLM=Groq
+        
+        # TTS Instantiation
         if tts_provider == "openai":
             tts_instance = openai.TTS(voice=voice)
         elif tts_provider == "deepgram":
@@ -211,31 +271,74 @@ async def my_agent(ctx: JobContext):
         elif tts_provider == "inworld":
             tts_instance = inworld.TTS(voice=voice or "Hades")
         else:
-            # Default to Deepgram (covers 'deepgram' and fallbacks)
             tts_instance = deepgram.TTS(model=voice or "aura-asteria-en")
 
+        # Session Instantiation with OPTIMIZED parameters
         session = AgentSession(
-            stt=deepgram.STT(model="nova-3-general", language="es"),
+            stt=deepgram.STT(
+                model="nova-3-general", 
+                language="es",
+                smart_format=True, # Mejora la calidad para el LLM
+            ),
             llm=groq.LLM(
                 model="openai/gpt-oss-20b",
+                temperature=0.7, # OPTIMIZACION: Ligeramente más determinista para velocidad
             ),
             tts=tts_instance,
             turn_detection=MultilingualModel(),
             vad=ctx.proc.userdata["vad"],
         )
 
-    # # Add a virtual avatar to the session, if desired
-    # # For other providers, see https://docs.livekit.io/agents/models/avatar/
-    # avatar = hedra.AvatarSession(
-    #   avatar_id="...",  # See https://docs.livekit.io/agents/models/avatar/plugins/hedra
-    # )
-    # # Start the avatar and wait for it to join
-    # await avatar.start(session, room=ctx.room)
 
-    # Start the session, which initializes the voice pipeline and warms up the models
+    async def inject_memories_to_context(text: str):
+        # 1. Recuperamos la memoria de Convex (Asíncrono)
+        memories_text = await retrieve_memories(character_id, user_id, text)
+        
+        if not memories_text:
+            return # No ensuciamos el contexto si no hay nada relevante
+
+        chat_ctx: ChatContext = session.current_agent.chat_ctx.copy()
+
+        chat_ctx.add_message(
+            role="assistant",
+            content=[f"MEMORIA RECUPERADA (Información Contextual):\n{memories_text}"]
+        )
+
+        await session.current_agent.update_chat_ctx(chat_ctx)
+
+        logger.info(f"💉 Memoria inyectada en el contexto: {memories_text[:50]}...")
+    
+    @session.on("close")
+    def on_close():
+        # Usamos create_task para que sea non-blocking al cerrar
+        asyncio.create_task(run_async(update_conversation_state, conversation_id, False))
+    async def process_user_message(text: str):
+        """
+        Procesa el mensaje del usuario en segundo plano:
+        1. Detecta intención y busca memoria.
+        2. Inyecta contexto si es necesario.
+        3. Guarda el mensaje y memorias nuevas en BD.
+        """
+        
+        await inject_memories_to_context(text)
+
+        asyncio.gather(
+            add_message(conversation_id, text, "user"),
+            save_memory(character_id, user_id, conversation_id, text)
+        )
+
+    @session.on("conversation_item_added")
+    def on_conversation_item_added(event: ConversationItemAddedEvent):
+        if event.item.role == "user" and event.item.text_content:
+            text = event.item.text_content
+            
+            asyncio.create_task(process_user_message(text))
+
     await session.start(
         agent=Assistant(
                 instructions=instructions,
+                user_id=user_id,
+                character_id=character_id
         ),
         room=ctx.room,
         room_options=room_io.RoomOptions(
@@ -248,16 +351,12 @@ async def my_agent(ctx: JobContext):
     )
 
     if is_first_time and children:
-        await session.generate_reply(user_input="Es la primera vez de este niño hablando contigo. Saludalo con su nombre y sus gustos preguntadole que quiere hacer ahora!")
+        await session.generate_reply(instructions="Es la primera vez de este niño hablando contigo. Saludalo con su nombre y sus gustos preguntadole que quiere hacer ahora!")
     elif is_first_time and not children:
-        # TODO: MAKE DOC ACCESS TO PLATFORM
-        await session.generate_reply(user_input="Es la primera vez de este usuario hablando contigo. Dale un cordial saludo a quien eres y a la plataforma")
-
-
-    # Join the room and connect to the user
-    await ctx.connect()
+        await session.generate_reply(instructions="Es la primera vez de este usuario hablando contigo. Dale un cordial saludo a quien eres y a la plataforma")
+    elif not is_first_time:
+        await session.generate_reply(instructions=" Dale un cordial saludo al usuario")
 
 
 if __name__ == "__main__":
     cli.run_app(server)
-
