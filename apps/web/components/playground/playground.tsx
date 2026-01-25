@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { TokenSource } from "livekit-client";
+import { TokenSource, TokenSourceLiteral } from "livekit-client";
 import {
   RoomAudioRenderer,
   SessionProvider,
@@ -14,7 +14,7 @@ import { Toaster } from "../ui/sonner";
 import { ViewController } from "./view-controller";
 import { useDebugMode } from "@/hooks/use-debug";
 import { useAgentErrors } from "@/hooks/use-agent-errors";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { Preloaded } from "convex/react";
 import { api } from "@daimo/backend";
 
@@ -30,22 +30,19 @@ function AppSetup() {
 interface AppProps {
   appConfig: AppConfig;
   preloadedCharacter: Preloaded<typeof api.characters.getById>;
+  tokenSource: { serverUrl: string; participantToken: string };
 }
 
-export function Playground({ appConfig, preloadedCharacter }: AppProps) {
-  const { characterId } = useParams();
-  const tokenSource = useMemo(() => {
-    return typeof process.env.NEXT_PUBLIC_CONN_DETAILS_ENDPOINT === "string"
-      ? getSandboxTokenSource(appConfig)
-      : TokenSource.endpoint(
-          `/api/connection-details?characterId=${characterId}&isFirstTime=true`,
-        );
-  }, [appConfig, characterId]);
+export function Playground({
+  appConfig,
+  preloadedCharacter,
+  tokenSource,
+}: AppProps) {
+  const token = useMemo(() => {
+    return TokenSource.literal(tokenSource);
+  }, [tokenSource]);
 
-  const session = useSession(
-    tokenSource,
-    appConfig.agentName ? { agentName: appConfig.agentName } : undefined,
-  );
+  const session = useSession(token);
 
   return (
     <SessionProvider session={session}>

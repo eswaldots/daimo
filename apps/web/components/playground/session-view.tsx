@@ -1,6 +1,12 @@
 "use client";
 
-import React, { startTransition, useEffect, useRef, useState } from "react";
+import React, {
+  startTransition,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import * as Sentry from "@sentry/nextjs";
 import { motion, MotionProps } from "motion/react";
 import {
@@ -73,6 +79,13 @@ export const SessionView = ({
   const [chatOpen, setChatOpen] = useState(false);
   const { characterId } = useParams();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const auraColor = useMemo(() => {
+    if (typeof window === "undefined") return "#1FD5F9";
+    const value = getComputedStyle(document.documentElement)
+      .getPropertyValue("--color-primary")
+      .trim();
+    return value || "#1FD5F9";
+  }, []);
 
   const controls: ControlBarControls = {
     leave: true,

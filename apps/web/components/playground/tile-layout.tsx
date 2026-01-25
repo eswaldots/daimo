@@ -11,6 +11,7 @@ import {
   useVoiceAssistant,
 } from "@livekit/components-react";
 import { cn } from "@/lib/utils";
+import { AgentAudioVisualizerAura } from "../agents-ui/agent-audio-visualizer-aura";
 
 const MotionContainer = motion.create("div");
 
@@ -113,6 +114,14 @@ export function TileLayout({ chatOpen }: TileLayoutProps) {
   const videoWidth = agentVideoTrack?.publication.dimensions?.width ?? 0;
   const videoHeight = agentVideoTrack?.publication.dimensions?.height ?? 0;
 
+  const auraColor = useMemo(() => {
+    if (typeof window === "undefined") return "#1FD5F9";
+    const value = getComputedStyle(document.documentElement)
+      .getPropertyValue("--color-primary")
+      .trim();
+    return value || "#1FD5F9";
+  }, []);
+
   return (
     <div className="pointer-events-none fixed inset-x-0 top-8 bottom-32 z-50 md:top-12 md:bottom-40">
       <div className="relative mx-auto h-full max-w-2xl px-4 md:px-0">
@@ -138,7 +147,7 @@ export function TileLayout({ chatOpen }: TileLayoutProps) {
                   layoutId="agent"
                   initial={{
                     opacity: 0,
-                    scale: 0,
+                    scale: chatOpen ? 1 : 5,
                   }}
                   animate={{
                     opacity: 1,
@@ -153,23 +162,16 @@ export function TileLayout({ chatOpen }: TileLayoutProps) {
                     chatOpen && "border-input/50 drop-shadow-lg/10 delay-200",
                   )}
                 >
-                  <BarVisualizer
-                    barCount={5}
-                    state={!isConnected ? "connecting" : agentState}
-                    options={{ minHeight: 5 }}
-                    trackRef={agentAudioTrack}
+                  <AgentAudioVisualizerAura
+                    state={agentState}
+                    color={auraColor}
+                    colorShift={0.1}
+                    themeMode={"light"}
+                    audioTrack={agentAudioTrack}
                     className={cn(
                       "flex h-full items-center justify-center gap-1",
                     )}
-                  >
-                    <span
-                      className={cn([
-                        "bg-muted min-h-2.5 w-2.5 rounded-full",
-                        "origin-center transition-colors duration-250 ease-linear",
-                        "data-[lk-highlighted=true]:bg-foreground data-[lk-muted=true]:bg-muted",
-                      ])}
-                    />
-                  </BarVisualizer>
+                  ></AgentAudioVisualizerAura>
                 </MotionContainer>
               )}
 
