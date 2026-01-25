@@ -20,6 +20,5 @@
   },
   "registries": {
     "@react-bits": "https://reactbits.dev/r/{name}.json",
-    "@agents-ui": "https://livekit.io/ui/r/{name}.json"
   }
 }

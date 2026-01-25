@@ -66,14 +66,12 @@ export const createToken = async ({
       );
     }
 
-    console.log("creating conversation");
     const conversationId = await fetchAuthMutation(
       api.agent.conversation.createConversation,
       {
         characterId: character._id,
       },
     );
-    console.log("conversation created");
 
     const participantName = "user";
     // TODO: el padre puede entrar a la misma sala que el usuario en futuras versiones de daimo, asi que arreglar esto
@@ -81,29 +79,19 @@ export const createToken = async ({
     // TODO: usar id de conversacion
     const roomName = `${conversationId}`;
 
-    // ---------------------------------------------------------
-    // 2. NUEVO: Inyectar la Metadata en la Sala usando RoomServiceClient
-    // ---------------------------------------------------------
-    if (characterId) {
-      const roomService = new RoomServiceClient(
-        LIVEKIT_URL,
-        API_KEY,
-        API_SECRET,
-      );
+    const roomService = new RoomServiceClient(LIVEKIT_URL, API_KEY, API_SECRET);
 
-      // Creamos la sala explícitamente para pegarle la metadata
-      await roomService.createRoom({
-        name: roomName,
-        emptyTimeout: 60, // La sala se cierra si nadie entra en 60s
-        metadata: JSON.stringify({
-          characterId, // <--- AQUÍ VA TU METADATA PARA EL AGENTE
-          userId: session.user.id,
-          conversationId,
-          isFirstTime,
-        }),
-      });
-    }
-    // ---------------------------------------------------------
+    // Creamos la sala explícitamente para pegarle la metadata
+    await roomService.createRoom({
+      name: roomName,
+      emptyTimeout: 60, // La sala se cierra si nadie entra en 60s
+      metadata: JSON.stringify({
+        characterId, // <--- AQUÍ VA TU METADATA PARA EL AGENTE
+        userId: session.user.id,
+        conversationId,
+        isFirstTime,
+      }),
+    });
 
     // 3. Generar el token (Esto sigue igual)
     const participantToken = await createParticipantToken(

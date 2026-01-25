@@ -40,7 +40,7 @@ export function Playground({
 }: AppProps) {
   const token = useMemo(() => {
     return TokenSource.literal(tokenSource);
-  }, []);
+  }, [tokenSource]);
 
   const session = useSession(token);
 

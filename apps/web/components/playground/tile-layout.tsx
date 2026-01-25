@@ -114,6 +114,14 @@ export function TileLayout({ chatOpen }: TileLayoutProps) {
   const videoWidth = agentVideoTrack?.publication.dimensions?.width ?? 0;
   const videoHeight = agentVideoTrack?.publication.dimensions?.height ?? 0;
 
+  const auraColor = useMemo(() => {
+    if (typeof window === "undefined") return "#1FD5F9";
+    const value = getComputedStyle(document.documentElement)
+      .getPropertyValue("--color-primary")
+      .trim();
+    return value || "#1FD5F9";
+  }, []);
+
   return (
     <div className="pointer-events-none fixed inset-x-0 top-8 bottom-32 z-50 md:top-12 md:bottom-40">
       <div className="relative mx-auto h-full max-w-2xl px-4 md:px-0">
@@ -156,7 +164,7 @@ export function TileLayout({ chatOpen }: TileLayoutProps) {
                 >
                   <AgentAudioVisualizerAura
                     state={agentState}
-                    color="var(--color-primary)"
+                    color={auraColor}
                     colorShift={0.1}
                     themeMode={"light"}
                     audioTrack={agentAudioTrack}

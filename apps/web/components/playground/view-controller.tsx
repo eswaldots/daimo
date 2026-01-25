@@ -75,7 +75,7 @@ export function ViewController({
         setModal(true);
       }, 1000);
     }
-  }, [start]);
+  }, [start, room]);
 
   useEffect(() => {
     checkMicPermission();
@@ -111,7 +111,10 @@ export function ViewController({
                     audio: true,
                   });
 
-                  start();
+                  if (room.state === ConnectionState.Disconnected) {
+                    start();
+                  }
+
                   setModal(false);
                 } catch (e) {
                   Sentry.captureException(e);

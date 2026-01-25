@@ -9,17 +9,23 @@ import { createToken } from "@/lib/actions";
 
 export default async function Page({
   params,
+  searchParams,
 }: {
   params: Promise<{ characterId: Id<"characters">; isFirstTime?: boolean }>;
+  searchParams: Promise<{ isFirstTime?: string }>;
 }) {
-  const { characterId, isFirstTime } = await params;
+  const { characterId } = await params;
+  const { isFirstTime } = await searchParams;
+  const isFirstTimeFlag = isFirstTime === "true";
+
   try {
     const query = await preloadQuery(api.characters.getById, { characterId });
     const hdrs = await headers();
     const appConfig = await getAppConfig(hdrs);
+
     const data = await createToken({
       characterId: characterId,
-      isFirstTime: !!isFirstTime,
+      isFirstTime: isFirstTimeFlag,
     });
 
     return (
@@ -27,7 +33,7 @@ export default async function Page({
         preloadedCharacter={query}
         appConfig={appConfig}
         tokenSource={{
-          serverUrl: process.env.LIVEKIT_URL!,
+          serverUrl: data.serverUrl,
           participantToken: data.participantToken,
         }}
       />

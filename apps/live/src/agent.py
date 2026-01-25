@@ -327,10 +327,13 @@ async def my_agent(ctx: JobContext):
         
         await inject_memories_to_context(text)
 
-        asyncio.gather(
+        for coro in (
             add_message(conversation_id, text, "user"),
-            save_memory(character_id, user_id, conversation_id, text)
-        )
+            save_memory(character_id, user_id, conversation_id, text),
+        ):
+            task = asyncio.create_task(coro)
+            _active_tasks.add(task)
+            task.add_done_callback(_active_tasks.discard)
 
     @session.on("conversation_item_added")
     def on_conversation_item_added(event: ConversationItemAddedEvent):
