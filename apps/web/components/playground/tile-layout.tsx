@@ -115,7 +115,7 @@ export function TileLayout({ chatOpen }: TileLayoutProps) {
   const videoHeight = agentVideoTrack?.publication.dimensions?.height ?? 0;
 
   const auraColor = useMemo(() => {
-    if (typeof window === "undefined") return "#1FD5F9";
+    if (typeof window === "undefined") return "#1FD5F7";
     const value = getComputedStyle(document.documentElement)
       .getPropertyValue("--color-primary")
       .trim();
@@ -162,16 +162,23 @@ export function TileLayout({ chatOpen }: TileLayoutProps) {
                     chatOpen && "border-input/50 drop-shadow-lg/10 delay-200",
                   )}
                 >
-                  <AgentAudioVisualizerAura
-                    state={agentState}
-                    color={auraColor}
-                    colorShift={0.1}
-                    themeMode={"light"}
-                    audioTrack={agentAudioTrack}
+                  <BarVisualizer
+                    state={!isConnected ? "connecting" : agentState}
+                    barCount={5}
+                    options={{ minHeight: 5 }}
+                    track={agentAudioTrack}
                     className={cn(
                       "flex h-full items-center justify-center gap-1",
                     )}
-                  ></AgentAudioVisualizerAura>
+                  >
+                    <span
+                      className={cn([
+                        "bg-muted min-h-2.5 w-2.5 rounded-full",
+                        "origin-center transition-colors duration-250 ease-linear",
+                        "data-[lk-highlighted=true]:bg-foreground data-[lk-muted=true]:bg-muted",
+                      ])}
+                    />
+                  </BarVisualizer>
                 </MotionContainer>
               )}
 
