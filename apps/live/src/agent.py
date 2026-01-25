@@ -1,4 +1,5 @@
 from functools import partial
+from google.genai import types
 from openai.types.audio import TranscriptionSegment
 import asyncio
 import json
@@ -78,7 +79,6 @@ Aqui hay algunas memorias importantes del usuario:
 - Para recordar CUALQUIER COSA sobre el usuario (su nombre, qué le gusta, de qué hablaron ayer), DEBES usar la herramienta `consult_memory`.
 - Si el usuario dice "¿Te acuerdas de...?" o "¿Qué me gusta...?", tu primera acción DEBE ser llamar a `consult_memory`.
 - No pidas perdón por buscar, solo hazlo de forma invisible.
-
 """
 
 logger = logging.getLogger("agent")
@@ -138,22 +138,22 @@ class Assistant(Agent):
         self.user_id = user_id
         self.character_id = character_id
 
-    # @function_tool()
-    # async def consult_memory(self, context: RunContext, search_text: str):
-    #     """
-    #     Busca información del usuario.
-    #     Args:
-    #          search_text: Texto simple para buscar. Si no estás seguro, usa una palabra general.
-    #     """
-    #     logger.info(f"Searching memory about: {search_text}")
-    #
-    #     memories = await retrieve_memories(self.character_id, self.user_id, search_text)
-    #
-    #     if not memories:
-    #         return "No hay memorias específicas sobre esto."
-    #
-    #     logger.info(f"Memoria encontrada: {memories}")
-    #     return f"MEMORIAS ENCONTRADAS SOBRE '{search_text}':\n{memories}"
+    @function_tool()
+    async def consult_memory(self, context: RunContext, search_text: str):
+        """
+        Busca información del usuario USALA SIEMPRE QUE LO VEAS NECESARIO.
+        Args:
+             search_text: Texto simple para buscar. Si no estás seguro, usa una palabra general.
+        """
+        logger.info(f"Searching memory about: {search_text}")
+
+        memories = await retrieve_memories(self.character_id, self.user_id, search_text)
+
+        if not memories:
+            return "No hay memorias específicas sobre esto."
+
+        logger.info(f"Memoria encontrada: {memories}")
+        return f"MEMORIAS ENCONTRADAS SOBRE '{search_text}':\n{memories}"
 
 
 server = AgentServer()
@@ -255,6 +255,11 @@ async def my_agent(ctx: JobContext):
                 instructions=instructions,
                 enable_affective_dialog=True,
                 model="gemini-2.5-flash-native-audio-preview-12-2025",
+                thinking_config=types.ThinkingConfig(
+                    include_thoughts=False,
+                    thinking_level=types.ThinkingLevel.MINIMAL,
+                    thinking_budget=0
+                ),
             ),
             vad=ctx.proc.userdata["vad"],
         )
@@ -300,7 +305,7 @@ async def my_agent(ctx: JobContext):
         chat_ctx: ChatContext = session.current_agent.chat_ctx.copy()
 
         chat_ctx.add_message(
-            role="assistant",
+            role="system",
             content=[f"MEMORIA RECUPERADA (Información Contextual):\n{memories_text}"]
         )
 
