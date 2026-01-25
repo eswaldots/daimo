@@ -1,3 +1,5 @@
+// @ts-nocheck TODO: there is a weird config of typescript monorepos
+
 import { httpRouter } from "convex/server";
 import { authComponent, createAuth } from "./auth";
 
