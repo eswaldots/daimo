@@ -52,7 +52,6 @@ export const getMetadataRoom = query({
       (await ctx.runQuery(internal.agent.memory.getCoreMemories, {
         characterId: characterId,
         userId: userId,
-        n: 5,
       })) ?? [];
 
     // if user doesn't have children only returns the user data

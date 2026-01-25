@@ -45,7 +45,7 @@ export const retrieve = serverAction({
 });
 
 export const getCoreMemories = internalQuery({
-  args: { userId: v.string(), characterId: v.id("characters"), n: v.number() },
+  args: { userId: v.string(), characterId: v.id("characters") },
   handler: async (ctx, args) => {
     const coreMemories = await ctx.db
       .query("memories")
@@ -65,10 +65,7 @@ export const getCoreMemories = internalQuery({
       .order("desc")
       .take(3);
 
-    return {
-      ...coreMemories,
-      ...recentMemories,
-    };
+    return [...coreMemories, ...recentMemories];
   },
 });
 
