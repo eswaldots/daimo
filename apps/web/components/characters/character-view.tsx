@@ -240,7 +240,7 @@ export default function CharacterView({
 
               <motion.div className="z-40 flex-col md:flex-row md:w-auto w-full flex items-start gap-3 md:bg-transparent bg-background md:my-4 -mt-8">
                 <Button
-                  className="w-full md:w-fit md:rounded-full rounded-xl squircle font-medium h-12 md:h-10 text-base"
+                  className="w-full md:w-fit md:rounded-full rounded-full squircle font-medium h-12 md:h-10 text-base"
                   size="lg"
                   onClick={() => {
                     if (!session) {
