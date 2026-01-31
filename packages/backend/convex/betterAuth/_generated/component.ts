@@ -1020,6 +1020,13 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
       >;
     };
     user: {
+      getCurrentUser: FunctionReference<
+        "mutation",
+        "internal",
+        { completedOnboarding: boolean; userId: string },
+        any,
+        Name
+      >;
       setCompletedOnboarding: FunctionReference<
         "mutation",
         "internal",

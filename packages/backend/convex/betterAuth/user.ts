@@ -10,3 +10,13 @@ export const setCompletedOnboarding = mutation({
     return await ctx.db.patch(userId, { completedOnboarding });
   },
 });
+
+export const getCurrentUser = mutation({
+  args: {
+    userId: v.id("user"),
+    completedOnboarding: v.boolean(),
+  },
+  handler: async (ctx, { userId, completedOnboarding }) => {
+    return await ctx.db.patch(userId, { completedOnboarding });
+  },
+});

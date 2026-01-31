@@ -341,17 +341,23 @@ async def my_agent(ctx: JobContext):
     def on_close():
         # Usamos create_task para que sea non-blocking al cerrar
         asyncio.create_task(run_async(update_conversation_state, conversation_id, False))
-    async def process_user_message(text: str):
+    async def process_user_message(text: str, role: ChatRole):
         """
         Procesa el mensaje del usuario en segundo plano:
         1. Detecta intención y busca memoria.
         2. Inyecta contexto si es necesario.
         3. Guarda el mensaje y memorias nuevas en BD.
         """
+        if role == "assistant":
+            task = asyncio.create_task(add_message(conversation_id, text, "assistant"))
+            _active_tasks.add(task)
+            task.add_done_callback(_active_tasks.discard)
+            return
+
         last_assistant_msg = ""
         
         if session.current_agent and session.current_agent.chat_ctx:
-            messages = session.current_agent.chat_ctx.messages
+            messages = session.current_agent.chat_ctx.items
             # Recorremos hacia atrás para encontrar el último 'assistant'
             for msg in reversed(messages):
                 if msg.role == "assistant" and msg.content:
@@ -360,23 +366,27 @@ async def my_agent(ctx: JobContext):
                     elif isinstance(msg.content, list):
                         last_assistant_msg = " ".join([str(c) for c in msg.content])
                     break
-        
-        # await inject_memories_to_context(text)
 
-        for coro in (
-            add_message(conversation_id, text, "user"),
-            save_memory(character_id, user_id, conversation_id, text, last_assistant_msg),
-        ):
-            task = asyncio.create_task(coro)
-            _active_tasks.add(task)
-            task.add_done_callback(_active_tasks.discard)
+        async def save_all():
+            try:
+                # gather corre ambas a la vez y espera a que terminen
+                await asyncio.gather(
+                    add_message(conversation_id, text, "user"),
+                    save_memory(character_id, user_id, conversation_id, text, last_assistant_msg)
+                )
+            except Exception as e:
+                print(f"Error guardando datos: {e}")
+
+        task = asyncio.create_task(save_all())
+        _active_tasks.add(task)
+        task.add_done_callback(_active_tasks.discard)
 
     @session.on("conversation_item_added")
     def on_conversation_item_added(event: ConversationItemAddedEvent):
-        if event.item.role == "user" and event.item.text_content:
-            text = event.item.text_content
-            
-            asyncio.create_task(process_user_message(text))
+        for content in event.item.content:
+            if isinstance(content, str):
+                asyncio.create_task(process_user_message(content, event.item.role))
+
 
     await session.start(
         agent=Assistant(

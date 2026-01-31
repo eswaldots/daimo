@@ -1,13 +1,14 @@
 import { embed, generateText, Output } from "ai";
 import { groq } from "@ai-sdk/groq";
 import { asyncMap } from "convex-helpers";
-import { internalMutation, internalQuery } from "../_generated/server";
+import { internalMutation, internalQuery, query } from "../_generated/server";
 import { google } from "@ai-sdk/google";
 import { ConvexError, v } from "convex/values";
 import { internal } from "../_generated/api";
 import { Doc } from "../_generated/dataModel";
 import { serverAction } from "../utils";
 import { z } from "zod";
+import { authComponent } from "../auth";
 
 export const MEMORY_ACCESS_THROTTLE = 300_000;
 
@@ -257,5 +258,26 @@ export const insertMemoryMutation = internalMutation({
       lastAccess: Date.now(),
       data: { type: "conversation", conversationId: args.conversationId },
     });
+  },
+});
+
+export const getByCharacter = query({
+  args: {
+    characterId: v.string(),
+  },
+  handler: async (ctx, { characterId }) => {
+    const user = await authComponent.getAuthUser(ctx);
+
+    if (!user) {
+      throw new ConvexError("Usuario no encontrado");
+    }
+
+    return await ctx.db
+      .query("memories")
+      .withIndex("userId_characterId", (q) =>
+        q.eq("userId", user._id).eq("characterId", characterId),
+      )
+      .order("desc")
+      .collect();
   },
 });
