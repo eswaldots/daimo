@@ -43,6 +43,7 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
    --color-modal-background: var(--modal-background);
+	--accent-success: var(--accent-success);
 }
 
 :root {

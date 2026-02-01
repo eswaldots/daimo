@@ -43,7 +43,7 @@ export const memoryFields = {
 };
 
 export const agentSchema = {
-  conversations: defineTable(conversationFields),
+  conversations: defineTable(conversationFields).index("userId", ["userId"]),
   messages: defineTable(messageFields),
   memories: defineTable(memoryFields)
     .index("embeddingId_characterId", ["embeddingId", "characterId"])

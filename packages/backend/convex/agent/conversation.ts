@@ -1,5 +1,5 @@
 import { ConvexError, v } from "convex/values";
-import { mutation } from "../_generated/server";
+import { mutation, query } from "../_generated/server";
 import { authComponent } from "../auth";
 import { conversationFields } from "./schema";
 import { serverMutation } from "../utils";
@@ -32,5 +32,23 @@ export const updateConversationState = serverMutation({
     await ctx.db.patch(conversationId, {
       isLive,
     });
+  },
+});
+
+export const getConversationsByUserId = query({
+  args: {
+    userId: v.string(),
+  },
+  handler: async (ctx, { userId }) => {
+    const user = await authComponent.getAuthUser(ctx);
+
+    if (user.role !== "admin") {
+      throw new ConvexError("Unauthorized");
+    }
+
+    return await ctx.db
+      .query("conversations")
+      .withIndex("userId", (q) => q.eq("userId", userId))
+      .collect();
   },
 });
