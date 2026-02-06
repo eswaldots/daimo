@@ -14,9 +14,8 @@ import {
 import { NavUser } from "./nav-user";
 import { Session } from "@/lib/types";
 import { Home, User } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { useTheme } from "next-themes";
 
 /**
  * Render the application's left sidebar with header, primary navigation, and current-user footer.
@@ -28,13 +27,11 @@ import { useTheme } from "next-themes";
  * @returns The sidebar JSX element containing header, navigation content, and footer user display.
  */
 export default function HomeSidebar({ session }: { session: Session }) {
-  const router = useRouter();
   const pathname = usePathname();
-  const { theme, setTheme } = useTheme();
 
   return (
-    <Sidebar className="border-border">
-      <SidebarHeader className="pt-4 px-4">
+    <Sidebar className="bg-background border-none">
+      <SidebarHeader className="pt-4 px-4 bg-background">
         <SidebarMenu>
           <SidebarMenuButton className="hover:bg-transparent active:bg-transparent">
             <Link href="/home">
@@ -45,7 +42,7 @@ export default function HomeSidebar({ session }: { session: Session }) {
           </SidebarMenuButton>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="bg-background">
         <SidebarGroup className="px-4">
           <SidebarGroupContent className="flex flex-col gap-1">
             {/*<CreateCharacter />*/}
@@ -80,7 +77,7 @@ export default function HomeSidebar({ session }: { session: Session }) {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="pb-4 px-4">
+      <SidebarFooter className="pb-4 px-4 bg-background">
         <NavUser
           user={{
             avatar: session.user.image ?? "",
@@ -92,4 +89,3 @@ export default function HomeSidebar({ session }: { session: Session }) {
     </Sidebar>
   );
 }
-

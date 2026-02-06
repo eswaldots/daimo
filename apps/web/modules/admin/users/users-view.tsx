@@ -10,7 +10,7 @@ const UsersView = () => {
 
   return (
     <main>
-      <h1 className="text-2xl font-semibold tracking-tighter">Usuarios</h1>
+      <h1 className="text-3xl font-semibold tracking-tighter">Usuarios</h1>
 
       <SearchInput className="my-6" placeholder="Busca a usuarios por nombre" />
 

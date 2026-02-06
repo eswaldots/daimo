@@ -1,6 +1,4 @@
 import { ColumnDef } from "@tanstack/react-table";
-// TODO: ???
-import { Doc } from "../../../../../../packages/backend/convex/betterAuth/_generated/dataModel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { authClient } from "@/lib/auth/auth-client";
@@ -13,8 +11,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Ellipsis } from "lucide-react";
 import Link from "next/link";
+import { api } from "@daimo/backend";
+import { FunctionReturnType } from "convex/server";
+import { useIsMobile } from "@/hooks/use-mobile";
 
-export const userColums: ColumnDef<Doc<"user">>[] = [
+type UserArray = FunctionReturnType<typeof api.auth.users.getAllUsers>;
+
+type ElementType<T> = T extends (infer U)[] ? U : never;
+
+type UserWithInfo = ElementType<UserArray>;
+
+export const userColums: ColumnDef<UserWithInfo>[] = [
   {
     accessorKey: "name",
     header: "Nombre",
@@ -49,7 +56,8 @@ export const userColums: ColumnDef<Doc<"user">>[] = [
   {
     header: "Acciones",
     cell: ({ row }) => {
-      const { _id } = row.original;
+      const { _id, lastConversation } = row.original;
+      const isMobile = useIsMobile();
 
       return (
         <DropdownMenu>
@@ -60,7 +68,13 @@ export const userColums: ColumnDef<Doc<"user">>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="min-w-48">
             <DropdownMenuItem asChild>
-              <Link href={`/admin/users/${_id}/conversations`}>
+              <Link
+                href={
+                  isMobile
+                    ? `/admin/users/${_id}/conversations/`
+                    : `/admin/users/${_id}/conversations/${lastConversation._id}`
+                }
+              >
                 Ver conversaciones
               </Link>
             </DropdownMenuItem>
