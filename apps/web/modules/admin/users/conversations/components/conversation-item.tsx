@@ -17,10 +17,9 @@ const ConversationItem = (
 ) => {
   return (
     <SidebarMenuItem>
-      <Link
-        href={`/admin/users/${conversation.userId}/conversations/${conversation._id}`}
+      <div
         className={cn(
-          "flex items-center gap-3 px-3 py-2 hover:bg-secondary rounded-md cursor-pointer transition-colors",
+          "flex items-center gap-3 px-3 py-2 hover:bg-secondary rounded-md cursor-pointer transition-colors ",
           conversation.isActive && "bg-foreground/10 hover:bg-foreground/20",
         )}
       >
@@ -48,12 +47,12 @@ const ConversationItem = (
             )}
           </div>
 
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground max-w-full truncate">
             {conversation.title ?? "Sin titulo"} ·{" "}
             {new Date(conversation._creationTime).toLocaleDateString()}
           </p>
         </div>
-      </Link>
+      </div>
     </SidebarMenuItem>
   );
 };

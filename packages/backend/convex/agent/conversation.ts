@@ -71,7 +71,14 @@ export const getConversationsByUserId = query({
     const conversations = await ctx.db
       .query("conversations")
       .withIndex("userId", (q) => q.eq("userId", userId))
+      .order("desc")
       .collect();
+
+    const userById = await authComponent.getAnyUserById(ctx, userId);
+
+    if (!user) {
+      throw new ConvexError("Doesn't exists");
+    }
 
     const conversationsWithCharacter = await asyncMap(
       conversations,
@@ -93,7 +100,7 @@ export const getConversationsByUserId = query({
     );
 
     return {
-      user: user,
+      user: userById,
       conversations: conversationsWithCharacter.filter(Boolean),
     };
   },

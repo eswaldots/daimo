@@ -5,6 +5,7 @@ import { authComponent } from "../auth";
 import { asyncMap } from "convex-helpers";
 import { Doc } from "../_generated/dataModel";
 import { Doc as AuthDoc } from "../betterAuth/_generated/dataModel";
+import { paginationOptsValidator, PaginationResult } from "convex/server";
 
 type UserWithInfo = AuthDoc<"user"> & {
   lastConversation: Doc<"conversations"> | null;
@@ -13,8 +14,12 @@ type UserWithInfo = AuthDoc<"user"> & {
 export const getAllUsers = query({
   args: {
     search: v.optional(v.string()),
+    paginationOpts: paginationOptsValidator,
   },
-  handler: async (ctx, { search }): Promise<UserWithInfo[]> => {
+  handler: async (
+    ctx,
+    { search, paginationOpts },
+  ): Promise<PaginationResult<UserWithInfo>> => {
     const user = await authComponent.getAuthUser(ctx);
 
     if (user?.role !== "admin") {
@@ -23,19 +28,25 @@ export const getAllUsers = query({
 
     const users = await ctx.runQuery(components.betterAuth.user.getAllUsers, {
       search,
+      paginationOpts,
     });
 
-    const usersWithInfo = await asyncMap(users, async (user) => {
-      const lastConversation: Doc<"conversations"> | null = await ctx.runQuery(
-        internal.agent.conversation.getLatestConversationOfUser,
-        { userId: user._id },
-      );
+    const usersWithInfo = await asyncMap(
+      // @ts-ignore muerdelo
+      users?.page ?? users,
+      async (user: { _id: string }) => {
+        const lastConversation: Doc<"conversations"> | null =
+          await ctx.runQuery(
+            internal.agent.conversation.getLatestConversationOfUser,
+            { userId: user._id },
+          );
 
-      return { ...user, lastConversation };
-    });
+        return { ...user, lastConversation };
+      },
+    );
 
     // @ts-expect-error this is because will not return an id from convex main component
-    return usersWithInfo;
+    return { page: usersWithInfo, ...users };
   },
 });
 

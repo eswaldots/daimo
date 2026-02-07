@@ -60,7 +60,11 @@ const ConversationHeader = () => {
           <ArrowLeft className="size-5" />
         </Button>
       )}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        key={data?.character.image}
+      >
         <Avatar className="size-9">
           <AvatarImage src={data?.character?.image ?? ""} className="size-9" />
         </Avatar>
@@ -188,7 +192,7 @@ const SkeletonBody = () => {
             >
               <Message
                 from={i % 2 === 0 ? "assistant" : "user"}
-                className="rounded-full"
+                className="rounded-[20px]"
               >
                 <MessageContent>
                   <Skeleton className="h-4 w-64" />

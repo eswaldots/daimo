@@ -11,15 +11,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { Ellipsis } from "lucide-react";
 import Link from "next/link";
-import { api } from "@daimo/backend";
-import { FunctionReturnType } from "convex/server";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { UserWithRole } from "better-auth/plugins";
+// TODO: ???
+import { Id } from "../../../../../../packages/backend/convex/betterAuth/_generated/dataModel";
+import { Doc } from "@daimo/backend";
 
-type UserArray = FunctionReturnType<typeof api.auth.users.getAllUsers>;
-
-type ElementType<T> = T extends (infer U)[] ? U : never;
-
-type UserWithInfo = ElementType<UserArray>;
+type UserWithInfo = {
+  _id: Id<"user">;
+  role?: string | null;
+  _creationTime: number;
+  lastConversation: Doc<"conversations"> | null;
+} & Omit<Omit<UserWithRole, "id">, "updatedAt">;
 
 export const userColumns: ColumnDef<UserWithInfo>[] = [
   {

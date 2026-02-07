@@ -1,7 +1,12 @@
 import { v } from "convex/values";
+import { paginator } from "convex-helpers/server/pagination";
 import { doc } from "convex-helpers/validators";
 import { mutation, query } from "./_generated/server";
 import schema from "./schema";
+import {
+  paginationOptsValidator,
+  paginationResultValidator,
+} from "convex/server";
 
 export const setCompletedOnboarding = mutation({
   args: {
@@ -14,18 +19,25 @@ export const setCompletedOnboarding = mutation({
 });
 
 export const getAllUsers = query({
-  returns: v.array(doc(schema, "user")),
+  returns: v.union(
+    paginationResultValidator(doc(schema, "user")),
+    v.array(doc(schema, "user")),
+  ),
   args: {
     search: v.optional(v.string()),
+    paginationOpts: paginationOptsValidator,
   },
-  handler: async (ctx, { search }) => {
-    const usersQuery = ctx.db.query("user");
-
+  handler: async (ctx, { search, paginationOpts }) => {
     if (search) {
-      return await usersQuery
+      return await ctx.db
+        .query("user")
         .withSearchIndex("search_name", (q) => q.search("name", search))
-        .collect();
-    } else return await usersQuery.order("desc").collect();
+        .take(5);
+    } else
+      return await paginator(ctx.db, schema)
+        .query("user")
+        .order("desc")
+        .paginate(paginationOpts);
   },
 });
 
@@ -39,5 +51,12 @@ export const getById = query({
       .query("user")
       .withIndex("by_id", (q) => q.eq("_id", id))
       .unique();
+  },
+});
+
+export const createUser = mutation({
+  args: doc(schema, "user").omit("_id").omit("_creationTime"),
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("user", { ...args });
   },
 });

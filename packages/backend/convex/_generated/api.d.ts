@@ -30,6 +30,7 @@ import type * as storage from "../storage.js";
 import type * as subscriptions from "../subscriptions.js";
 import type * as tags from "../tags.js";
 import type * as tags_internal from "../tags/internal.js";
+import type * as testing from "../testing.js";
 import type * as utils from "../utils.js";
 
 import type {
@@ -61,6 +62,7 @@ declare const fullApi: ApiFromModules<{
   subscriptions: typeof subscriptions;
   tags: typeof tags;
   "tags/internal": typeof tags_internal;
+  testing: typeof testing;
   utils: typeof utils;
 }>;
 
@@ -1082,13 +1084,10 @@ export declare const components: {
       >;
     };
     user: {
-      getAllUsers: FunctionReference<
-        "query",
+      createUser: FunctionReference<
+        "mutation",
         "internal",
-        { search?: string },
-        Array<{
-          _creationTime: number;
-          _id: string;
+        {
           banExpires?: null | number;
           banReason?: null | string;
           banned?: null | boolean;
@@ -1101,7 +1100,61 @@ export declare const components: {
           role?: null | string;
           updatedAt: number;
           userId?: null | string;
-        }>
+        },
+        any
+      >;
+      getAllUsers: FunctionReference<
+        "query",
+        "internal",
+        {
+          paginationOpts: {
+            cursor: string | null;
+            endCursor?: string | null;
+            id?: number;
+            maximumBytesRead?: number;
+            maximumRowsRead?: number;
+            numItems: number;
+          };
+          search?: string;
+        },
+        | {
+            continueCursor: string;
+            isDone: boolean;
+            page: Array<{
+              _creationTime: number;
+              _id: string;
+              banExpires?: null | number;
+              banReason?: null | string;
+              banned?: null | boolean;
+              completedOnboarding?: null | boolean;
+              createdAt: number;
+              email: string;
+              emailVerified: boolean;
+              image?: null | string;
+              name: string;
+              role?: null | string;
+              updatedAt: number;
+              userId?: null | string;
+            }>;
+            pageStatus?: "SplitRecommended" | "SplitRequired" | null;
+            splitCursor?: string | null;
+          }
+        | Array<{
+            _creationTime: number;
+            _id: string;
+            banExpires?: null | number;
+            banReason?: null | string;
+            banned?: null | boolean;
+            completedOnboarding?: null | boolean;
+            createdAt: number;
+            email: string;
+            emailVerified: boolean;
+            image?: null | string;
+            name: string;
+            role?: null | string;
+            updatedAt: number;
+            userId?: null | string;
+          }>
       >;
       getById: FunctionReference<
         "query",

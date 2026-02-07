@@ -6,6 +6,9 @@ import { useParams } from "next/navigation";
 import { ConversationItem } from "./components/conversation-item";
 import { InfoIcon } from "lucide-react";
 import { motion } from "motion/react";
+import Link from "next/link";
+
+const AnimatedLink = motion.create(Link);
 
 export const ConversationsListView = (props: {
   preloadedConversations: Preloaded<
@@ -40,10 +43,11 @@ export const ConversationsListView = (props: {
         {conversations
           .filter((conversation) => !!conversation)
           .map((conversation, i) => (
-            <motion.div
+            <AnimatedLink
               className="flex flex-col active:bg-secondary rounded-xl"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
+              href={`/admin/users/${conversation.userId}/conversations/${conversation._id}`}
               key={conversation?._id}
               transition={{ delay: i * 0.025 + 0.25 }}
             >
@@ -57,7 +61,7 @@ export const ConversationsListView = (props: {
                 <InfoIcon className="size-6 text-accent" strokeWidth={1.25} />
               </div>
               <div className="w-full border-t border-border [mask-image:linear-gradient(to_right,transparent,white_20%,white_80%,transparent)]"></div>
-            </motion.div>
+            </AnimatedLink>
           ))}
       </ul>
     </main>

@@ -7,6 +7,7 @@ import { Preloaded, usePreloadedQuery } from "convex/react";
 import { useParams } from "next/navigation";
 import { ReactNode } from "react";
 import { ConversationItem } from "./conversation-item";
+import Link from "next/link";
 
 export const ConversationsLayout = (props: {
   preloadedConversations: Preloaded<
@@ -26,7 +27,7 @@ export const ConversationsLayout = (props: {
       {!isMobile && (
         <div className="flex flex-col items-start w-sm ml-1 h-screen border-r border-border py-4 px-4">
           <h1 className="text-lg font-medium tracking-tight">
-            Historial de {user.name.split(" ")[0]}
+            Historial de {user?.name.split(" ")[0]}
           </h1>
 
           <SearchInput
@@ -34,15 +35,19 @@ export const ConversationsLayout = (props: {
             className="md:w-full my-4 rounded-md"
           />
 
-          <ul className="h-full overflow-y-scroll w-full space-y-1 active:bg-secondary">
+          <ul className="h-full overflow-y-scroll w-full grid gap-1">
             {conversations
               .filter((conversation) => !!conversation)
               .map((conversation) => (
-                <ConversationItem
-                  {...conversation}
+                <Link
+                  href={`/admin/users/${conversation.userId}/conversations/${conversation._id}`}
                   key={conversation?._id ?? ""}
-                  isActive={conversationId === conversation?._id}
-                />
+                >
+                  <ConversationItem
+                    {...conversation}
+                    isActive={conversationId === conversation?._id}
+                  />
+                </Link>
               ))}
           </ul>
         </div>
