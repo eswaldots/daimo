@@ -29,7 +29,7 @@ export const ConversationsListView = (props: {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.25 }}
       >
-        Conversaciones de {user.name.split(" ")[0]}
+        Conversaciones de {user?.name.split(" ")[0]}
       </motion.h1>
 
       {/* TODO: implement a grep search through messages like whatsapp grep search*/}
