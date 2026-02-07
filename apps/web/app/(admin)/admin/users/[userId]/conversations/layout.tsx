@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 import { cache, ReactNode } from "react";
 
 type Props = {
-  params: Promise<{ userId: string; conversationId: string }>;
+  params: Promise<{ userId: string }>;
   children: ReactNode;
 };
 
