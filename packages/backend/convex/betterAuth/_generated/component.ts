@@ -1020,6 +1020,50 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
       >;
     };
     user: {
+      getAllUsers: FunctionReference<
+        "query",
+        "internal",
+        { search?: string },
+        Array<{
+          _creationTime: number;
+          _id: string;
+          banExpires?: null | number;
+          banReason?: null | string;
+          banned?: null | boolean;
+          completedOnboarding?: null | boolean;
+          createdAt: number;
+          email: string;
+          emailVerified: boolean;
+          image?: null | string;
+          name: string;
+          role?: null | string;
+          updatedAt: number;
+          userId?: null | string;
+        }>,
+        Name
+      >;
+      getById: FunctionReference<
+        "query",
+        "internal",
+        { id: string },
+        {
+          _creationTime: number;
+          _id: string;
+          banExpires?: null | number;
+          banReason?: null | string;
+          banned?: null | boolean;
+          completedOnboarding?: null | boolean;
+          createdAt: number;
+          email: string;
+          emailVerified: boolean;
+          image?: null | string;
+          name: string;
+          role?: null | string;
+          updatedAt: number;
+          userId?: null | string;
+        } | null,
+        Name
+      >;
       setCompletedOnboarding: FunctionReference<
         "mutation",
         "internal",

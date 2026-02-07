@@ -30,18 +30,21 @@ export default async function Layout({ children }: { children: ReactNode }) {
           "--header-height": "calc(var(--spacing) * 12)",
         } as React.CSSProperties
       }
+      className="flex flex-col"
     >
-      <HomeSidebar session={data} />
-      <SidebarInset className="relative dark:bg-muted bg-background">
-        <div className="flex flex-1 flex-col mx-auto w-full">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-4 md:py-10 md:pt-8 pt-18 md:px-10 px-4">
-              <Trigger />
-              <ViewTransition>{children}</ViewTransition>
+      <div className="flex flex-1">
+        <HomeSidebar session={data} />
+        <SidebarInset className="relative dark:bg-muted bg-background">
+          <div className="flex flex-1 flex-col mx-auto w-full">
+            <div className="@container/main flex flex-1 flex-col gap-2">
+              <div className="flex flex-col gap-4 py-4 md:gap-4 md:py-10 md:pt-8 pt-18 md:px-10 px-4">
+                <Trigger />
+                <ViewTransition>{children}</ViewTransition>
+              </div>
             </div>
           </div>
-        </div>
-      </SidebarInset>
+        </SidebarInset>
+      </div>
     </SidebarProvider>
   );
 }

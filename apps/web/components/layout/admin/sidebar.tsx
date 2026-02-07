@@ -50,7 +50,7 @@ export default function AdminSidebar({ session }: { session: Session }) {
   const { theme, setTheme } = useTheme();
 
   return (
-    <Sidebar className="border-input" variant="inset">
+    <Sidebar className="border-input" variant="sidebar">
       <SidebarHeader className="pt-4">
         <SidebarMenu>
           <SidebarMenuButton className="hover:bg-transparent">
@@ -72,18 +72,19 @@ export default function AdminSidebar({ session }: { session: Session }) {
             <SidebarMenuItem className="flex items-center gap-2">
               <SidebarMenuButton isActive={pathname === "/admin/users"} asChild>
                 <Link href="/admin/users">
-                  <Users2Icon strokeWidth={1.5} />
+                  <Users2Icon strokeWidth={1.5} className="size-5" />
                   Usuarios
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem className="flex items-center gap-2">
               <SidebarMenuButton
+                className="rounded-md text-sm tracking-wide font-medium"
                 isActive={pathname === "/admin/characters"}
                 asChild
               >
                 <Link href="/admin/characters">
-                  <ToyBrickIcon strokeWidth={1.5} />
+                  <ToyBrickIcon strokeWidth={1.5} className="size-5" />
                   Personajes
                 </Link>
               </SidebarMenuButton>
@@ -91,6 +92,7 @@ export default function AdminSidebar({ session }: { session: Session }) {
             <SidebarMenuItem className="flex items-center gap-2">
               <SidebarMenuButton
                 isActive={pathname === "/admin/voices"}
+                className="rounded-md text-sm tracking-wide font-medium"
                 asChild
               >
                 <Link href="/admin/voices">
@@ -103,6 +105,7 @@ export default function AdminSidebar({ session }: { session: Session }) {
               <SidebarMenuButton
                 isActive={pathname === "/admin/onboarding"}
                 asChild
+                className="rounded-md text-sm tracking-wide font-medium"
               >
                 <Link href="/admin/onboarding">
                   <Home strokeWidth={1.5} />
@@ -134,7 +137,7 @@ export default function AdminSidebar({ session }: { session: Session }) {
             <DropdownMenuContent side="top" className="md:max-w-full w-full">
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
-                  <PaletteIcon />
+                  <PaletteIcon className="size-5" />
                   Tema
                 </DropdownMenuSubTrigger>
                 <DropdownMenuPortal>
@@ -171,4 +174,3 @@ export default function AdminSidebar({ session }: { session: Session }) {
     </Sidebar>
   );
 }
-

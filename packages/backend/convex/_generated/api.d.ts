@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as agent_actions from "../agent/actions.js";
 import type * as agent_conversation from "../agent/conversation.js";
 import type * as agent_llm from "../agent/llm.js";
 import type * as agent_memory from "../agent/memory.js";
@@ -16,9 +17,11 @@ import type * as aggregate from "../aggregate.js";
 import type * as auth from "../auth.js";
 import type * as auth_apiKey from "../auth/apiKey.js";
 import type * as auth_onboarding from "../auth/onboarding.js";
+import type * as auth_users from "../auth/users.js";
 import type * as characters from "../characters.js";
 import type * as characters_internal from "../characters/internal.js";
 import type * as constants_plans from "../constants/plans.js";
+import type * as crons from "../crons.js";
 import type * as http from "../http.js";
 import type * as parental_children from "../parental/children.js";
 import type * as room from "../room.js";
@@ -36,6 +39,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "agent/actions": typeof agent_actions;
   "agent/conversation": typeof agent_conversation;
   "agent/llm": typeof agent_llm;
   "agent/memory": typeof agent_memory;
@@ -44,9 +48,11 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   "auth/apiKey": typeof auth_apiKey;
   "auth/onboarding": typeof auth_onboarding;
+  "auth/users": typeof auth_users;
   characters: typeof characters;
   "characters/internal": typeof characters_internal;
   "constants/plans": typeof constants_plans;
+  crons: typeof crons;
   http: typeof http;
   "parental/children": typeof parental_children;
   room: typeof room;
@@ -1076,6 +1082,48 @@ export declare const components: {
       >;
     };
     user: {
+      getAllUsers: FunctionReference<
+        "query",
+        "internal",
+        { search?: string },
+        Array<{
+          _creationTime: number;
+          _id: string;
+          banExpires?: null | number;
+          banReason?: null | string;
+          banned?: null | boolean;
+          completedOnboarding?: null | boolean;
+          createdAt: number;
+          email: string;
+          emailVerified: boolean;
+          image?: null | string;
+          name: string;
+          role?: null | string;
+          updatedAt: number;
+          userId?: null | string;
+        }>
+      >;
+      getById: FunctionReference<
+        "query",
+        "internal",
+        { id: string },
+        {
+          _creationTime: number;
+          _id: string;
+          banExpires?: null | number;
+          banReason?: null | string;
+          banned?: null | boolean;
+          completedOnboarding?: null | boolean;
+          createdAt: number;
+          email: string;
+          emailVerified: boolean;
+          image?: null | string;
+          name: string;
+          role?: null | string;
+          updatedAt: number;
+          userId?: null | string;
+        } | null
+      >;
       setCompletedOnboarding: FunctionReference<
         "mutation",
         "internal",
