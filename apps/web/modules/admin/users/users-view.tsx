@@ -3,7 +3,7 @@
 import SearchInput from "@/components/layout/search-input";
 import { useGetUsers } from "../hooks/queries";
 import { DataTable } from "@/components/ui/data-table";
-import { userColums } from "./components/users-columns";
+import { userColumns } from "./components/users-columns";
 import { useSearchParams } from "next/navigation";
 
 const UsersView = () => {
@@ -17,7 +17,7 @@ const UsersView = () => {
 
       <SearchInput className="my-6" placeholder="Busca a usuarios por nombre" />
 
-      {data && <DataTable columns={userColums} data={data} />}
+      {data && <DataTable columns={userColumns} data={data} />}
     </main>
   );
 };

@@ -21,7 +21,7 @@ type ElementType<T> = T extends (infer U)[] ? U : never;
 
 type UserWithInfo = ElementType<UserArray>;
 
-export const userColums: ColumnDef<UserWithInfo>[] = [
+export const userColumns: ColumnDef<UserWithInfo>[] = [
   {
     accessorKey: "name",
     header: "Nombre",

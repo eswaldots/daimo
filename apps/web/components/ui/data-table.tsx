@@ -36,7 +36,7 @@ export function DataTable<TData, TValue>({
     <AnimatePresence mode="sync">
       <motion.div
         className="overflow-hidden rounded-md"
-        key={String(data)}
+        key={JSON.stringify(data)}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
