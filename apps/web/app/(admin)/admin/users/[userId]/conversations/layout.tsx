@@ -2,7 +2,7 @@ import { fetchAuthQuery, preloadAuthQuery } from "@/lib/auth/auth-server";
 import { ConversationsLayout } from "@/modules/admin/users/conversations/components/conversations-layout";
 import { api } from "@daimo/backend";
 import { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { cache, ReactNode } from "react";
 
 type Props = {

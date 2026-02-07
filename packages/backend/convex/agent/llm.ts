@@ -33,6 +33,14 @@ export const generateTitle = internalAction({
       `,
     });
 
+    if (!output) {
+      console.warn(
+        "Failed to generate title for conversation",
+        args.conversationId,
+      );
+      return;
+    }
+
     await ctx.runMutation(internal.agent.conversation.updateConversationTitle, {
       title: output.title,
       conversationId: args.conversationId,

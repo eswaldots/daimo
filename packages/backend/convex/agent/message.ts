@@ -48,6 +48,10 @@ export const getMessagesByConversationId = query({
   handler: async (ctx, { id, paginationOpts }) => {
     const user = await authComponent.getAuthUser(ctx);
 
+    if (!user) {
+      throw new ConvexError("Unauthenticated");
+    }
+
     if (user.role !== "admin") {
       throw new ConvexError("Unauthorized");
     }

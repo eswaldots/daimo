@@ -1085,7 +1085,7 @@ export declare const components: {
       getAllUsers: FunctionReference<
         "query",
         "internal",
-        any,
+        { search?: string },
         Array<{
           _creationTime: number;
           _id: string;

@@ -26,7 +26,7 @@ export const ConversationsLayout = (props: {
       {!isMobile && (
         <div className="flex flex-col items-start w-sm ml-1 h-screen border-r border-border py-4 px-4">
           <h1 className="text-lg font-medium tracking-tight">
-            Historial de Aaron Avila
+            Historial de {user.name.split(" ")[0]}
           </h1>
 
           <SearchInput

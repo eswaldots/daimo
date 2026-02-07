@@ -11,14 +11,19 @@ type UserWithInfo = AuthDoc<"user"> & {
 };
 
 export const getAllUsers = query({
-  handler: async (ctx): Promise<UserWithInfo[]> => {
+  args: {
+    search: v.optional(v.string()),
+  },
+  handler: async (ctx, { search }): Promise<UserWithInfo[]> => {
     const user = await authComponent.getAuthUser(ctx);
 
     if (user?.role !== "admin") {
       throw new ConvexError("Unautorizado");
     }
 
-    const users = await ctx.runQuery(components.betterAuth.user.getAllUsers);
+    const users = await ctx.runQuery(components.betterAuth.user.getAllUsers, {
+      search,
+    });
 
     const usersWithInfo = await asyncMap(users, async (user) => {
       const lastConversation: Doc<"conversations"> | null = await ctx.runQuery(

@@ -15,8 +15,17 @@ export const setCompletedOnboarding = mutation({
 
 export const getAllUsers = query({
   returns: v.array(doc(schema, "user")),
-  handler: async (ctx) => {
-    return await ctx.db.query("user").collect();
+  args: {
+    search: v.optional(v.string()),
+  },
+  handler: async (ctx, { search }) => {
+    const usersQuery = ctx.db.query("user");
+
+    if (search) {
+      return await usersQuery
+        .withSearchIndex("search_name", (q) => q.search("name", search))
+        .collect();
+    } else return await usersQuery.order("desc").collect();
   },
 });
 

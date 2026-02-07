@@ -1023,7 +1023,7 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
       getAllUsers: FunctionReference<
         "query",
         "internal",
-        any,
+        { search?: string },
         Array<{
           _creationTime: number;
           _id: string;

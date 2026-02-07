@@ -67,12 +67,12 @@ export const userColums: ColumnDef<UserWithInfo>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="min-w-48">
-            <DropdownMenuItem asChild>
+            <DropdownMenuItem asChild disabled={!lastConversation}>
               <Link
                 href={
                   isMobile
                     ? `/admin/users/${_id}/conversations/`
-                    : `/admin/users/${_id}/conversations/${lastConversation._id}`
+                    : `/admin/users/${_id}/conversations/${lastConversation?._id}`
                 }
               >
                 Ver conversaciones

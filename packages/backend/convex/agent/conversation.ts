@@ -60,6 +60,10 @@ export const getConversationsByUserId = query({
   handler: async (ctx, { userId }) => {
     const user = await authComponent.getAuthUser(ctx);
 
+    if (!user) {
+      throw new ConvexError("Unauthenticated");
+    }
+
     if (user.role !== "admin") {
       throw new ConvexError("Unauthorized");
     }
@@ -74,7 +78,7 @@ export const getConversationsByUserId = query({
       async (conversation) => {
         const character = await ctx.db.get(conversation.characterId);
 
-        if (!character || !character?.storageId) return;
+        if (!character || !character?.storageId) return null;
 
         const image = await ctx.storage.getUrl(character.storageId);
 
@@ -90,7 +94,7 @@ export const getConversationsByUserId = query({
 
     return {
       user: user,
-      conversations: conversationsWithCharacter,
+      conversations: conversationsWithCharacter.filter(Boolean),
     };
   },
 });
@@ -100,15 +104,10 @@ export const getLatestConversationOfUser = internalQuery({
     userId: v.string(),
   },
   handler: async (ctx, { userId }) => {
-    const user = await authComponent.getAuthUser(ctx);
-
-    if (user.role !== "admin") {
-      throw new ConvexError("Unauthorized");
-    }
-
     return await ctx.db
       .query("conversations")
       .withIndex("userId", (q) => q.eq("userId", userId))
+      .order("desc")
       .first();
   },
 });
