@@ -352,14 +352,18 @@ async def my_agent(ctx: JobContext):
         
         if session.current_agent and session.current_agent.chat_ctx:
             logger.info(session.current_agent.chat_ctx)
-            messages = session.current_agent.chat_ctx.messages
             # Recorremos hacia atrás para encontrar el último 'assistant'
-            for msg in reversed(messages):
-                if msg.role == "assistant" and msg.content:
-                    if isinstance(msg.content, str):
-                        last_assistant_msg = msg.content
-                    elif isinstance(msg.content, list):
-                        last_assistant_msg = " ".join([str(c) for c in msg.content])
+            for item in reversed(session.current_agent.chat_ctx.items):
+                if not isinstance(item, ChatMessage):
+                    continue
+                if item.role != "assistant":
+                    continue
+                text_content = item.text_content
+                if text_content:
+                    last_assistant_msg = text_content
+                else:
+                    last_assistant_msg = " ".join(str(c) for c in item.content)
+                if last_assistant_msg:
                     break
         
         # await inject_memories_to_context(text)
@@ -376,8 +380,11 @@ async def my_agent(ctx: JobContext):
     def on_conversation_item_added(event: ConversationItemAddedEvent):
         if event.item.role == "user" and event.item.text_content:
             text = event.item.text_content
-            
             asyncio.create_task(process_user_message(text))
+        elif event.item.role == "assistant" and event.item.text_content:
+            task = asyncio.create_task(add_message(conversation_id, event.item.text_content, "assistant"))
+            _active_tasks.add(task)
+            task.add_done_callback(_active_tasks.discard)
 
     await session.start(
         agent=Assistant(
