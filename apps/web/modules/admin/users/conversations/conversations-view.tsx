@@ -49,12 +49,12 @@ const ConversationHeader = () => {
   }
 
   return (
-    <header className="py-4 md:py-5 border-b h-fit flex items-center px-3 gap-4 w-full">
+    <header className="py-4 md:py-5 border-b h-fit flex items-center px-6 gap-4 w-full">
       {isMobile && (
         <Button
           size="icon-sm"
           variant="ghost"
-          className="-mx-2.5"
+          className="-mx-2.5 active:bg-secondary"
           onClick={() => router.back()}
         >
           <ArrowLeft className="size-5" />
@@ -105,12 +105,12 @@ const SkeletonHeader = () => {
   const router = useRouter();
 
   return (
-    <header className="py-4 md:py-5 border-b h-fit flex items-center px-3 gap-4 w-full">
+    <header className="py-4 md:py-5 border-b h-fit flex items-center px-6 md:px-3 gap-4 w-full">
       {isMobile && (
         <Button
           size="icon-sm"
           variant="ghost"
-          className="-mx-2.5"
+          className="-mx-2.5 active:bg-secondary rounded-full"
           onClick={() => router.back()}
         >
           <ArrowLeft className="size-5" />
@@ -143,7 +143,7 @@ const ConversationBody = () => {
   }
 
   return (
-    <section className="md:p-3 h-full">
+    <section className="md:p-3 h-full px-1 md:px-3">
       <Conversation className="relative size-full h-full">
         <ConversationContent className="h-full  md:max-h-[calc(100vh-100px)]">
           {results.length === 0 ? (

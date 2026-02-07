@@ -22,9 +22,9 @@ export const ConversationsLayout = (props: {
   const { conversationId } = useParams();
 
   return (
-    <main className="flex items-center gap-6 max-h-screen md:-ml-6 -mt-8 md:-mt-6 -mx-4 md:-mx-3 md:overflow-y-hidden overflow-x-hidden md:max-w-[calc(100vw-var(--sidebar-width))]!">
+    <main className="flex items-center gap-6 absolute left-0 top-12 md:top-0 w-full md:overflow-y-hidden overflow-x-hidden md:max-w-[calc(100vw-var(--sidebar-width))]!">
       {!isMobile && (
-        <div className="flex flex-col items-start bg-background w-sm ml-1 h-screen border-r border-border py-4 px-4">
+        <div className="flex flex-col items-start w-sm ml-1 h-screen border-r border-border py-4 px-4">
           <h1 className="text-lg font-medium tracking-tight">
             Historial de Aaron Avila
           </h1>
@@ -34,7 +34,7 @@ export const ConversationsLayout = (props: {
             className="md:w-full my-4 rounded-md"
           />
 
-          <ul className="h-full overflow-y-scroll w-full space-y-1">
+          <ul className="h-full overflow-y-scroll w-full space-y-1 active:bg-secondary">
             {conversations
               .filter((conversation) => !!conversation)
               .map((conversation) => (

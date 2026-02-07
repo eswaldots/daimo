@@ -19,7 +19,7 @@ export const ConversationsListView = (props: {
   const { conversationId } = useParams();
 
   return (
-    <main className="flex items-start gap-6 h-full flex-col mt-8">
+    <main className="flex items-start gap-6 h-full flex-col mt-8 px-2">
       <motion.h1
         className="text-2xl font-semibold tracking-tight px-2"
         initial={{ opacity: 0 }}
@@ -41,7 +41,7 @@ export const ConversationsListView = (props: {
           .filter((conversation) => !!conversation)
           .map((conversation, i) => (
             <motion.div
-              className="flex flex-col"
+              className="flex flex-col active:bg-secondary rounded-xl"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               key={conversation?._id}

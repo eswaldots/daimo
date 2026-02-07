@@ -351,6 +351,7 @@ async def my_agent(ctx: JobContext):
         last_assistant_msg = ""
         
         if session.current_agent and session.current_agent.chat_ctx:
+            logger.info(session.current_agent.chat_ctx)
             messages = session.current_agent.chat_ctx.messages
             # Recorremos hacia atrás para encontrar el último 'assistant'
             for msg in reversed(messages):

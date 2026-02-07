@@ -1,5 +1,10 @@
 import { ConvexError, v } from "convex/values";
-import { internalQuery, mutation, query } from "../_generated/server";
+import {
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+} from "../_generated/server";
 import { authComponent } from "../auth";
 import { conversationFields } from "./schema";
 import { serverMutation } from "../utils";
@@ -32,6 +37,18 @@ export const updateConversationState = serverMutation({
   handler: async (ctx, { isLive, conversationId }) => {
     await ctx.db.patch(conversationId, {
       isLive,
+    });
+  },
+});
+
+export const updateConversationTitle = internalMutation({
+  args: {
+    title: v.string(),
+    conversationId: v.id("conversations"),
+  },
+  handler: async (ctx, { title, conversationId }) => {
+    await ctx.db.patch(conversationId, {
+      title,
     });
   },
 });
@@ -118,5 +135,26 @@ export const getConversationById = query({
     const image = await ctx.storage.getUrl(character.storageId);
 
     return { ...conversation, character: { ...character, image } };
+  },
+});
+
+export const getLiveConversations = internalQuery({
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("conversations")
+      .withIndex("isLive", (q) => q.eq("isLive", true))
+      .collect();
+  },
+});
+
+export const internalUpdateConversationState = internalMutation({
+  args: {
+    isLive: v.boolean(),
+    conversationId: v.id("conversations"),
+  },
+  handler: async (ctx, { isLive, conversationId }) => {
+    await ctx.db.patch(conversationId, {
+      isLive,
+    });
   },
 });
