@@ -20,7 +20,6 @@ import type * as characters from "../characters.js";
 import type * as characters_internal from "../characters/internal.js";
 import type * as constants_plans from "../constants/plans.js";
 import type * as http from "../http.js";
-import type * as migrations_memory from "../migrations/memory.js";
 import type * as parental_children from "../parental/children.js";
 import type * as room from "../room.js";
 import type * as stars from "../stars.js";
@@ -49,7 +48,6 @@ declare const fullApi: ApiFromModules<{
   "characters/internal": typeof characters_internal;
   "constants/plans": typeof constants_plans;
   http: typeof http;
-  "migrations/memory": typeof migrations_memory;
   "parental/children": typeof parental_children;
   room: typeof room;
   stars: typeof stars;

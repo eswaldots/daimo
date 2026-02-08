@@ -17,14 +17,13 @@ export const messageFields = {
 };
 
 export const memoryFields = {
-  description: v.string(),
   from: v.optional(v.union(v.literal("children"), v.literal("user"))),
-  displayDescription: v.optional(v.string()),
+  displayDescription: v.string(),
   parentDescription: v.optional(v.string()),
   embeddingId: v.id("memoryEmbeddings"),
   importance: v.number(),
   userId: v.string(),
-  childrenId: v.string(),
+  childrenId: v.optional(v.string()),
   characterId: v.optional(v.string()),
   lastAccess: v.number(),
   data: v.union(

@@ -30,6 +30,7 @@
     "@ai-sdk/deepseek": "^1.0.31",
     "@ai-sdk/google": "^3.0.13",
     "@ai-sdk/google-vertex": "^3.0.86",
+    "@ai-sdk/groq": "^3.0.22",
     "@ai-sdk/openai": "^2.0.79",
     "@convex-dev/aggregate": "^0.2.0",
     "@convex-dev/better-auth": "^0.10.10",
