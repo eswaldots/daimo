@@ -1,6 +1,6 @@
 "use client";
 
-import { api } from "@daimo/backend";
+import { api, Id } from "@daimo/backend";
 import Markdown from "react-markdown";
 import Image from "next/image";
 import {
@@ -14,8 +14,10 @@ import { Button } from "../ui/button";
 import {
   AudioWaveform,
   Brain,
+  BrainIcon,
   CheckIcon,
   Clock,
+  Ellipsis,
   Heart,
   LockIcon,
   LucideCardSim,
@@ -23,6 +25,7 @@ import {
   MicVocal,
   ShareIcon,
   SparklesIcon,
+  TrashIcon,
   User,
   XIcon,
 } from "lucide-react";
@@ -54,6 +57,20 @@ import DaimoIcon from "../icons/daimo";
 import Link from "next/link";
 import { ScrollArea } from "../ui/scroll-area";
 import { toast } from "sonner";
+import { FunctionReturnType } from "convex/server";
+import { useQueryWithStatus } from "@/lib/convex/use-query-with-status";
+import { Spinner } from "../ui/spinner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+
+type Character = NonNullable<FunctionReturnType<typeof api.characters.getById>>;
 
 /**
  * Renders the character profile view including hero image, details, star and conversation actions, memory dialog, and premium upsell UI (modal or drawer).
@@ -127,6 +144,7 @@ export default function CharacterView({
     }
   };
 
+  const [openMemory, setOpenMemory] = useState(false);
   const container = useRef(null);
   const subscription = useQuery(api.subscriptions.getCurrentSubscription);
 
@@ -202,39 +220,11 @@ export default function CharacterView({
                   <motion.p className="text-foreground md:text-white/80 max-w-md font-medium md:text-xl text-base hidden md:block">
                     {character.shortDescription}
                   </motion.p>
-                  <Dialog>
-                    <DialogTrigger>
-                      <motion.p className="text-foreground md:text-white/80 max-w-md text-sm hover:underline cursor-pointer hidden md:block">
-                        Aún no te conoce
-                      </motion.p>
-                    </DialogTrigger>
-                    <DialogContent className="md:max-w-2xl px-6 py-8 pt-10 md:p-16 rounded-3xl text-left">
-                      <DialogHeader className="text-left">
-                        <span className="text-foreground font-medium">
-                          Memoria
-                        </span>
-                        <DialogTitle className="text-foreground text-3xl md:text-5xl leading-[1.1] font-semibold">
-                          Lo que {character.name} recuerda sobre ti
-                        </DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-1">
-                        <DialogDescription className="tracking-tight text-lg md:text-xl font-medium text-foreground mt-6 md:mt-16">
-                          Todavía no hay recuerdos guardados.
-                        </DialogDescription>
-                        <DialogDescription className="tracking-normal text-sm md:text-base text-foreground">
-                          A medida de que hablen, Daimo ira guardando detalles
-                          importantes para personalizar la experiencia.
-                        </DialogDescription>
-                      </div>
-                      <DialogFooter className="mt-6 md:mt-16 flex items-start w-full">
-                        <DialogClose asChild>
-                          <Button className="rounded-full ml-auto">
-                            Entendido
-                          </Button>
-                        </DialogClose>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+                  <MemoryModal
+                    character={character}
+                    open={openMemory}
+                    onOpenChange={setOpenMemory}
+                  />
                 </div>
               </div>
 
@@ -293,6 +283,16 @@ export default function CharacterView({
                   </Button>
                   <Button
                     className="rounded-full z-40 md:p-3 size-12 md:hidden"
+                    variant="secondary"
+                    size="icon-lg"
+                    onClick={() => {
+                      setOpenMemory(true);
+                    }}
+                  >
+                    <BrainIcon className="md:size-4 size-5" />
+                  </Button>
+                  <Button
+                    className="rounded-full z-40 md:bg-white/50 md:dark:bg-border md:dark:hover:bg-border/50 md:p-3 size-12 md:hidden"
                     variant="secondary"
                     size="icon-lg"
                     onClick={() => {
@@ -694,5 +694,163 @@ const Description = ({ text }: { text: string }) => {
         </span>
       )}
     </div>
+  );
+};
+
+const useMemories = ({ characterId }: { characterId: Id<"characters"> }) => {
+  const methods = useQueryWithStatus(api.agent.memory.getDisplayMemories, {
+    characterId,
+  });
+
+  return methods;
+};
+
+const MemoryModal = ({
+  character,
+  open,
+  onOpenChange,
+}: {
+  character: Character;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) => {
+  const { isPending, data } = useMemories({ characterId: character._id });
+
+  const deleteMemory = useMutation(api.agent.memory.deleteMemory);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogTrigger>
+        <motion.p className="text-foreground md:text-white/80 max-w-md text-sm hover:underline cursor-pointer hidden md:block">
+          {/* TODO: Hacer que esto sea dinámico con respecto a si tiene memorias o no*/}
+          Ver memorias
+        </motion.p>
+      </DialogTrigger>
+      <DialogContent className="md:max-w-2xl px-6 py-8 pt-10 md:p-16 rounded-3xl text-left dark:bg-background">
+        <DialogHeader className="text-left">
+          <span className="text-muted-foreground md:text-base text-sm font-normal">
+            Memoria
+          </span>
+          <DialogTitle className="text-foreground text-xl md:text-3xl leading-[1.1] font-medium">
+            Lo que {character?.name} recuerda sobre ti
+          </DialogTitle>
+        </DialogHeader>
+        <div
+          className={cn(
+            "my-4 h-[20vh] overflow-y-auto transition-all",
+            data && data?.length >= 1 && "border-t",
+          )}
+        >
+          {!isPending && data?.length === 0 && (
+            <div className="space-y-1 h-full flex flex-col justify-center">
+              <DialogDescription className="tracking-tight text-lg md:text-xl font-medium text-foreground mt-6 md:mt-16">
+                Todavía no hay recuerdos guardados.
+              </DialogDescription>
+              <DialogDescription className="tracking-normal text-sm md:text-base text-foreground">
+                A medida de que hablen, Daimo ira guardando detalles importantes
+                para personalizar la experiencia.
+              </DialogDescription>
+            </div>
+          )}
+          {isPending && <Spinner />}
+          {data && (
+            <ul>
+              {data.map((memory, i) => (
+                <motion.div
+                  key={memory._id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.25 * i + 0.025 }}
+                  className="py-4 border-b last:border-b-none flex items-center justify-between"
+                >
+                  <h1 className="text-base">{memory.displayDescription}</h1>
+                  <DropdownMenu modal={true}>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="icon-sm" variant="ghost">
+                        <Ellipsis />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="md:w-48" align="start">
+                      <DropdownMenuGroup>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <DropdownMenuItem
+                              variant="destructive"
+                              onSelect={(e) => {
+                                e.preventDefault();
+                              }}
+                            >
+                              <TrashIcon />
+                              Borrar
+                            </DropdownMenuItem>
+                          </DialogTrigger>
+                          <DialogContent
+                            className="p-10"
+                            showCloseButton={false}
+                          >
+                            <DialogHeader>
+                              <DialogTitle className="font-medium tracking-tight text-2xl">
+                                Borrar esta memoria
+                              </DialogTitle>
+                            </DialogHeader>
+                            <DialogDescription className="text-foreground font-normal text-base tracking-normal">
+                              <strong>"{memory.displayDescription}"</strong>,
+                              sera borrada, es probable que {character.name} no
+                              vuelva a recordar esta información.
+                            </DialogDescription>
+
+                            <DialogFooter className="mt-3">
+                              <DialogClose asChild>
+                                <Button variant="secondary">Cancelar</Button>
+                              </DialogClose>
+
+                              <DialogClose asChild>
+                                <Button
+                                  onClick={async () => {
+                                    const promise = deleteMemory({
+                                      memoryId: memory._id,
+                                    });
+
+                                    toast.promise(promise, {
+                                      loading: "Borrando memoria",
+                                      success: "Memoria borrada exitosamente",
+                                      error: "No se pudo borrar la memoria",
+                                    });
+                                  }}
+                                  variant="destructive"
+                                >
+                                  Borrar
+                                </Button>
+                              </DialogClose>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      </DropdownMenuGroup>
+
+                      <DropdownMenuSeparator className="my-1.5" />
+
+                      <DropdownMenuGroup>
+                        <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">
+                          Guardada el{" "}
+                          {new Date(memory._creationTime).toLocaleDateString(
+                            "es",
+                            { year: "numeric", month: "long", day: "numeric" },
+                          )}
+                        </DropdownMenuLabel>
+                      </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </motion.div>
+              ))}
+            </ul>
+          )}
+        </div>
+        <DialogFooter className="mt-6 md:mt-16 flex items-start w-full">
+          <DialogClose asChild>
+            <Button className="rounded-full ml-auto">Ok</Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };

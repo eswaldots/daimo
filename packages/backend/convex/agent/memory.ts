@@ -1,13 +1,19 @@
 import { embed, generateText, Output } from "ai";
 import { groq } from "@ai-sdk/groq";
 import { asyncMap } from "convex-helpers";
-import { internalMutation, internalQuery } from "../_generated/server";
+import {
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+} from "../_generated/server";
 import { google } from "@ai-sdk/google";
 import { ConvexError, v } from "convex/values";
 import { internal } from "../_generated/api";
 import { Doc } from "../_generated/dataModel";
 import { serverAction } from "../utils";
 import { z } from "zod";
+import { authComponent } from "../auth";
 
 export const MEMORY_ACCESS_THROTTLE = 300_000;
 
@@ -41,6 +47,32 @@ export const retrieve = serverAction({
     );
 
     return rankedMemories.map(({ memory }) => memory);
+  },
+});
+
+export const getDisplayMemories = query({
+  args: { characterId: v.id("characters") },
+  handler: async (ctx, args) => {
+    const user = await authComponent.getAuthUser(ctx);
+
+    if (!user) {
+      throw new ConvexError("Unautorizado");
+    }
+
+    const coreMemories = await ctx.db
+      .query("memories")
+      .withIndex("userId_characterId_importance", (q) =>
+        q
+          .eq("userId", user._id)
+          .eq("characterId", args.characterId)
+          .gt("importance", 4),
+      )
+      .take(10);
+
+    const merged = [...coreMemories];
+    const unique = Array.from(new Map(merged.map((m) => [m._id, m])).values());
+
+    return unique;
   },
 });
 
@@ -151,6 +183,11 @@ export const createMemory = serverAction({
       ? `CONTEXTO PREVIO (Lo que preguntó la IA): "${args.lastAssistantMessage}"`
       : "CONTEXTO PREVIO: No disponible (Inicio de conversación o silencio).";
 
+    const children = await ctx.runQuery(
+      internal.parental.children.getByFatherId,
+      { fatherId: args.userId },
+    );
+
     const { output } = await generateText({
       model: groq("openai/gpt-oss-120b"),
       output: Output.object({
@@ -164,7 +201,12 @@ export const createMemory = serverAction({
           fact: z
             .string()
             .describe(
-              "El dato en TERCERA PERSONA. Si should_save es false, devuelve un string vacío ''.",
+              "El dato en SEGUNDA PERSONA. Si should_save es false, devuelve un string vacío ''. Ej: Te gusta jugar bolos",
+            ),
+          parentFact: z
+            .string()
+            .describe(
+              "El dato en TERCERA PERSONA para que el padre del niño vea la memoria. Si should_save es false, devuelve un string vacío ''.",
             ),
           category: z
             .enum([
@@ -201,9 +243,10 @@ export const createMemory = serverAction({
       ${contextStr}
       
       INPUT DEL USUARIO: "${args.text}"
+      ${children?.name ? `USERNAME: ${children.name}` : ""}
       
       Analiza la relación entre lo que preguntó la IA y lo que respondió el usuario para extraer el "fact".
-      Ejemplo: Si IA pregunta "¿Tu color favorito?" y Usuario dice "Azul", el fact es "Su color favorito es el azul".
+      Ejemplo: Si IA pregunta "¿Tu color favorito?" y Usuario dice "Azul", el fact es "Tu color favorito es el azul" y el parentFact es "El color favorito de <USERNAME> es el azul".
       `,
     });
 
@@ -212,7 +255,7 @@ export const createMemory = serverAction({
       return;
     }
 
-    const { fact, importance } = output;
+    const { fact, importance, parentFact } = output;
 
     const { embedding } = await embed({
       value: fact,
@@ -223,6 +266,8 @@ export const createMemory = serverAction({
       userId: args.userId,
       characterId: args.characterId,
       description: fact,
+      from: children ? "children" : "user",
+      parentDescription: children ? parentFact : undefined,
       importance: importance ?? 0,
       embedding: embedding,
       conversationId: args.conversationId,
@@ -234,28 +279,77 @@ export const insertMemoryMutation = internalMutation({
   args: {
     userId: v.string(),
     characterId: v.string(),
+    from: v.optional(v.union(v.literal("children"), v.literal("user"))),
     description: v.string(),
+    childrenId: v.optional(v.string()),
+    parentDescription: v.optional(v.string()),
     importance: v.number(),
     embedding: v.array(v.float64()),
     conversationId: v.id("conversations"),
   },
   handler: async (ctx, args) => {
-    // 1. Guardar primero el embedding
     const embeddingId = await ctx.db.insert("memoryEmbeddings", {
       userId: args.userId,
       characterId: args.characterId,
       embedding: args.embedding,
     });
 
-    // 2. Guardar la memoria referenciando al embedding
     await ctx.db.insert("memories", {
       userId: args.userId,
       characterId: args.characterId,
-      description: args.description,
+      from: args.from,
+      displayDescription: args.description,
+      childrenId: args.childrenId,
+      parentDescription: args.parentDescription,
       embeddingId: embeddingId,
       importance: args.importance,
       lastAccess: Date.now(),
       data: { type: "conversation", conversationId: args.conversationId },
     });
+  },
+});
+
+export const getByCharacter = query({
+  args: {
+    characterId: v.string(),
+  },
+  handler: async (ctx, { characterId }) => {
+    const user = await authComponent.getAuthUser(ctx);
+
+    if (!user) {
+      throw new ConvexError("Usuario no encontrado");
+    }
+
+    return await ctx.db
+      .query("memories")
+      .withIndex("userId_characterId", (q) =>
+        q.eq("userId", user._id).eq("characterId", characterId),
+      )
+      .order("desc")
+      .take(100);
+  },
+});
+
+export const deleteMemory = mutation({
+  args: {
+    memoryId: v.id("memories"),
+  },
+  handler: async (ctx, { memoryId }) => {
+    const user = await authComponent.getAuthUser(ctx);
+
+    if (!user) {
+      throw new ConvexError("Usuario no encontrado");
+    }
+
+    const memory = await ctx.db.get(memoryId);
+
+    if (!memory || memory.userId !== user._id) {
+      throw new ConvexError("No autorizado");
+    }
+
+    await Promise.all([
+      ctx.db.delete(memory._id),
+      ctx.db.delete(memory.embeddingId),
+    ]);
   },
 });
