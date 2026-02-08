@@ -60,6 +60,7 @@ export const userColumns: ColumnDef<UserWithInfo>[] = [
     header: "Acciones",
     cell: ({ row }) => {
       const { _id, lastConversation } = row.original;
+      console.log(lastConversation);
       const isMobile = useIsMobile();
 
       return (

@@ -35,18 +35,18 @@ export const getAllUsers = query({
       // @ts-ignore muerdelo
       users?.page ?? users,
       async (user: { _id: string }) => {
-        const lastConversation: Doc<"conversations"> | null =
-          await ctx.runQuery(
-            internal.agent.conversation.getLatestConversationOfUser,
-            { userId: user._id },
-          );
+        const lastConversation = await ctx.db
+          .query("conversations")
+          .withIndex("userId", (q) => q.eq("userId", user._id))
+          .order("desc")
+          .first();
 
         return { ...user, lastConversation };
       },
     );
 
     // @ts-expect-error this is because will not return an id from convex main component
-    return { page: usersWithInfo, ...users };
+    return { ...users, page: usersWithInfo };
   },
 });
 
