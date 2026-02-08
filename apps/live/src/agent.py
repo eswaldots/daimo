@@ -392,6 +392,7 @@ async def my_agent(ctx: JobContext):
         ),
         room=ctx.room,
         room_options=room_io.RoomOptions(
+            video_input=True,
             audio_input=room_io.AudioInputOptions(
                 noise_cancellation=lambda params: noise_cancellation.BVCTelephony()
                 if params.participant.kind == rtc.ParticipantKind.PARTICIPANT_KIND_SIP
