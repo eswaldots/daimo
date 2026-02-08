@@ -1020,11 +1020,100 @@ export type ComponentApi<Name extends string | undefined = string | undefined> =
       >;
     };
     user: {
-      getCurrentUser: FunctionReference<
+      createUser: FunctionReference<
         "mutation",
         "internal",
-        { completedOnboarding: boolean; userId: string },
+        {
+          banExpires?: null | number;
+          banReason?: null | string;
+          banned?: null | boolean;
+          completedOnboarding?: null | boolean;
+          createdAt: number;
+          email: string;
+          emailVerified: boolean;
+          image?: null | string;
+          name: string;
+          role?: null | string;
+          updatedAt: number;
+          userId?: null | string;
+        },
         any,
+        Name
+      >;
+      getAllUsers: FunctionReference<
+        "query",
+        "internal",
+        {
+          paginationOpts: {
+            cursor: string | null;
+            endCursor?: string | null;
+            id?: number;
+            maximumBytesRead?: number;
+            maximumRowsRead?: number;
+            numItems: number;
+          };
+          search?: string;
+        },
+        | {
+            continueCursor: string;
+            isDone: boolean;
+            page: Array<{
+              _creationTime: number;
+              _id: string;
+              banExpires?: null | number;
+              banReason?: null | string;
+              banned?: null | boolean;
+              completedOnboarding?: null | boolean;
+              createdAt: number;
+              email: string;
+              emailVerified: boolean;
+              image?: null | string;
+              name: string;
+              role?: null | string;
+              updatedAt: number;
+              userId?: null | string;
+            }>;
+            pageStatus?: "SplitRecommended" | "SplitRequired" | null;
+            splitCursor?: string | null;
+          }
+        | Array<{
+            _creationTime: number;
+            _id: string;
+            banExpires?: null | number;
+            banReason?: null | string;
+            banned?: null | boolean;
+            completedOnboarding?: null | boolean;
+            createdAt: number;
+            email: string;
+            emailVerified: boolean;
+            image?: null | string;
+            name: string;
+            role?: null | string;
+            updatedAt: number;
+            userId?: null | string;
+          }>,
+        Name
+      >;
+      getById: FunctionReference<
+        "query",
+        "internal",
+        { id: string },
+        {
+          _creationTime: number;
+          _id: string;
+          banExpires?: null | number;
+          banReason?: null | string;
+          banned?: null | boolean;
+          completedOnboarding?: null | boolean;
+          createdAt: number;
+          email: string;
+          emailVerified: boolean;
+          image?: null | string;
+          name: string;
+          role?: null | string;
+          updatedAt: number;
+          userId?: null | string;
+        } | null,
         Name
       >;
       setCompletedOnboarding: FunctionReference<
