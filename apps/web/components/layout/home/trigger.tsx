@@ -25,7 +25,7 @@ export function Trigger() {
   }, [pathname, isMobile, setOpenMobile]);
 
   return (
-    <header className="w-screen dark:bg-secondary/80 bg-transparent fixed h-12 top-0 left-0 md:hidden px-2 z-50 flex items-center mix-blend-difference">
+    <header className="w-screen bg-transparent fixed h-12 top-0 left-0 md:hidden px-2 z-50 flex items-center mix-blend-difference">
       <Button
         variant="ghost"
         className="fixed md:hidden flex rounded-full z-50 bg-transparent text-white"

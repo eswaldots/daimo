@@ -75,7 +75,6 @@ Aqui hay algunas memorias importantes del usuario:
 - IMPORTANTE: Tu respuesta debe ser para ser OÍDA, no leída. Evita símbolos extraños o formato markdown.
 
 ### USO DE HERRAMIENTAS (PRIORIDAD MÁXIMA)
-- Tienes amnesia parcial. NO TIENES MEMORIA DE LARGO PLAZO INTEGRADA.
 - Para recordar CUALQUIER COSA sobre el usuario (su nombre, qué le gusta, de qué hablaron ayer), DEBES usar la herramienta `consult_memory`.
 - Si el usuario dice "¿Te acuerdas de...?" o "¿Qué me gusta...?", tu primera acción DEBE ser llamar a `consult_memory`.
 - No pidas perdón por buscar, solo hazlo de forma invisible.
@@ -277,6 +276,7 @@ async def my_agent(ctx: JobContext):
             llm=google.realtime.RealtimeModel(
                 voice=voice,
                 instructions=instructions,
+                proactivity=True,
                 enable_affective_dialog=True,
                 model="gemini-2.5-flash-native-audio-preview-12-2025",
                 thinking_config=types.ThinkingConfig(
@@ -285,7 +285,6 @@ async def my_agent(ctx: JobContext):
                     thinking_budget=0
                 ),
             ),
-            vad=ctx.proc.userdata["vad"],
         )
     else:
         # Standard Stack: STT=Deepgram, LLM=Groq
@@ -311,7 +310,7 @@ async def my_agent(ctx: JobContext):
             ),
             llm=groq.LLM(
                 model="openai/gpt-oss-20b",
-                temperature=0.7, # OPTIMIZACION: Ligeramente más determinista para velocidad
+                temperature=0.7,
             ),
             tts=tts_instance,
             turn_detection=MultilingualModel(),
@@ -357,14 +356,17 @@ async def my_agent(ctx: JobContext):
         last_assistant_msg = ""
         
         if session.current_agent and session.current_agent.chat_ctx:
-            messages = session.current_agent.chat_ctx.items
-            # Recorremos hacia atrás para encontrar el último 'assistant'
-            for msg in reversed(messages):
-                if msg.role == "assistant" and msg.content:
-                    if isinstance(msg.content, str):
-                        last_assistant_msg = msg.content
-                    elif isinstance(msg.content, list):
-                        last_assistant_msg = " ".join([str(c) for c in msg.content])
+            for item in reversed(session.current_agent.chat_ctx.items):
+                if not isinstance(item, ChatMessage):
+                    continue
+                if item.role != "assistant":
+                    continue
+                text_content = item.text_content
+                if text_content:
+                    last_assistant_msg = text_content
+                else:
+                    last_assistant_msg = " ".join(str(c) for c in item.content)
+                if last_assistant_msg:
                     break
 
         async def save_all():
@@ -383,10 +385,13 @@ async def my_agent(ctx: JobContext):
 
     @session.on("conversation_item_added")
     def on_conversation_item_added(event: ConversationItemAddedEvent):
-        for content in event.item.content:
-            if isinstance(content, str):
-                asyncio.create_task(process_user_message(content, event.item.role))
-
+        if event.item.role == "user" and event.item.text_content:
+            text = event.item.text_content
+            asyncio.create_task(process_user_message(text))
+        elif event.item.role == "assistant" and event.item.text_content:
+            task = asyncio.create_task(add_message(conversation_id, event.item.text_content, "assistant"))
+            _active_tasks.add(task)
+            task.add_done_callback(_active_tasks.discard)
 
     await session.start(
         agent=Assistant(
@@ -396,6 +401,7 @@ async def my_agent(ctx: JobContext):
         ),
         room=ctx.room,
         room_options=room_io.RoomOptions(
+            video_input=True,
             audio_input=room_io.AudioInputOptions(
                 noise_cancellation=lambda params: noise_cancellation.BVCTelephony()
                 if params.participant.kind == rtc.ParticipantKind.PARTICIPANT_KIND_SIP

@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { Overview } from "@/components/views/overview";
 
 export const metadata: Metadata = {
-  title: "Inicio - Daimo",
+  title: "Inicio | Daimo",
 };
 
 /**

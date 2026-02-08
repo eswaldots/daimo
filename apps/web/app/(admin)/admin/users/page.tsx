@@ -1,7 +1,12 @@
-export default function Page() {
-  return (
-    <div>
-      <h1></h1>
-    </div>
-  );
-}
+import { UsersView } from "@/modules/admin/users/users-view";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Usuarios | Daimo for admins",
+};
+
+const ServerPage = () => {
+  return <UsersView />;
+};
+
+export default ServerPage;

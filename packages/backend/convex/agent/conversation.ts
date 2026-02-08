@@ -1,8 +1,14 @@
 import { ConvexError, v } from "convex/values";
-import { mutation } from "../_generated/server";
+import {
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+} from "../_generated/server";
 import { authComponent } from "../auth";
 import { conversationFields } from "./schema";
 import { serverMutation } from "../utils";
+import { asyncMap } from "convex-helpers";
 
 const { isLive, userId, ...filteredConversationFields } = conversationFields;
 
@@ -24,6 +30,130 @@ export const createConversation = mutation({
 });
 
 export const updateConversationState = serverMutation({
+  args: {
+    isLive: v.boolean(),
+    conversationId: v.id("conversations"),
+  },
+  handler: async (ctx, { isLive, conversationId }) => {
+    await ctx.db.patch(conversationId, {
+      isLive,
+    });
+  },
+});
+
+export const updateConversationTitle = internalMutation({
+  args: {
+    title: v.string(),
+    conversationId: v.id("conversations"),
+  },
+  handler: async (ctx, { title, conversationId }) => {
+    await ctx.db.patch(conversationId, {
+      title,
+    });
+  },
+});
+
+export const getConversationsByUserId = query({
+  args: {
+    userId: v.string(),
+  },
+  handler: async (ctx, { userId }) => {
+    const user = await authComponent.getAuthUser(ctx);
+
+    if (!user) {
+      throw new ConvexError("Unauthenticated");
+    }
+
+    if (user.role !== "admin") {
+      throw new ConvexError("Unauthorized");
+    }
+
+    const conversations = await ctx.db
+      .query("conversations")
+      .withIndex("userId", (q) => q.eq("userId", userId))
+      .order("desc")
+      .collect();
+
+    const userById = await authComponent.getAnyUserById(ctx, userId);
+
+    if (!user) {
+      throw new ConvexError("Doesn't exists");
+    }
+
+    const conversationsWithCharacter = await asyncMap(
+      conversations,
+      async (conversation) => {
+        const character = await ctx.db.get(conversation.characterId);
+
+        if (!character || !character?.storageId) return null;
+
+        const image = await ctx.storage.getUrl(character.storageId);
+
+        return {
+          ...conversation,
+          character: {
+            ...character,
+            image,
+          },
+        };
+      },
+    );
+
+    return {
+      user: userById,
+      conversations: conversationsWithCharacter.filter(Boolean),
+    };
+  },
+});
+
+export const getLatestConversationOfUser = internalQuery({
+  args: {
+    userId: v.string(),
+  },
+  handler: async (ctx, { userId }) => {
+    return await ctx.db
+      .query("conversations")
+      .withIndex("userId", (q) => q.eq("userId", userId))
+      .order("desc")
+      .first();
+  },
+});
+
+export const getConversationById = query({
+  args: {
+    id: v.id("conversations"),
+  },
+  handler: async (ctx, { id }) => {
+    const user = await authComponent.getAuthUser(ctx);
+
+    if (user.role !== "admin") {
+      throw new ConvexError("Unauthorized");
+    }
+
+    const conversation = await ctx.db.get(id);
+
+    if (!conversation) return null;
+
+    const character = await ctx.db.get(conversation.characterId);
+
+    if (!character?.storageId) return null;
+
+    const image = await ctx.storage.getUrl(character.storageId);
+
+    return { ...conversation, character: { ...character, image } };
+  },
+});
+
+export const getLiveConversations = internalQuery({
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("conversations")
+      .withIndex("isLive", (q) => q.eq("isLive", true))
+      .collect();
+  },
+});
+
+export const internalUpdateConversationState = internalMutation({
   args: {
     isLive: v.boolean(),
     conversationId: v.id("conversations"),
