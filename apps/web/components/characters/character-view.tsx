@@ -271,7 +271,7 @@ export default function CharacterView({
                 </Button>
                 <div className="flex gap-2">
                   <Button
-                    className="rounded-full z-40 md:bg-white/50 md:dark:bg-border md:dark:hover:bg-border/50 md:p-3 size-12"
+                    className="rounded-full z-40 md:bg-primary/50 md:p-3 size-12"
                     variant="secondary"
                     size="icon-lg"
                     onClick={toggleStarred}
@@ -292,7 +292,7 @@ export default function CharacterView({
                     </ClickSpark>
                   </Button>
                   <Button
-                    className="rounded-full z-40 md:bg-white/50 md:dark:bg-border md:dark:hover:bg-border/50 md:p-3 size-12 md:hidden"
+                    className="rounded-full z-40 md:p-3 size-12 md:hidden"
                     variant="secondary"
                     size="icon-lg"
                     onClick={() => {

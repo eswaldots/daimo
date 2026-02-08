@@ -30,7 +30,7 @@ export default function HomeSidebar({ session }: { session: Session }) {
   const pathname = usePathname();
 
   return (
-    <Sidebar className="bg-background border-none">
+    <Sidebar className="border-none">
       <SidebarHeader className="pt-4 px-4 bg-background">
         <SidebarMenu>
           <SidebarMenuButton className="hover:bg-transparent active:bg-transparent">
@@ -92,7 +92,7 @@ export default function HomeSidebar({ session }: { session: Session }) {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="pb-4 px-4 bg-background">
+      <SidebarFooter className="pb-4 px-4 bg-background ">
         <NavUser
           user={{
             avatar: session.user.image ?? "",
