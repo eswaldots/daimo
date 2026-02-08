@@ -340,19 +340,13 @@ async def my_agent(ctx: JobContext):
     def on_close():
         # Usamos create_task para que sea non-blocking al cerrar
         asyncio.create_task(run_async(update_conversation_state, conversation_id, False))
-    async def process_user_message(text: str, role: ChatRole):
+    async def process_user_message(text: str):
         """
         Procesa el mensaje del usuario en segundo plano:
         1. Detecta intención y busca memoria.
         2. Inyecta contexto si es necesario.
         3. Guarda el mensaje y memorias nuevas en BD.
         """
-        if role == "assistant":
-            task = asyncio.create_task(add_message(conversation_id, text, "assistant"))
-            _active_tasks.add(task)
-            task.add_done_callback(_active_tasks.discard)
-            return
-
         last_assistant_msg = ""
         
         if session.current_agent and session.current_agent.chat_ctx:
@@ -368,20 +362,16 @@ async def my_agent(ctx: JobContext):
                     last_assistant_msg = " ".join(str(c) for c in item.content)
                 if last_assistant_msg:
                     break
+        
+        # await inject_memories_to_context(text)
 
-        async def save_all():
-            try:
-                # gather corre ambas a la vez y espera a que terminen
-                await asyncio.gather(
-                    add_message(conversation_id, text, "user"),
-                    save_memory(character_id, user_id, conversation_id, text, last_assistant_msg)
-                )
-            except Exception as e:
-                print(f"Error guardando datos: {e}")
-
-        task = asyncio.create_task(save_all())
-        _active_tasks.add(task)
-        task.add_done_callback(_active_tasks.discard)
+        for coro in (
+            add_message(conversation_id, text, "user"),
+            save_memory(character_id, user_id, conversation_id, text, last_assistant_msg),
+        ):
+            task = asyncio.create_task(coro)
+            _active_tasks.add(task)
+            task.add_done_callback(_active_tasks.discard)
 
     @session.on("conversation_item_added")
     def on_conversation_item_added(event: ConversationItemAddedEvent):

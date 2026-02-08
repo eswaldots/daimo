@@ -722,7 +722,8 @@ const MemoryModal = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger>
         <motion.p className="text-foreground md:text-white/80 max-w-md text-sm hover:underline cursor-pointer hidden md:block">
-          Aún no te conoce
+          {/* TODO: Hacer que esto sea dinámico con respecto a si tiene memorias o no*/}
+          Ver memorias
         </motion.p>
       </DialogTrigger>
       <DialogContent className="md:max-w-2xl px-6 py-8 pt-10 md:p-16 rounded-3xl text-left dark:bg-background">
@@ -756,6 +757,7 @@ const MemoryModal = ({
             <ul>
               {data.map((memory, i) => (
                 <motion.div
+                  key={memory._id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.25 * i + 0.025 }}
@@ -830,7 +832,10 @@ const MemoryModal = ({
                       <DropdownMenuGroup>
                         <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">
                           Guardada el{" "}
-                          {new Date(memory._creationTime).toDateString()}
+                          {new Date(memory._creationTime).toLocaleDateString(
+                            "es",
+                            { year: "numeric", month: "long", day: "numeric" },
+                          )}
                         </DropdownMenuLabel>
                       </DropdownMenuGroup>
                     </DropdownMenuContent>

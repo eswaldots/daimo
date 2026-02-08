@@ -243,10 +243,10 @@ export const createMemory = serverAction({
       ${contextStr}
       
       INPUT DEL USUARIO: "${args.text}"
-      ${children?.name && `USERNAME: ${children.name}}`}
+      ${children?.name ? `USERNAME: ${children.name}` : ""}
       
       Analiza la relación entre lo que preguntó la IA y lo que respondió el usuario para extraer el "fact".
-      Ejemplo: Si IA pregunta "¿Tu color favorito?" y Usuario dice "Azul", el fact es "Tu color favorito es el azul" y el parentFact es "El color favorito de <USERNAME> es el azul"".
+      Ejemplo: Si IA pregunta "¿Tu color favorito?" y Usuario dice "Azul", el fact es "Tu color favorito es el azul" y el parentFact es "El color favorito de <USERNAME> es el azul".
       `,
     });
 
@@ -326,7 +326,7 @@ export const getByCharacter = query({
         q.eq("userId", user._id).eq("characterId", characterId),
       )
       .order("desc")
-      .collect();
+      .take(100);
   },
 });
 
@@ -348,8 +348,8 @@ export const deleteMemory = mutation({
     }
 
     await Promise.all([
-      await ctx.db.delete(memory._id),
-      await ctx.db.delete(memory.embeddingId),
+      ctx.db.delete(memory._id),
+      ctx.db.delete(memory.embeddingId),
     ]);
   },
 });
