@@ -75,7 +75,6 @@ Aqui hay algunas memorias importantes del usuario:
 - IMPORTANTE: Tu respuesta debe ser para ser OÍDA, no leída. Evita símbolos extraños o formato markdown.
 
 ### USO DE HERRAMIENTAS (PRIORIDAD MÁXIMA)
-- Tienes amnesia parcial. NO TIENES MEMORIA DE LARGO PLAZO INTEGRADA.
 - Para recordar CUALQUIER COSA sobre el usuario (su nombre, qué le gusta, de qué hablaron ayer), DEBES usar la herramienta `consult_memory`.
 - Si el usuario dice "¿Te acuerdas de...?" o "¿Qué me gusta...?", tu primera acción DEBE ser llamar a `consult_memory`.
 - No pidas perdón por buscar, solo hazlo de forma invisible.
@@ -277,6 +276,7 @@ async def my_agent(ctx: JobContext):
             llm=google.realtime.RealtimeModel(
                 voice=voice,
                 instructions=instructions,
+                proactivity=True,
                 enable_affective_dialog=True,
                 model="gemini-2.5-flash-native-audio-preview-12-2025",
                 thinking_config=types.ThinkingConfig(
@@ -285,7 +285,6 @@ async def my_agent(ctx: JobContext):
                     thinking_budget=0
                 ),
             ),
-            vad=ctx.proc.userdata["vad"],
         )
     else:
         # Standard Stack: STT=Deepgram, LLM=Groq
@@ -311,7 +310,7 @@ async def my_agent(ctx: JobContext):
             ),
             llm=groq.LLM(
                 model="openai/gpt-oss-20b",
-                temperature=0.7, # OPTIMIZACION: Ligeramente más determinista para velocidad
+                temperature=0.7,
             ),
             tts=tts_instance,
             turn_detection=MultilingualModel(),
