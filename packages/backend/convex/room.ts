@@ -11,8 +11,8 @@ import { ConvexUser } from "./betterAuth/types";
 
 type ReturnValue = {
   user: ConvexUser;
-  children: Doc<"childrens"> | null;
-  childrenTags: string[];
+  profile: Doc<"profile"> | null;
+  profileTags: string[];
   character: Doc<"characters">;
   coreMemories: Doc<"memories">[];
 };
@@ -43,10 +43,13 @@ export const getMetadataRoom = query({
       throw new ConvexError("Usuario no encontrado");
     }
 
-    const children: Doc<"childrens"> | null = await ctx.runQuery(
-      internal.parental.children.getByFatherId,
-      { fatherId: user._id },
+    // TODO: here refacotr profile
+    const profiles: Doc<"profile">[] | null = await ctx.runQuery(
+      internal.parental.profile.getByUserId,
+      { userId: user._id },
     );
+
+    const profile = profiles[0];
 
     const coreMemories =
       (await ctx.runQuery(internal.agent.memory.getCoreMemories, {
@@ -55,33 +58,39 @@ export const getMetadataRoom = query({
       })) ?? [];
 
     // if user doesn't have children only returns the user data
-    if (!children) {
+    if (!profile) {
       return {
         user,
         character,
-        childrenTags: [],
-        children: null,
+        profileTags: [],
+        profile: null,
         coreMemories,
       };
     }
 
     type Tag = Doc<"tags"> | null;
 
-    const childrenTags: Tag[] | null = await ctx.runQuery(
-      internal.parental.children.getChildrenTags,
-      { childrenId: children._id },
+    const profileTags: Tag[] | null = await ctx.runQuery(
+      internal.parental.profile.getProfileTags,
+      { profileId: profile._id },
     );
 
-    if (!childrenTags) {
-      return { children, user, childrenTags: [], character, coreMemories };
+    if (!profileTags) {
+      return {
+        profile: profile,
+        user,
+        profileTags: [],
+        character,
+        coreMemories,
+      };
     }
     const mappedTags =
-      childrenTags.filter((tag) => !!tag).map((tag) => tag.name) ?? [];
+      profileTags.filter((tag) => !!tag).map((tag) => tag.name) ?? [];
 
     return {
-      children,
+      profile: profile,
       user,
-      childrenTags: mappedTags,
+      profileTags: mappedTags,
       character,
       coreMemories,
     };

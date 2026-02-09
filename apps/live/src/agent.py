@@ -38,6 +38,7 @@ from livekit.plugins import (
     inworld,
 )
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
+import sentry_sdk
 
 PARENT_TEMPLATE = """
 ### CONTEXTO E IDENTIDAD
@@ -86,8 +87,17 @@ load_dotenv(".env.local")
 
 CONVEX_URL = os.getenv("CONVEX_URL")
 CONVEX_API_KEY = os.getenv("CONVEX_API_KEY")
+ENVIROMENT = os.getenv("ENVIROMENT")
 
 client = ConvexClient(CONVEX_URL or "http://127.0.0.1:8000")
+
+if (ENVIROMENT == "production"):
+    sentry_sdk.init(
+        dsn="https://49ab3a0d267e3bace957257f2e248968@o4510568326692864.ingest.us.sentry.io/4510858636689408",
+        # Add data like request headers and IP for users,
+        # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
+        send_default_pii=True,
+    )
 
 def format_memories(memories_list):
     if not memories_list:
@@ -254,8 +264,8 @@ async def my_agent(ctx: JobContext):
 
     voice = voice_id.split(":", 1)[1]
 
-    children = metadata.get("children")
-    children_tags = children.get("childrenTags") if children else None
+    children = metadata.get("profile")
+    children_tags = children.get("profileTags") if children else None
 
     instructions = Template(CHILDREN_TEMPLATE).render(
                     backstory=character["prompt"], name=character["name"],

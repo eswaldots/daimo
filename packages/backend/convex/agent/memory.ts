@@ -183,9 +183,9 @@ export const createMemory = serverAction({
       ? `CONTEXTO PREVIO (Lo que preguntó la IA): "${args.lastAssistantMessage}"`
       : "CONTEXTO PREVIO: No disponible (Inicio de conversación o silencio).";
 
-    const children = await ctx.runQuery(
-      internal.parental.children.getByFatherId,
-      { fatherId: args.userId },
+    const [profile] = await ctx.runQuery(
+      internal.parental.profile.getByUserId,
+      { userId: args.userId },
     );
 
     const { output } = await generateText({
@@ -243,7 +243,7 @@ export const createMemory = serverAction({
       ${contextStr}
       
       INPUT DEL USUARIO: "${args.text}"
-      ${children?.name ? `USERNAME: ${children.name}` : ""}
+      ${profile?.name ? `USERNAME: ${profile.name}` : ""}
       
       Analiza la relación entre lo que preguntó la IA y lo que respondió el usuario para extraer el "fact".
       Ejemplo: Si IA pregunta "¿Tu color favorito?" y Usuario dice "Azul", el fact es "Tu color favorito es el azul" y el parentFact es "El color favorito de <USERNAME> es el azul".
@@ -266,8 +266,8 @@ export const createMemory = serverAction({
       userId: args.userId,
       characterId: args.characterId,
       description: fact,
-      from: children ? "children" : "user",
-      parentDescription: children ? parentFact : undefined,
+      from: profile ? "children" : "user",
+      parentDescription: profile ? parentFact : undefined,
       importance: importance ?? 0,
       embedding: embedding,
       conversationId: args.conversationId,

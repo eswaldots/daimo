@@ -15,21 +15,20 @@ export const checkOnboardingRedirect = query({
       throw new ConvexError("No autenticado");
     }
 
-    const children = await ctx.runQuery(
-      internal.parental.children.getByFatherId,
-      { fatherId: user._id },
-    );
+    const profiles = await ctx.runQuery(internal.parental.profile.getByUserId, {
+      userId: user._id,
+    });
 
-    if (!children) {
+    if (!profiles || !profiles[0]) {
       return "/onboarding/getting-started";
     }
 
-    const childrenTags: (Doc<"tags"> | null)[] | null = await ctx.runQuery(
-      internal.parental.children.getChildrenTags,
-      { childrenId: children._id },
+    const profileTags: (Doc<"tags"> | null)[] | null = await ctx.runQuery(
+      internal.parental.profile.getProfileTags,
+      { profileId: profiles[0]._id },
     );
 
-    if (!childrenTags || childrenTags?.length === 0) {
+    if (!profileTags || profileTags?.length === 0) {
       return "/onboarding/profile-tags";
     }
 
@@ -66,19 +65,19 @@ export const saveChildrenTags = mutation({
       throw new ConvexError("No autorizado");
     }
 
-    const children = await ctx.runQuery(
-      internal.parental.children.getByFatherId,
-      { fatherId: user._id },
+    const [profile] = await ctx.runQuery(
+      internal.parental.profile.getByUserId,
+      { userId: user._id },
     );
 
-    if (!children) {
+    if (!profile) {
       throw new ConvexError("Usuario no tiene hijos");
     }
 
     const promises = args.tags.map(async (name) => {
       try {
         await ctx.runMutation(internal.tags.internal.relateChildrenTag, {
-          childrenId: children._id,
+          profileId: profile._id,
           tagId: name,
         });
       } catch {
