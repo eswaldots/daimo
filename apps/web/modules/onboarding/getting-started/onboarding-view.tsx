@@ -12,7 +12,7 @@ export const OnboardingView = () => {
       exit={{ opacity: 0 }}
     >
       <motion.div
-        className="p-6 dark:bg-background  bg-foreground rounded-3xl w-fit mx-auto flex items-center justify-center"
+        className="p-7 dark:bg-foreground  bg-foreground rounded-4xl w-fit mx-auto flex items-center justify-center"
         initial={{ opacity: 0, scale: 2, y: 200 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{
@@ -22,7 +22,7 @@ export const OnboardingView = () => {
           damping: 20,
         }}
       >
-        <DaimoIcon className="text-background dark:text-foreground md:size-18 size-16" />
+        <DaimoIcon className="text-background md:size-18 size-16" />
       </motion.div>
 
       <div className="gap-5 grid text-center">

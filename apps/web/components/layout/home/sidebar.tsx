@@ -11,11 +11,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { NavUser } from "./nav-user";
-import { Session } from "@/lib/types";
-import { HomeIcon, User } from "lucide-react";
+import { HomeIcon, User, SettingsIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useProfile } from "@/hooks/use-profile";
+import { NavUser } from "./nav-user";
 
 /**
  * Render the application's left sidebar with header, primary navigation, and current-user footer.
@@ -28,6 +28,7 @@ import Link from "next/link";
  */
 export default function HomeSidebar({ session }: { session: Session }) {
   const pathname = usePathname();
+  const { data } = useProfile();
 
   return (
     <Sidebar className="border-none">
@@ -93,11 +94,23 @@ export default function HomeSidebar({ session }: { session: Session }) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="pb-4 px-4 bg-background ">
+        <SidebarGroupContent>
+          <SidebarMenuButton
+            className="gap-6 rounded-lg text-sm tracking-wide font-medium py-5 [&>svg]:size-5 data-[active=true]:font-semibold data-[active=true]:[&>svg]:text-primary"
+            asChild
+          >
+            <Link href="/settings">
+              <SettingsIcon />
+              Configuración
+            </Link>
+          </SidebarMenuButton>
+        </SidebarGroupContent>
+
         <NavUser
           user={{
-            avatar: session.user.image ?? "",
-            email: session.user.email,
-            name: session.user.name,
+            avatar: data?.media ?? "",
+            email: "email",
+            name: data?.name ?? "",
           }}
         />
       </SidebarFooter>

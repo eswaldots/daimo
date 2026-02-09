@@ -1,12 +1,12 @@
-import { OnboardingView } from "@/modules/onboarding/getting-started/onboarding-view"
+import { OnboardingView } from "@/modules/onboarding/getting-started/onboarding-view";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-		title: "Bienvenido a Daimo - Daimo"
-}
+  title: "Bienvenido a Daimo - Daimo",
+};
 
 const ServerPage = () => {
-		return <OnboardingView />
-}
+  return <OnboardingView />;
+};
 
 export default ServerPage;

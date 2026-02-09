@@ -65,11 +65,11 @@ export const ProfileSetupView = () => {
   });
   const router = useRouter();
 
-  const createChildren = useMutation(api.parental.children.createChildren);
+  const createProfile = useMutation(api.parental.profile.createProfile);
 
   const onSubmit = async (data: ChildrenValues) => {
     try {
-      await createChildren({ ...data });
+      await createProfile({ ...data });
 
       router.push("/onboarding/profile-tags");
     } catch (e) {
