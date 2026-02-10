@@ -13,7 +13,6 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Session } from "@/lib/types";
-import { SettingsIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 
@@ -56,7 +55,7 @@ export default function SettingsSidebar({ session }: { session: Session }) {
                 asChild
               >
                 <Link href="/home">
-                  <span>Cuenta</span>
+                  <span>Perfil</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

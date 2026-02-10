@@ -114,3 +114,20 @@ export const getCurrentProfile = query({
     return profile;
   },
 });
+
+export const getProfiles = query({
+  handler: async (ctx) => {
+    const user = await authComponent.getAuthUser(ctx);
+
+    if (!user) {
+      throw new ConvexError("Unautorizado");
+    }
+
+    const profiles = await ctx.db
+      .query("profile")
+      .withIndex("by_user_id", (q) => q.eq("userId", user._id))
+      .collect();
+
+    return profiles;
+  },
+});

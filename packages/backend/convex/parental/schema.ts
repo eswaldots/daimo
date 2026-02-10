@@ -12,8 +12,17 @@ export const profileFields = {
   likes: v.optional(v.string()),
 };
 
+export const parentalSecurityFields = {
+  userId: v.string(),
+  pinHash: v.string(),
+  pinSalt: v.string(),
+};
+
 export const parentalSchema = {
   profile: defineTable(profileFields).index("by_user_id", ["userId"]),
+  parentalSecurity: defineTable(parentalSecurityFields).index("by_user_id", [
+    "userId",
+  ]),
   profileTags: defineTable({
     profileId: v.id("profile"),
     tagId: v.id("tags"),
