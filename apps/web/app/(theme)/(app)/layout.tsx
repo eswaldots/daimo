@@ -1,7 +1,9 @@
 import HomeSidebar from "@/components/layout/home/sidebar";
 import { Trigger } from "@/components/layout/home/trigger";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { fetchAuthMutation, fetchAuthQuery } from "@/lib/auth/auth-server";
 import { getServerSession } from "@/lib/auth/session-server";
+import { api, Id } from "@daimo/backend";
 import { redirect } from "next/navigation";
 import { ReactNode, ViewTransition } from "react";
 
@@ -20,6 +22,18 @@ export default async function Layout({ children }: { children: ReactNode }) {
 
   if (!data.user.completedOnboarding) {
     redirect("/onboarding/getting-started");
+  }
+
+  if (!data.session.activeProfileId) {
+    const profiles = await fetchAuthQuery(api.parental.profile.getProfiles);
+
+    if (profiles.length > 2) {
+      redirect("/profiles");
+    } else {
+      await fetchAuthMutation(api.parental.profile.setActiveProfile, {
+        profileId: profiles[profiles.length - 1]?._id as Id<"profile">,
+      });
+    }
   }
 
   return (

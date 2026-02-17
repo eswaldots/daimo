@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Inter_Tight } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/context/theme-provider";
 import { ConvexClientProvider } from "@/components/context/convex-client-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { SentryIdentify } from "./sentry-identify";
@@ -56,17 +55,11 @@ export default function RootLayout({
       <body
         className={`${interTight.variable} ${geistMono.variable} antialiased font-sans`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          disableTransitionOnChange
-        >
-          <ConvexClientProvider>
-            {children}
-            <Toaster />
-            <SentryIdentify />
-          </ConvexClientProvider>
-        </ThemeProvider>
+        <ConvexClientProvider>
+          {children}
+          <Toaster />
+          <SentryIdentify />
+        </ConvexClientProvider>
       </body>
     </html>
   );

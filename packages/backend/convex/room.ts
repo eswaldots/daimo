@@ -21,11 +21,12 @@ export const getMetadataRoom = query({
   args: {
     apiKey: v.string(),
     characterId: v.id("characters"),
+    profileId: v.id("profile"),
     userId: v.string(),
   },
   handler: async (
     ctx,
-    { apiKey: key, characterId, userId },
+    { apiKey: key, characterId, profileId, userId },
   ): Promise<ReturnValue> => {
     const isValidKey = await verifyApiKey(ctx, key);
 
@@ -43,18 +44,16 @@ export const getMetadataRoom = query({
       throw new ConvexError("Usuario no encontrado");
     }
 
-    // TODO: here refacotr profile
-    const profiles: Doc<"profile">[] | null = await ctx.runQuery(
-      internal.parental.profile.getByUserId,
-      { userId: user._id },
-    );
+    const profile = await ctx.db.get(profileId);
 
-    const profile = profiles[0];
+    if (!profile) {
+      throw new ConvexError("There is no profile to show");
+    }
 
     const coreMemories =
       (await ctx.runQuery(internal.agent.memory.getCoreMemories, {
         characterId: characterId,
-        userId: userId,
+        profileId: profile._id,
       })) ?? [];
 
     // if user doesn't have children only returns the user data

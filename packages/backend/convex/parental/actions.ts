@@ -1,8 +1,9 @@
 "use node";
 
 import { createHash, randomBytes } from "node:crypto";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { internalAction } from "../_generated/server";
+import { internal } from "../_generated/api";
 
 export const hashPin = internalAction({
   args: {
@@ -17,15 +18,32 @@ export const hashPin = internalAction({
   },
 });
 
+export const verifyPin = internalAction({
+  args: {
+    password: v.string(),
+    userId: v.string(),
+  },
+  handler: async (ctx, { password, userId }) => {
+    const pin = await ctx.runQuery(internal.parental.security.getPinByUser, {
+      userId,
+    });
+
+    if (!pin) {
+      throw new ConvexError("User doesn't have pin");
+    }
+
+    const havesPin = verifyPassword(password, pin?.pinSalt, pin?.pinHash);
+
+    return havesPin;
+  },
+});
+
 function hashPassword(password: string, salt: string) {
-  // Create hash object
   const hash = createHash("sha256");
 
-  // Update with salt and password
   hash.update(salt);
   hash.update(password);
 
-  // Return digest
   return hash.digest("hex");
 }
 

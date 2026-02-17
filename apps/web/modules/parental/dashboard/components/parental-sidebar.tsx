@@ -14,9 +14,7 @@ import {
 import { HomeIcon, User, SettingsIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { useProfile } from "@/hooks/use-profile";
-import { NavUser } from "./nav-user";
-import { Session } from "@/lib/types";
+import { NavUser } from "@/components/layout/home/nav-user";
 
 /**
  * Render the application's left sidebar with header, primary navigation, and current-user footer.
@@ -27,9 +25,8 @@ import { Session } from "@/lib/types";
  * @param session - The user's session object; used to populate the footer's avatar, name, and email.
  * @returns The sidebar JSX element containing header, navigation content, and footer user display.
  */
-export default function HomeSidebar({ session }: { session: Session }) {
+export default function ParentalSidebar() {
   const pathname = usePathname();
-  const { data } = useProfile();
 
   return (
     <Sidebar className="border-none">
@@ -38,7 +35,10 @@ export default function HomeSidebar({ session }: { session: Session }) {
           <SidebarMenuButton className="hover:bg-transparent active:bg-transparent">
             <Link href="/home">
               <h1 className="font-medium tracking-tight text-2xl text-foreground">
-                daimo
+                daimo{" "}
+                <span className="text-muted-foreground font-normal">
+                  for parents
+                </span>
               </h1>
             </Link>
           </SidebarMenuButton>

@@ -65,7 +65,9 @@ export const saveChildrenTags = mutation({
       throw new ConvexError("No autorizado");
     }
 
-    const [profile] = await ctx.runQuery(
+    // the user only will save the second child
+    // TODO: use the session active or something else, you should use profileId on the arg veryifing is from the user
+    const [_, profile] = await ctx.runQuery(
       internal.parental.profile.getByUserId,
       { userId: user._id },
     );

@@ -18,11 +18,18 @@ export const parentalSecurityFields = {
   pinSalt: v.string(),
 };
 
+export const parentalTokenFields = {
+  used: v.boolean(),
+  expiresAt: v.number(),
+  userId: v.string(),
+};
+
 export const parentalSchema = {
   profile: defineTable(profileFields).index("by_user_id", ["userId"]),
   parentalSecurity: defineTable(parentalSecurityFields).index("by_user_id", [
     "userId",
   ]),
+  parentalToken: defineTable(parentalTokenFields),
   profileTags: defineTable({
     profileId: v.id("profile"),
     tagId: v.id("tags"),

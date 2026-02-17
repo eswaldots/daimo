@@ -1,14 +1,7 @@
 "use client";
 
-import {
-  BadgeCheck,
-  ChevronsUpDown,
-  LogOut,
-  Settings,
-  Sparkles,
-} from "lucide-react";
+import { LogOut, Settings, Sparkles } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +15,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/sidebar";
 import { useState } from "react";
 import { authClient } from "@/lib/auth/auth-client";
@@ -33,6 +25,8 @@ import { api } from "@daimo/backend";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQueryWithStatus } from "@/lib/convex/use-query-with-status";
 import { motion } from "motion/react";
+import { ProfileMedia } from "@/components/profile/profile-media";
+import { useProfile } from "@/hooks/use-profile";
 
 /**
  * Renders a sidebar user button with an avatar and a centered dropdown menu of account actions.
@@ -44,16 +38,8 @@ import { motion } from "motion/react";
  * @param user - The user profile to display (`name`, `email`, `avatar`).
  * @returns The sidebar user menu React element.
  */
-export function NavUser({
-  user,
-}: {
-  user: {
-    name: string;
-    email: string;
-    avatar: string;
-  };
-}) {
-  const { isMobile } = useSidebar();
+export function NavUser() {
+  const { data: profile, isPending: isPendingProfile } = useProfile();
   const [isLoading, setIsLoading] = useState(false);
   const { data: subscription, isPending } = useQueryWithStatus(
     api.subscriptions.getCurrentSubscription,
@@ -69,16 +55,25 @@ export function NavUser({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="h-8 w-8 rounded-full">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-full">
-                  {user.name.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
+              {isPendingProfile ? (
+                <Skeleton className="rounded-full size-8" />
+              ) : (
+                profile && (
+                  <ProfileMedia
+                    src={profile.media}
+                    profileId={profile._id}
+                    fallback={profile.name}
+                  />
+                )
+              )}
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium text-foreground">
-                  {user.name}
-                </span>
+                {isPendingProfile ? (
+                  <Skeleton className="h-5 w-8" />
+                ) : (
+                  <span className="truncate font-medium text-foreground">
+                    {profile?.name}
+                  </span>
+                )}
                 <span className="truncate text-xs text-foreground font-normal">
                   {!isPending ? (
                     !subscription ? (
@@ -111,15 +106,18 @@ export function NavUser({
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-full">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-full">
-                    {user.name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
+                {isPendingProfile ? (
+                  <Skeleton className="rounded-full size-9" />
+                ) : (
+                  profile && (
+                    <ProfileMedia
+                      profileId={profile._id}
+                      fallback={profile.name}
+                    />
+                  )
+                )}
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate font-medium">{profile?.name}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
@@ -178,4 +176,3 @@ export function NavUser({
     </SidebarMenu>
   );
 }
-
