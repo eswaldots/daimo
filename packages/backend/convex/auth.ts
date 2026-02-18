@@ -55,11 +55,8 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
                 },
               );
             } catch (e) {
-              console.error(
-                "Error creating the owner profile for user",
-                user.id,
-                e,
-              );
+              // TODO: handle this error
+              console.error("Error creating the owner profile for user", e);
 
               throw e;
             }

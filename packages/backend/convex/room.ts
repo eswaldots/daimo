@@ -73,8 +73,9 @@ export const getMetadataRoom = query({
       };
     }
 
-    const mappedTags =
-      profileTags.filter((tag) => !!tag).map((tag) => tag.name) ?? [];
+    const mappedTags = profileTags
+      .filter((tag): tag is Doc<"tags"> => !!tag)
+      .map((tag) => tag.name);
 
     return {
       profile: profile,

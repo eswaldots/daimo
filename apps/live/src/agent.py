@@ -39,7 +39,6 @@ from livekit.plugins import (
     inworld,
 )
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
-import sentry_sdk
 
 PARENT_TEMPLATE = """
 ### CONTEXTO E IDENTIDAD
@@ -96,9 +95,9 @@ client = ConvexClient(CONVEX_URL or "http://127.0.0.1:8000")
 if (ENVIROMENT == "production" and SENTRY_DSN):
     sentry_sdk.init(
         dsn=SENTRY_DSN,
-        # Add data like request headers and IP for users,
-        # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
         send_default_pii=True,
+        environment=ENVIROMENT,
+        traces_sample_rate=0.1
     )
 
 def format_memories(memories_list):
@@ -221,6 +220,18 @@ async def my_agent(ctx: JobContext):
     user_id = metadata.get("userId")
     profile_id = metadata.get("profileId")
 
+
+    sentry_sdk.set_context("conversation", {
+        "conversation_id": metadata.get("conversationId"),
+        "character_id": metadata.get("characterId"),
+        "is_first_time": metadata.get("isFirstTime"),
+        "room_name": ctx.room.name
+    })
+
+    sentry_sdk.set_tag("character_id", metadata.get("characterId"))
+    sentry_sdk.set_tag("profile_id", metadata.get("profileId"))
+    
+
     if not user_id:
         raise ValueError("Missing userId on metadata")
 
@@ -249,9 +260,17 @@ async def my_agent(ctx: JobContext):
         metadata_res = await run_async(get_metadata, character_id, user_id, profile_id)
         # Reemplazamos la variable metadata local con la respuesta de Convex
         metadata.update(metadata_res) 
+
+        sentry_sdk.set_user({
+            "id": metadata_res.get("user")["_id"],
+            "email": metadata_res("user")["email"],
+            "username": metadata_res("user")["name"],
+            "profile_id": metadata.get("profileId")
+        })
     except Exception as e:
         logger.error(f"Error getting metadata from Convex {e}")
         raise
+
 
     logger.info("Metadata obtained!")
 

@@ -145,22 +145,26 @@ export function NavUser() {
               onSelect={async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                setIsLoading(true);
+                try {
+                  setIsLoading(true);
 
-                const { error } = await authClient.signOut();
+                  const { error } = await authClient.signOut();
 
-                if (error) {
+                  if (error) {
+                    setIsLoading(false);
+
+                    return;
+                  }
+
+                  // Capture logout event and reset PostHog
+                  posthog.capture("user_signed_out");
+                  posthog.reset();
+
                   setIsLoading(false);
-
-                  return;
+                } catch {
+                  // common error doesn't log to sentry
+                  router.push("/");
                 }
-
-                // Capture logout event and reset PostHog
-                posthog.capture("user_signed_out");
-                posthog.reset();
-
-                router.push("/");
-                setIsLoading(false);
               }}
             >
               {isLoading ? (

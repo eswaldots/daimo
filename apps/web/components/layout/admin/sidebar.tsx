@@ -1,6 +1,5 @@
 "use client";
 
-import { NavUser } from "../home/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -38,6 +37,7 @@ import {
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "next-themes";
+import { NavUser } from "../home/nav-user";
 
 /**
  * Renders the admin sidebar containing navigation links, a theme selector, and the current user's card.
@@ -163,13 +163,8 @@ export default function AdminSidebar({ session }: { session: Session }) {
           </DropdownMenu>
         </SidebarMenuItem>
 
-        <NavUser
-          user={{
-            avatar: session.user.image ?? "",
-            email: session.user.email,
-            name: session.user.name,
-          }}
-        />
+        {/* TODO: create a nav user for admin that includes the user */}
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   );

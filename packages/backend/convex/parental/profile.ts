@@ -37,7 +37,7 @@ export const getProfileTags = internalQuery({
       .collect();
 
     if (!links) {
-      return null;
+      return [];
     }
 
     const tagsIds = links.map((tag) => tag.tagId);

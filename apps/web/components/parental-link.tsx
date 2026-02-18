@@ -180,13 +180,13 @@ const CreatePin = (
     try {
       await createPin({ pin: confirmValue });
 
-      setIsLoading(false);
+      props.onSuccess();
     } catch (e) {
       Sentry.captureException(e);
 
       setError("Error al crear el PIN. Intenta de nuevo.");
     } finally {
-      props.onSuccess();
+      setIsLoading(false);
     }
   };
 

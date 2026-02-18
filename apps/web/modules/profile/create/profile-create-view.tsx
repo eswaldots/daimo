@@ -58,7 +58,7 @@ export const ProfileCreateView = () => {
   } = useForm<ChildrenValues>({
     resolver: zodResolver(schema),
   });
-  const formRef = useRef(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -110,9 +110,17 @@ export const ProfileCreateView = () => {
         onSuccess={() => {
           setIsOpen(false);
 
-          formRef.current.dispatchEvent(
-            new Event("submit", { cancelable: true, bubbles: true }),
-          );
+          if (formRef.current) {
+            formRef.current.dispatchEvent(
+              new Event("submit", { cancelable: true, bubbles: true }),
+            );
+          } else {
+            sileo.error({
+              title: "Hubo un error",
+              fill: "#171717",
+              description: `No se pudo subir el formulario al servidor, inténte de nuevo más tarde`,
+            });
+          }
         }}
       />
       <motion.section
