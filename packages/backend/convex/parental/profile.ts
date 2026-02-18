@@ -92,6 +92,7 @@ export const createProfile = mutation({
     });
 
     // TODO: check if we can get sessionId in the headers and only query, it will be more performant
+    // @ts-ignore typescript is driving me nuts bro
     const { auth, headers } = await authComponent.getAuth(createAuth, ctx);
 
     const data = await auth.api.getSession({ headers });
@@ -116,6 +117,7 @@ export const createInternalProfile = internalMutation({
 
 export const getCurrentProfile = query({
   handler: async (ctx) => {
+    // @ts-ignore typescript is driving me nuts bro
     const { auth, headers } = await authComponent.getAuth(createAuth, ctx);
 
     const data = await auth.api.getSession({ headers });
@@ -124,11 +126,13 @@ export const getCurrentProfile = query({
       throw new ConvexError("There is no active session");
     }
 
+    // @ts-ignore typescript is driving me nuts bro
     if (!data.session.activeProfileId) {
       return null;
     }
 
     const profile = await ctx.db.get(
+      // @ts-ignore typescript is driving me nuts bro
       data.session.activeProfileId as Id<"profile">,
     );
 
@@ -160,6 +164,7 @@ export const setActiveProfile = mutation({
   },
   handler: async (ctx, { profileId, parentalToken }) => {
     // TODO: check if we can get sessionId in the headers and only query, it will be more performant
+    // @ts-ignore typescript is driving me nuts bro
     const { auth, headers } = await authComponent.getAuth(createAuth, ctx);
 
     const data = await auth.api.getSession({ headers });

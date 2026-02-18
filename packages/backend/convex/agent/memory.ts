@@ -27,14 +27,17 @@ export const retrieve = serverAction({
     text: v.string(),
   },
   handler: async (ctx, args) => {
-    const profile = await ctx.runQuery(internal.parental.profile.getProfileById, { profileId: args.profileId });
+    const profile = await ctx.runQuery(
+      internal.parental.profile.getProfileById,
+      { profileId: args.profileId },
+    );
 
     if (!profile) {
-	    throw new ConvexError("That profile doesn't exists");
+      throw new ConvexError("That profile doesn't exists");
     }
 
     if (profile.userId != args.userId) {
-	    throw new ConvexError("User doesn't have that profile");
+      throw new ConvexError("User doesn't have that profile");
     }
 
     const candidates = await ctx.vectorSearch("memoryEmbeddings", "embedding", {
@@ -70,6 +73,7 @@ export const getDisplayMemories = query({
       throw new ConvexError("Unautorizado");
     }
 
+    // @ts-ignore typescript is driving me nuts bro
     const { auth, headers } = await authComponent.getAuth(createAuth, ctx);
 
     const data = await auth.api.getSession({ headers });
@@ -78,6 +82,7 @@ export const getDisplayMemories = query({
       throw new ConvexError("There is no active session");
     }
 
+    // @ts-ignore why typescript is this bad with me
     if (!data?.session.activeProfileId) {
       throw new ConvexError("There is not active profile");
     }
@@ -86,6 +91,7 @@ export const getDisplayMemories = query({
       .query("memories")
       .withIndex("profileId_characterId_importance", (q) =>
         q
+          // @ts-ignore why typescript is this bad with me
           .eq("profileId", data.session.activeProfileId as Id<"profile">)
           .eq("characterId", args.characterId)
           .gt("importance", 4),

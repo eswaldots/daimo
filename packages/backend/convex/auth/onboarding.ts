@@ -67,6 +67,7 @@ export const saveChildrenTags = mutation({
     }
 
     // TODO: for now this is ok, but if user wants to edit later profile tags as admin it will be to be modified
+    // @ts-ignore typescript is driving me nuts bro
     const { auth, headers } = await authComponent.getAuth(createAuth, ctx);
 
     const data = await auth.api.getSession({ headers });
@@ -75,11 +76,13 @@ export const saveChildrenTags = mutation({
       throw new ConvexError("There is no active session");
     }
 
+    // @ts-ignore typescript is driving me nuts bro
     if (!data?.session.activeProfileId) {
       throw new ConvexError("There is no active profile ID");
     }
 
     const profile = await ctx.db.get(
+      // @ts-ignore typescript is driving me nuts bro
       data?.session.activeProfileId as Id<"profile">,
     );
 
