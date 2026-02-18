@@ -88,12 +88,13 @@ load_dotenv(".env.local")
 CONVEX_URL = os.getenv("CONVEX_URL")
 CONVEX_API_KEY = os.getenv("CONVEX_API_KEY")
 ENVIROMENT = os.getenv("ENVIROMENT")
+SENTRY_DSN = os.getenv("SENTRY_DSN")
 
 client = ConvexClient(CONVEX_URL or "http://127.0.0.1:8000")
 
-if (ENVIROMENT == "production"):
+if (ENVIROMENT == "production" and SENTRY_DSN):
     sentry_sdk.init(
-        dsn="https://49ab3a0d267e3bace957257f2e248968@o4510568326692864.ingest.us.sentry.io/4510858636689408",
+        dsn=SENTRY_DSN,
         # Add data like request headers and IP for users,
         # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
         send_default_pii=True,

@@ -1,10 +1,10 @@
 import { createClient, type GenericCtx } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
-import { api, components, internal } from "./_generated/api";
+import { components, internal } from "./_generated/api";
 import { DataModel } from "./_generated/dataModel";
 import { localization } from "better-auth-localization";
 import { betterAuth, BetterAuthOptions } from "better-auth";
-import { admin, createAuthMiddleware } from "better-auth/plugins";
+import { admin } from "better-auth/plugins";
 import authSchema from "./betterAuth/schema";
 import authConfig from "./auth.config";
 import { requireRunMutationCtx } from "@convex-dev/better-auth/utils";
@@ -44,15 +44,25 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
       user: {
         create: {
           after: async (user) => {
-            await requireRunMutationCtx(ctx).runMutation(
-              internal.parental.profile.createInternalProfile,
-              {
-                isOwner: true,
-                media: user.image ?? undefined,
-                name: user.name,
-                userId: user.id,
-              },
-            );
+            try {
+              await requireRunMutationCtx(ctx).runMutation(
+                internal.parental.profile.createInternalProfile,
+                {
+                  isOwner: true,
+                  media: user.image ?? undefined,
+                  name: user.name,
+                  userId: user.id,
+                },
+              );
+            } catch (e) {
+              console.error(
+                "Error creating the owner profile for user",
+                user.id,
+                e,
+              );
+
+              throw e;
+            }
           },
         },
       },
