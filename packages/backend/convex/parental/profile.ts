@@ -78,6 +78,8 @@ export const createProfile = mutation({
 
       const token = await ctx.db.get(parentalToken);
 
+      if (token?.userId !== user._id)
+        throw new ConvexError("Token doesn't behave you");
       if (!token) throw new ConvexError("Token not found");
       if (token.used) throw new ConvexError("Token already used");
       if (token.expiresAt <= Date.now()) throw new ConvexError("Token expired");
@@ -194,6 +196,8 @@ export const setActiveProfile = mutation({
 
       const token = await ctx.db.get(parentalToken);
 
+      if (token?.userId !== data.user.id)
+        throw new ConvexError("Token doesn't behave you");
       if (!token) throw new ConvexError("Token not found");
       if (token.used) throw new ConvexError("Token already used");
       if (token.expiresAt <= Date.now()) throw new ConvexError("Token expired");

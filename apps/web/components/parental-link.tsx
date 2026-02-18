@@ -21,7 +21,6 @@ import { cn } from "@/lib/utils";
 import { CircleCheckIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { PinDialog } from "./pin-dialog";
-import { sileo } from "sileo";
 
 export const ParentalLink = ({
   children,
@@ -50,7 +49,19 @@ export const ParentalLink = ({
 
   return (
     <>
-      <div onClick={handleClick}>{children}</div>
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={handleClick}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleClick();
+          }
+        }}
+      >
+        {children}
+      </div>
       <PinDialog
         open={isOpenPin}
         onOpenChange={setIsOpenPin}
@@ -167,8 +178,17 @@ const CreatePin = (
   const [confirmValue, setConfirmValue] = useState("");
   const [error, setError] = useState<null | string>(null);
   const [isLoading, setIsLoading] = useState(false);
-
   const createPin = useAction(api.parental.security.createPin);
+
+  useEffect(() => {
+    if (props.open) {
+      setValue("");
+      setConfirmValue("");
+      setIsConfirming(false);
+      setError(null);
+      setIsLoading(false);
+    }
+  }, [props.open]);
 
   useEffect(() => {
     if (value.length >= 4) {
@@ -197,10 +217,10 @@ const CreatePin = (
       } else {
         setIsLoading(true);
 
-        handleCreatePin();
+        void handleCreatePin();
       }
     }
-  }, [confirmValue]);
+  }, [confirmValue, value]);
 
   return (
     <Dialog {...props}>

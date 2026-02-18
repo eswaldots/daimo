@@ -71,12 +71,21 @@ export const ProfileCreateView = () => {
 
       if (!parentalToken) {
         setIsOpen(true);
-      }
 
-      await createProfile({
-        ...data,
-        parentalToken: parentalToken as Id<"parentalToken">,
-      });
+        return;
+      }
+      await Sentry.startSpan(
+        {
+          name: "createProfile",
+          op: "convex.mutation",
+          attributes: { gender: data.gender },
+        },
+        () =>
+          createProfile({
+            ...data,
+            parentalToken: parentalToken as Id<"parentalToken">,
+          }),
+      );
 
       sileo.success({
         title: "Perfil creado",
@@ -269,9 +278,7 @@ export const DataPrivacy = ({ children }: { children: ReactNode }) => {
         <DialogTitle className="md:leading-[1.1] mb-2 text-4xl md:text-6xl font-medium">
           Privacidad
         </DialogTitle>
-        <h1 className="text-lg md:text-xl">
-          Transparencia y Seguridad de Datos
-        </h1>
+        <p className="text-lg md:text-xl">Transparencia y Seguridad de Datos</p>
         <div className="prose prose-neutral dark:prose-strong:text-foreground text-foreground font-normal md:text-lg leading-relaxed">
           <Markdown>{copyText}</Markdown>
         </div>
@@ -312,6 +319,7 @@ const FormInput = ({ placeholder, ...props }: ComponentProps<"input">) => {
       <InputGroupInput
         {...props}
         className="mt-4.5 mb-1.5 md:text-sm"
+        aria-label={placeholder}
         onChange={(e) => {
           setValue(e.target.value);
           props.onChange?.(e);
