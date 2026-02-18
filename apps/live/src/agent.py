@@ -27,6 +27,7 @@ from livekit.agents import (
     cli,
     room_io,
 )
+import sentry_sdk
 from livekit.plugins import (
     deepgram,
     google,
