@@ -69,6 +69,10 @@ export const ProfileCreateView = () => {
     try {
       const parentalToken = sessionStorage.getItem("parentalToken");
 
+      if (!parentalToken) {
+        setIsOpen(true);
+      }
+
       await createProfile({
         ...data,
         parentalToken: parentalToken as Id<"parentalToken">,

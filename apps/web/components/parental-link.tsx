@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
+import * as Sentry from "@sentry/nextjs";
 import { useHasPin } from "@/hooks/use-has-pin";
 import { LockIcon } from "./animated-icons/lock";
 import { Button } from "./ui/button";
@@ -20,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { CircleCheckIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { PinDialog } from "./pin-dialog";
+import { sileo } from "sileo";
 
 export const ParentalLink = ({
   children,
@@ -175,11 +177,17 @@ const CreatePin = (
   }, [value]);
 
   const handleCreatePin = async () => {
-    await createPin({ pin: confirmValue });
+    try {
+      await createPin({ pin: confirmValue });
 
-    setIsLoading(false);
+      setIsLoading(false);
+    } catch (e) {
+      Sentry.captureException(e);
 
-    props.onSuccess();
+      setError("Error al crear el PIN. Intenta de nuevo.");
+    } finally {
+      props.onSuccess();
+    }
   };
 
   useEffect(() => {

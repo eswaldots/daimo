@@ -62,7 +62,7 @@ export const retrieve = serverAction({
 });
 
 export const getDisplayMemories = query({
-  args: { characterId: v.id("characters"), profileId: v.id("profile") },
+  args: { characterId: v.id("characters") },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
 
@@ -76,6 +76,10 @@ export const getDisplayMemories = query({
 
     if (!data?.session) {
       throw new ConvexError("There is no active session");
+    }
+
+    if (!data?.session.activeProfileId) {
+      throw new ConvexError("There is not active profile");
     }
 
     const coreMemories = await ctx.db

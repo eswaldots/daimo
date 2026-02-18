@@ -54,7 +54,7 @@ export default function SettingsSidebar({ session }: { session: Session }) {
                 className="gap-6 rounded-lg text-sm px-4 tracking-wide font-medium py-5 [&>svg]:size-5 data-[active=true]:font-semibold data-[active=true]:[&>svg]:text-primary"
                 asChild
               >
-                <Link href="/home">
+                <Link href="/settings">
                   <span>Perfil</span>
                 </Link>
               </SidebarMenuButton>

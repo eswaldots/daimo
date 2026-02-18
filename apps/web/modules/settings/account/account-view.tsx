@@ -280,8 +280,20 @@ const ProfileSelect = () => {
                         setDialogProfileId(null);
                         setIsLoading(true);
 
+                        // will always true
                         const sessionId =
                           sessionStorage.getItem("parentalToken");
+
+                        if (!sessionId) {
+                          sileo.error({
+                            title: "No se encontro el token",
+                            fill: "#171717",
+                            description:
+                              "No pudimos encontrar su token de seguridad parental, esto es un error poco común, contacté con soporte inmediatamente",
+                          });
+
+                          return;
+                        }
 
                         try {
                           await setProfile({

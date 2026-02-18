@@ -8,7 +8,8 @@ export const setActiveProfile = mutation({
     sessionId: v.string(),
   },
   handler: async (ctx, { profileId, sessionId }) => {
-    // TODO: verify if profileId exists
+    // this is a internal mutation, so the external caller ALWAYS haves to verify the profileId exists
+    //  TODO: verify the profileId inside of the mutation
     await ctx.db.patch("session", sessionId as Id<"session">, {
       activeProfileId: profileId,
     });

@@ -2,9 +2,10 @@
 
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
-import { authComponent } from "../auth";
+import { authComponent, createAuth } from "../auth";
 import { api, components, internal } from "../_generated/api";
 import { Doc, Id } from "../_generated/dataModel";
+import { auth } from "../betterAuth/auth";
 
 // TODO: Don't use magic strings
 export const checkOnboardingRedirect = query({
@@ -65,11 +66,21 @@ export const saveChildrenTags = mutation({
       throw new ConvexError("No autorizado");
     }
 
-    // the user only will save the second child
-    // TODO: use the session active or something else, you should use profileId on the arg veryifing is from the user
-    const [_, profile] = await ctx.runQuery(
-      internal.parental.profile.getByUserId,
-      { userId: user._id },
+    // TODO: for now this is ok, but if user wants to edit later profile tags as admin it will be to be modified
+    const { auth, headers } = await authComponent.getAuth(createAuth, ctx);
+
+    const data = await auth.api.getSession({ headers });
+
+    if (!data?.session) {
+      throw new ConvexError("There is no active session");
+    }
+
+    if (!data?.session.activeProfileId) {
+      throw new ConvexError("There is no active profile ID");
+    }
+
+    const profile = await ctx.db.get(
+      data?.session.activeProfileId as Id<"profile">,
     );
 
     if (!profile) {

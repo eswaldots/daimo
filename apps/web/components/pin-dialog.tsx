@@ -35,6 +35,7 @@ export const PinDialog = ({
       setIsSuccess(true);
       onSuccess();
     } catch {
+      // TODO: handle non correct errors
       setError("El PIN no es correcto");
     } finally {
       setIsLoading(false);
