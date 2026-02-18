@@ -119,7 +119,7 @@ async def run_async(func, *args, **kwargs):
 
 def get_metadata(character_id: str, user_id: str, profile_id: str) -> dict:
     # Esta función se mantiene sincrona para ser llamada por run_async
-    return client.query("room:getMetadataRoom", dict(characterId=character_id, userId=user_id, apiKey=CONVEX_API_KEY))
+    return client.query("room:getMetadataRoom", dict(characterId=character_id, userId=user_id, apiKey=CONVEX_API_KEY, profileId=profile_id))
 
 async def retrieve_memories(character_id: str, user_id: str, text: str, profile_id: str):
     res = await run_async(
@@ -244,7 +244,7 @@ async def my_agent(ctx: JobContext):
     logger.info("Getting metadata from the room...")
     try:
         # OPTIMIZACION: Hacemos esta llamada asíncrona para no bloquear el loop del agente
-        metadata_res = await run_async(get_metadata, character_id, user_id)
+        metadata_res = await run_async(get_metadata, character_id, user_id, profile_id)
         # Reemplazamos la variable metadata local con la respuesta de Convex
         metadata.update(metadata_res) 
     except Exception as e:

@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { ParentalLink } from "@/components/parental-link";
 import { useSetProfile } from "@/hooks/use-set-profile";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
@@ -36,6 +36,8 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { useHasPin } from "@/hooks/use-has-pin";
+import { sileo } from "sileo";
 
 export const AccountView = () => {
   return (
@@ -142,6 +144,7 @@ const ProfileSelect = () => {
     null,
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { data: hasPin } = useHasPin();
 
   if (isPending) {
     return <ProfileSelectSkeleton />;
@@ -192,13 +195,12 @@ const ProfileSelect = () => {
                 (profile) => profile._id != userData.session.activeProfileId,
               )
               .map((profile) => (
-                <>
+                <Fragment key={profile._id}>
                   <motion.div
-                    key={profile._id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     onClick={async () => {
-                      if (profile.isOwner || isEditing) {
+                      if (profile.isOwner && hasPin) {
                         setIsDialogOpen(true);
 
                         setDialogProfileId(profile._id);
@@ -210,15 +212,26 @@ const ProfileSelect = () => {
 
                       try {
                         await setProfile({ profileId: profile._id });
+                        if (profile.isOwner && !hasPin) {
+                          sileo.warning({
+                            title: "Estas entrando al perfil de administrador",
+                            description:
+                              "Se sugiere crear un PIN parental para evitar operaciones peligrosas malentendidas",
+                            fill: "#171717",
+                          });
+                        }
                         await refetch();
 
                         router.push("/home");
                       } catch (e) {
                         Sentry.captureException(e);
 
-                        toast.error(
-                          "Hubo un error intentando cambiar de perfil, intenta de nuevo más tarde",
-                        );
+                        sileo.error({
+                          title: "Hubo un error",
+                          description:
+                            "Hubo un error intentando cambiar de perfil, intenta de nuevo más tarde",
+                          fill: "#171717",
+                        });
                       } finally {
                         setIsLoading(false);
                       }
@@ -291,7 +304,7 @@ const ProfileSelect = () => {
                       }}
                     />
                   )}
-                </>
+                </Fragment>
               ))
           )}
 

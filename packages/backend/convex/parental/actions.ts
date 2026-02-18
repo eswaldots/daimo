@@ -1,6 +1,6 @@
 "use node";
 
-import { createHash, randomBytes } from "node:crypto";
+import { scryptSync, randomBytes, timingSafeEqual } from "node:crypto";
 import { ConvexError, v } from "convex/values";
 import { internalAction } from "../_generated/server";
 import { internal } from "../_generated/api";
@@ -39,15 +39,16 @@ export const verifyPin = internalAction({
 });
 
 function hashPassword(password: string, salt: string) {
-  const hash = createHash("sha256");
-
-  hash.update(salt);
-  hash.update(password);
-
-  return hash.digest("hex");
+  return scryptSync(password, salt, 64).toString("hex");
 }
 
-function verifyPassword(password: string, salt: string, storedHash: string) {
-  const hash = hashPassword(password, salt);
-  return hash === storedHash;
+function verifyPassword(
+  password: string,
+  salt: string,
+  storedHash: string,
+): boolean {
+  const hashBuffer = scryptSync(password, salt, 64);
+  const storedHashBuffer = Buffer.from(storedHash, "hex");
+
+  return timingSafeEqual(hashBuffer, storedHashBuffer);
 }

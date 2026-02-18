@@ -77,13 +77,11 @@ export const PinDialog = ({
             <InputOTP
               containerClassName="flex flex-col items-center"
               maxLength={4}
-              value={value
-                .split("")
-                .map(() => "●")
-                .join("")}
+              value={value}
               onChange={(e) => {
                 setValue(e);
               }}
+              type="password"
             >
               <InputOTPGroup
                 data-invalid={!!error}

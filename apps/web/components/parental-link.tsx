@@ -95,11 +95,16 @@ export const ParentalLink = ({
             </DialogDescription>
 
             <DialogFooter className="mt-6 w-full flex flex-col md:flex-col gap-4 items-center">
-              <Button className="md:w-full text-base flex-1 h-12">
+              <Button
+                className="md:w-full text-base flex-1 h-12"
+                onClick={() => {
+                  router.push(href ?? "");
+                }}
+              >
                 Continuar
               </Button>
               <span className="text-muted-foreground text-sm">
-                Cerrando en 4 segundos
+                Continuando automáticamente en 4 segundos
               </span>
             </DialogFooter>
           </div>
@@ -224,17 +229,8 @@ const CreatePin = (
             <InputOTP
               containerClassName="flex flex-col items-center"
               maxLength={4}
-              value={
-                isConfirming
-                  ? confirmValue
-                      .split("")
-                      .map(() => "●")
-                      .join("")
-                  : value
-                      .split("")
-                      .map(() => "●")
-                      .join("")
-              }
+              type="password"
+              value={isConfirming ? confirmValue : value}
               onChange={(e) => {
                 if (isConfirming) {
                   setConfirmValue(e);

@@ -81,6 +81,8 @@ export const createProfile = mutation({
       if (!token) throw new ConvexError("Token not found");
       if (token.used) throw new ConvexError("Token already used");
       if (token.expiresAt <= Date.now()) throw new ConvexError("Token expired");
+
+      await ctx.db.patch(parentalToken, { used: true });
     }
 
     const profileId = await ctx.db.insert("profile", {
@@ -172,11 +174,14 @@ export const setActiveProfile = mutation({
       throw new ConvexError("There is no profile to show");
     }
 
-    if (profile.userId != data.user.id) {
+    if (profile.userId !== data.user.id) {
       throw new ConvexError("User doesn't behave this profile");
     }
 
-    if (profile.isOwner) {
+    const hasPin = await ctx.runQuery(api.parental.security.hasPin);
+
+    // if doesn't have pin no change, TODO: user haves to create pin
+    if (profile.isOwner && hasPin) {
       if (!parentalToken)
         throw new ConvexError(
           "You have to pass the code arg for change to the owner profile",
@@ -187,6 +192,8 @@ export const setActiveProfile = mutation({
       if (!token) throw new ConvexError("Token not found");
       if (token.used) throw new ConvexError("Token already used");
       if (token.expiresAt <= Date.now()) throw new ConvexError("Token expired");
+
+      await ctx.db.patch(parentalToken, { used: true });
     }
 
     await ctx.runMutation(components.betterAuth.session.setActiveProfile, {

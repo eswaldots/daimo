@@ -56,47 +56,6 @@ export const createPin = action({
   },
 });
 
-export const verifyPin = action({
-  args: {
-    pin: v.string(),
-  },
-  handler: async (ctx, { pin }) => {
-    const user = await authComponent.getAuthUser(ctx);
-
-    if (!user) {
-      throw new ConvexError("Unauthorized");
-    }
-
-    const actualHash = await ctx.runQuery(
-      internal.parental.security.getActualHash,
-      { userId: user._id },
-    );
-
-    if (!!actualHash) {
-      throw new ConvexError("A pin yet exists");
-    }
-
-    if (pin.length != 4) {
-      throw new ConvexError(
-        "Invalid pin length, expected a length of 4 numbers",
-      );
-    }
-
-    const { hash, salt } = await ctx.runAction(
-      internal.parental.actions.hashPin,
-      {
-        password: pin,
-      },
-    );
-
-    await ctx.runMutation(internal.parental.security.storeHash, {
-      hash,
-      salt,
-      userId: user._id,
-    });
-  },
-});
-
 export const verify = action({
   args: {
     pin: v.string(),

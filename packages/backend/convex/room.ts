@@ -56,17 +56,6 @@ export const getMetadataRoom = query({
         profileId: profile._id,
       })) ?? [];
 
-    // if user doesn't have children only returns the user data
-    if (!profile) {
-      return {
-        user,
-        character,
-        profileTags: [],
-        profile: null,
-        coreMemories,
-      };
-    }
-
     type Tag = Doc<"tags"> | null;
 
     const profileTags: Tag[] | null = await ctx.runQuery(
@@ -83,6 +72,7 @@ export const getMetadataRoom = query({
         coreMemories,
       };
     }
+
     const mappedTags =
       profileTags.filter((tag) => !!tag).map((tag) => tag.name) ?? [];
 

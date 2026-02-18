@@ -80,7 +80,7 @@ export const ProfileCreateView = () => {
         description: `El perfil de ${data.name} ya esta listo para usarse`,
       });
 
-      if (!isPending && profiles?.length > 2) {
+      if (!isPending && profiles && profiles?.length > 2) {
         router.push("/profiles");
       } else {
         router.back();
