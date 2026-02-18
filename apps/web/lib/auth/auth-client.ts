@@ -13,6 +13,12 @@ export const authClient = createAuthClient({
           defaultValue: false,
         },
       },
+      session: {
+        activeProfileId: {
+          type: "string",
+          required: false,
+        },
+      },
     }),
   ],
   baseURL: process.env.NEXT_PUBLIC_SITE_URL,

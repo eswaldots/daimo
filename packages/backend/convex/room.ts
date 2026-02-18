@@ -11,8 +11,8 @@ import { ConvexUser } from "./betterAuth/types";
 
 type ReturnValue = {
   user: ConvexUser;
-  children: Doc<"childrens"> | null;
-  childrenTags: string[];
+  profile: Doc<"profile"> | null;
+  profileTags: string[];
   character: Doc<"characters">;
   coreMemories: Doc<"memories">[];
 };
@@ -21,11 +21,12 @@ export const getMetadataRoom = query({
   args: {
     apiKey: v.string(),
     characterId: v.id("characters"),
+    profileId: v.id("profile"),
     userId: v.string(),
   },
   handler: async (
     ctx,
-    { apiKey: key, characterId, userId },
+    { apiKey: key, characterId, profileId, userId },
   ): Promise<ReturnValue> => {
     const isValidKey = await verifyApiKey(ctx, key);
 
@@ -43,45 +44,43 @@ export const getMetadataRoom = query({
       throw new ConvexError("Usuario no encontrado");
     }
 
-    const children: Doc<"childrens"> | null = await ctx.runQuery(
-      internal.parental.children.getByFatherId,
-      { fatherId: user._id },
-    );
+    const profile = await ctx.db.get(profileId);
+
+    if (!profile) {
+      throw new ConvexError("There is no profile to show");
+    }
 
     const coreMemories =
       (await ctx.runQuery(internal.agent.memory.getCoreMemories, {
         characterId: characterId,
-        userId: userId,
+        profileId: profile._id,
       })) ?? [];
 
-    // if user doesn't have children only returns the user data
-    if (!children) {
+    type Tag = Doc<"tags"> | null;
+
+    const profileTags: Tag[] | null = await ctx.runQuery(
+      internal.parental.profile.getProfileTags,
+      { profileId: profile._id },
+    );
+
+    if (!profileTags) {
       return {
+        profile: profile,
         user,
+        profileTags: [],
         character,
-        childrenTags: [],
-        children: null,
         coreMemories,
       };
     }
 
-    type Tag = Doc<"tags"> | null;
-
-    const childrenTags: Tag[] | null = await ctx.runQuery(
-      internal.parental.children.getChildrenTags,
-      { childrenId: children._id },
-    );
-
-    if (!childrenTags) {
-      return { children, user, childrenTags: [], character, coreMemories };
-    }
-    const mappedTags =
-      childrenTags.filter((tag) => !!tag).map((tag) => tag.name) ?? [];
+    const mappedTags = profileTags
+      .filter((tag): tag is Doc<"tags"> => !!tag)
+      .map((tag) => tag.name);
 
     return {
-      children,
+      profile: profile,
       user,
-      childrenTags: mappedTags,
+      profileTags: mappedTags,
       character,
       coreMemories,
     };

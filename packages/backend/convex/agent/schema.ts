@@ -8,6 +8,7 @@ export const conversationFields = {
   isLive: v.boolean(),
   characterId: v.id("characters"),
   userId: v.string(),
+  profileId: v.id("profile"),
 };
 
 export const messageFields = {
@@ -17,13 +18,12 @@ export const messageFields = {
 };
 
 export const memoryFields = {
-  from: v.optional(v.union(v.literal("children"), v.literal("user"))),
   displayDescription: v.string(),
   parentDescription: v.optional(v.string()),
   embeddingId: v.id("memoryEmbeddings"),
   importance: v.number(),
   userId: v.string(),
-  childrenId: v.optional(v.string()),
+  profileId: v.id("profile"),
   characterId: v.optional(v.string()),
   lastAccess: v.number(),
   data: v.union(
@@ -48,6 +48,7 @@ export const memoryFields = {
 export const agentSchema = {
   conversations: defineTable(conversationFields)
     .index("userId", ["userId"])
+    .index("profileId", ["profileId"])
     .index("isLive", ["isLive"]),
   messages: defineTable(messageFields).index("conversationId", [
     "conversationId",
@@ -56,8 +57,9 @@ export const agentSchema = {
     .index("embeddingId_characterId", ["embeddingId", "characterId"])
     .index("characterId_userId_type", ["userId", "data.type"])
     .index("userId_characterId", ["userId", "characterId"])
-    .index("userId_characterId_importance", [
-      "userId",
+    .index("profileId_characterId", ["profileId", "characterId"])
+    .index("profileId_characterId_importance", [
+      "profileId",
       "characterId",
       "importance",
     ])
@@ -65,10 +67,11 @@ export const agentSchema = {
   memoryEmbeddings: defineTable({
     userId: v.string(),
     characterId: v.optional(v.string()),
+    profileId: v.id("profile"),
     embedding: v.array(v.float64()),
   }).vectorIndex("embedding", {
     vectorField: "embedding",
-    filterFields: ["userId", "characterId"],
+    filterFields: ["userId", "characterId", "profileId"],
     dimensions: EMBEDDING_DIMENSION,
   }),
   embeddingsCache: defineTable({

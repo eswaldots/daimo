@@ -23,7 +23,9 @@ import type * as characters_internal from "../characters/internal.js";
 import type * as constants_plans from "../constants/plans.js";
 import type * as crons from "../crons.js";
 import type * as http from "../http.js";
-import type * as parental_children from "../parental/children.js";
+import type * as parental_actions from "../parental/actions.js";
+import type * as parental_profile from "../parental/profile.js";
+import type * as parental_security from "../parental/security.js";
 import type * as room from "../room.js";
 import type * as stars from "../stars.js";
 import type * as storage from "../storage.js";
@@ -55,7 +57,9 @@ declare const fullApi: ApiFromModules<{
   "constants/plans": typeof constants_plans;
   crons: typeof crons;
   http: typeof http;
-  "parental/children": typeof parental_children;
+  "parental/actions": typeof parental_actions;
+  "parental/profile": typeof parental_profile;
+  "parental/security": typeof parental_security;
   room: typeof room;
   stars: typeof stars;
   storage: typeof storage;
@@ -119,6 +123,7 @@ export declare const components: {
               }
             | {
                 data: {
+                  activeProfileId?: null | string;
                   createdAt: number;
                   expiresAt: number;
                   impersonatedBy?: null | string;
@@ -160,6 +165,7 @@ export declare const components: {
             | {
                 data: {
                   createdAt: number;
+                  expiresAt?: null | number;
                   privateKey: string;
                   publicKey: string;
                 };
@@ -227,6 +233,7 @@ export declare const components: {
                     | "userAgent"
                     | "userId"
                     | "impersonatedBy"
+                    | "activeProfileId"
                     | "_id";
                   operator?:
                     | "lt"
@@ -324,7 +331,12 @@ export declare const components: {
                 model: "jwks";
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "publicKey" | "privateKey" | "createdAt" | "_id";
+                  field:
+                    | "publicKey"
+                    | "privateKey"
+                    | "createdAt"
+                    | "expiresAt"
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -415,6 +427,7 @@ export declare const components: {
                     | "userAgent"
                     | "userId"
                     | "impersonatedBy"
+                    | "activeProfileId"
                     | "_id";
                   operator?:
                     | "lt"
@@ -512,7 +525,12 @@ export declare const components: {
                 model: "jwks";
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "publicKey" | "privateKey" | "createdAt" | "_id";
+                  field:
+                    | "publicKey"
+                    | "privateKey"
+                    | "createdAt"
+                    | "expiresAt"
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -675,6 +693,7 @@ export declare const components: {
             | {
                 model: "session";
                 update: {
+                  activeProfileId?: null | string;
                   createdAt?: number;
                   expiresAt?: number;
                   impersonatedBy?: null | string;
@@ -695,6 +714,7 @@ export declare const components: {
                     | "userAgent"
                     | "userId"
                     | "impersonatedBy"
+                    | "activeProfileId"
                     | "_id";
                   operator?:
                     | "lt"
@@ -813,12 +833,18 @@ export declare const components: {
                 model: "jwks";
                 update: {
                   createdAt?: number;
+                  expiresAt?: null | number;
                   privateKey?: string;
                   publicKey?: string;
                 };
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "publicKey" | "privateKey" | "createdAt" | "_id";
+                  field:
+                    | "publicKey"
+                    | "privateKey"
+                    | "createdAt"
+                    | "expiresAt"
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -913,6 +939,7 @@ export declare const components: {
             | {
                 model: "session";
                 update: {
+                  activeProfileId?: null | string;
                   createdAt?: number;
                   expiresAt?: number;
                   impersonatedBy?: null | string;
@@ -933,6 +960,7 @@ export declare const components: {
                     | "userAgent"
                     | "userId"
                     | "impersonatedBy"
+                    | "activeProfileId"
                     | "_id";
                   operator?:
                     | "lt"
@@ -1051,12 +1079,18 @@ export declare const components: {
                 model: "jwks";
                 update: {
                   createdAt?: number;
+                  expiresAt?: null | number;
                   privateKey?: string;
                   publicKey?: string;
                 };
                 where?: Array<{
                   connector?: "AND" | "OR";
-                  field: "publicKey" | "privateKey" | "createdAt" | "_id";
+                  field:
+                    | "publicKey"
+                    | "privateKey"
+                    | "createdAt"
+                    | "expiresAt"
+                    | "_id";
                   operator?:
                     | "lt"
                     | "lte"
@@ -1082,6 +1116,17 @@ export declare const components: {
         },
         any
       >;
+    };
+    session: {
+      setActiveProfile: FunctionReference<
+        "mutation",
+        "internal",
+        { profileId: string; sessionId: string },
+        any
+      >;
+    };
+    testing: {
+      wipeAllTables: FunctionReference<"mutation", "internal", any, any>;
     };
     user: {
       createUser: FunctionReference<
@@ -1182,6 +1227,48 @@ export declare const components: {
         "internal",
         { completedOnboarding: boolean; userId: string },
         any
+      >;
+    };
+  };
+  actionCache: {
+    crons: {
+      purge: FunctionReference<
+        "mutation",
+        "internal",
+        { expiresAt?: number },
+        null
+      >;
+    };
+    lib: {
+      get: FunctionReference<
+        "query",
+        "internal",
+        { args: any; name: string; ttl: number | null },
+        { kind: "hit"; value: any } | { expiredEntry?: string; kind: "miss" }
+      >;
+      put: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          args: any;
+          expiredEntry?: string;
+          name: string;
+          ttl: number | null;
+          value: any;
+        },
+        { cacheHit: boolean; deletedExpiredEntry: boolean }
+      >;
+      remove: FunctionReference<
+        "mutation",
+        "internal",
+        { args: any; name: string },
+        null
+      >;
+      removeAll: FunctionReference<
+        "mutation",
+        "internal",
+        { batchSize?: number; before?: number; name?: string },
+        null
       >;
     };
   };

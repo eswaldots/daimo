@@ -55,13 +55,13 @@ export const relateTag = internalMutation({
 export const relateChildrenTag = internalMutation({
   args: {
     tagId: v.id("tags"),
-    childrenId: v.id("childrens"),
+    profileId: v.id("profile"),
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db
-      .query("childrenTags")
-      .withIndex("by_children_and_tag", (q) =>
-        q.eq("childrenId", args.childrenId).eq("tagId", args.tagId),
+      .query("profileTags")
+      .withIndex("by_profile_and_tag", (q) =>
+        q.eq("profileId", args.profileId).eq("tagId", args.tagId),
       )
       .unique();
 
@@ -69,6 +69,6 @@ export const relateChildrenTag = internalMutation({
       throw new ConvexError("Tag already related to this child");
     }
 
-    return await ctx.db.insert("childrenTags", { ...args });
+    return await ctx.db.insert("profileTags", { ...args });
   },
 });

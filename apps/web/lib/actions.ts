@@ -66,10 +66,17 @@ export const createToken = async ({
       );
     }
 
+    if (!session.session.activeProfileId) {
+      throw new Error(
+        "No haz seleccionado aún un perfil para hablar con Daimo",
+      );
+    }
+
     const conversationId = await fetchAuthMutation(
       api.agent.conversation.createConversation,
       {
         characterId: character._id,
+        profileId: session.session.activeProfileId as Id<"profile">,
       },
     );
 
@@ -88,6 +95,7 @@ export const createToken = async ({
       metadata: JSON.stringify({
         characterId, // <--- AQUÍ VA TU METADATA PARA EL AGENTE
         userId: session.user.id,
+        profileId: session.session.activeProfileId,
         conversationId,
         isFirstTime,
       }),

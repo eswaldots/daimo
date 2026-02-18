@@ -1,25 +1,25 @@
 import { createClient, type GenericCtx } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
-import { components } from "./_generated/api";
+import { components, internal } from "./_generated/api";
 import { DataModel } from "./_generated/dataModel";
 import { localization } from "better-auth-localization";
 import { betterAuth, BetterAuthOptions } from "better-auth";
 import { admin } from "better-auth/plugins";
 import authSchema from "./betterAuth/schema";
 import authConfig from "./auth.config";
+import { requireRunMutationCtx } from "@convex-dev/better-auth/utils";
 
 const siteUrl = process.env.SITE_URL!;
 
 // The component client has methods needed for integrating Convex with Better Auth,
 // as well as helper methods for general use.
-export const authComponent = createClient<DataModel, typeof authSchema>(
-  components.betterAuth,
-  {
-    local: {
-      schema: authSchema,
-    },
+export const authComponent: ReturnType<
+  typeof createClient<DataModel, typeof authSchema>
+> = createClient<DataModel, typeof authSchema>(components.betterAuth, {
+  local: {
+    schema: authSchema,
   },
-);
+});
 
 export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
   return {
@@ -36,6 +36,38 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
         completedOnboarding: {
           type: "boolean",
           defaultValue: false,
+        },
+      },
+    },
+    databaseHooks: {
+      user: {
+        create: {
+          after: async (user) => {
+            try {
+              await requireRunMutationCtx(ctx).runMutation(
+                internal.parental.profile.createInternalProfile,
+                {
+                  isOwner: true,
+                  media: user.image ?? undefined,
+                  name: user.name,
+                  userId: user.id,
+                },
+              );
+            } catch (e) {
+              // TODO: handle this error
+              console.error("Error creating the owner profile for user", e);
+
+              throw e;
+            }
+          },
+        },
+      },
+    },
+    session: {
+      additionalFields: {
+        activeProfileId: {
+          type: "string",
+          required: false,
         },
       },
     },

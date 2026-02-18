@@ -10,10 +10,10 @@ import {
 import { google } from "@ai-sdk/google";
 import { ConvexError, v } from "convex/values";
 import { internal } from "../_generated/api";
-import { Doc } from "../_generated/dataModel";
+import { Doc, Id } from "../_generated/dataModel";
 import { serverAction } from "../utils";
 import { z } from "zod";
-import { authComponent } from "../auth";
+import { authComponent, createAuth } from "../auth";
 
 export const MEMORY_ACCESS_THROTTLE = 300_000;
 
@@ -22,10 +22,24 @@ const selfInternal = internal.agent.memory;
 export const retrieve = serverAction({
   args: {
     userId: v.string(),
+    profileId: v.id("profile"),
     characterId: v.id("characters"),
     text: v.string(),
   },
   handler: async (ctx, args) => {
+    const profile = await ctx.runQuery(
+      internal.parental.profile.getProfileById,
+      { profileId: args.profileId },
+    );
+
+    if (!profile) {
+      throw new ConvexError("That profile doesn't exists");
+    }
+
+    if (profile.userId != args.userId) {
+      throw new ConvexError("User doesn't have that profile");
+    }
+
     const candidates = await ctx.vectorSearch("memoryEmbeddings", "embedding", {
       vector: (
         await embed({
@@ -33,7 +47,7 @@ export const retrieve = serverAction({
           model: google.embeddingModel("gemini-embedding-001"),
         })
       ).embedding,
-      filter: (q) => q.eq("userId", args.userId),
+      filter: (q) => q.eq("profileId", args.profileId),
       limit: 20,
     });
 
@@ -59,11 +73,26 @@ export const getDisplayMemories = query({
       throw new ConvexError("Unautorizado");
     }
 
+    // @ts-ignore typescript is driving me nuts bro
+    const { auth, headers } = await authComponent.getAuth(createAuth, ctx);
+
+    const data = await auth.api.getSession({ headers });
+
+    if (!data?.session) {
+      throw new ConvexError("There is no active session");
+    }
+
+    // @ts-ignore why typescript is this bad with me
+    if (!data?.session.activeProfileId) {
+      throw new ConvexError("There is not active profile");
+    }
+
     const coreMemories = await ctx.db
       .query("memories")
-      .withIndex("userId_characterId_importance", (q) =>
+      .withIndex("profileId_characterId_importance", (q) =>
         q
-          .eq("userId", user._id)
+          // @ts-ignore why typescript is this bad with me
+          .eq("profileId", data.session.activeProfileId as Id<"profile">)
           .eq("characterId", args.characterId)
           .gt("importance", 4),
       )
@@ -77,13 +106,13 @@ export const getDisplayMemories = query({
 });
 
 export const getCoreMemories = internalQuery({
-  args: { userId: v.string(), characterId: v.id("characters") },
+  args: { characterId: v.id("characters"), profileId: v.id("profile") },
   handler: async (ctx, args) => {
     const coreMemories = await ctx.db
       .query("memories")
-      .withIndex("userId_characterId_importance", (q) =>
+      .withIndex("profileId_characterId_importance", (q) =>
         q
-          .eq("userId", args.userId)
+          .eq("profileId", args.profileId)
           .eq("characterId", args.characterId)
           .gt("importance", 8),
       )
@@ -91,8 +120,8 @@ export const getCoreMemories = internalQuery({
 
     const recentMemories = await ctx.db
       .query("memories")
-      .withIndex("userId_characterId", (q) =>
-        q.eq("userId", args.userId).eq("characterId", args.characterId),
+      .withIndex("profileId_characterId", (q) =>
+        q.eq("profileId", args.profileId).eq("characterId", args.characterId),
       )
       .order("desc")
       .take(3);
@@ -173,6 +202,7 @@ export const rankAndTouchMemories = internalMutation({
 export const createMemory = serverAction({
   args: {
     userId: v.string(),
+    profileId: v.id("profile"),
     conversationId: v.id("conversations"),
     characterId: v.string(),
     text: v.string(),
@@ -183,9 +213,9 @@ export const createMemory = serverAction({
       ? `CONTEXTO PREVIO (Lo que preguntó la IA): "${args.lastAssistantMessage}"`
       : "CONTEXTO PREVIO: No disponible (Inicio de conversación o silencio).";
 
-    const children = await ctx.runQuery(
-      internal.parental.children.getByFatherId,
-      { fatherId: args.userId },
+    const profile = await ctx.runQuery(
+      internal.parental.profile.getProfileById,
+      { profileId: args.profileId },
     );
 
     const { output } = await generateText({
@@ -243,7 +273,7 @@ export const createMemory = serverAction({
       ${contextStr}
       
       INPUT DEL USUARIO: "${args.text}"
-      ${children?.name ? `USERNAME: ${children.name}` : ""}
+      ${profile?.name ? `USERNAME: ${profile.name}` : ""}
       
       Analiza la relación entre lo que preguntó la IA y lo que respondió el usuario para extraer el "fact".
       Ejemplo: Si IA pregunta "¿Tu color favorito?" y Usuario dice "Azul", el fact es "Tu color favorito es el azul" y el parentFact es "El color favorito de <USERNAME> es el azul".
@@ -266,8 +296,8 @@ export const createMemory = serverAction({
       userId: args.userId,
       characterId: args.characterId,
       description: fact,
-      from: children ? "children" : "user",
-      parentDescription: children ? parentFact : undefined,
+      profileId: args.profileId,
+      parentDescription: profile ? parentFact : undefined,
       importance: importance ?? 0,
       embedding: embedding,
       conversationId: args.conversationId,
@@ -279,9 +309,8 @@ export const insertMemoryMutation = internalMutation({
   args: {
     userId: v.string(),
     characterId: v.string(),
-    from: v.optional(v.union(v.literal("children"), v.literal("user"))),
     description: v.string(),
-    childrenId: v.optional(v.string()),
+    profileId: v.id("profile"),
     parentDescription: v.optional(v.string()),
     importance: v.number(),
     embedding: v.array(v.float64()),
@@ -290,6 +319,7 @@ export const insertMemoryMutation = internalMutation({
   handler: async (ctx, args) => {
     const embeddingId = await ctx.db.insert("memoryEmbeddings", {
       userId: args.userId,
+      profileId: args.profileId,
       characterId: args.characterId,
       embedding: args.embedding,
     });
@@ -297,9 +327,8 @@ export const insertMemoryMutation = internalMutation({
     await ctx.db.insert("memories", {
       userId: args.userId,
       characterId: args.characterId,
-      from: args.from,
       displayDescription: args.description,
-      childrenId: args.childrenId,
+      profileId: args.profileId,
       parentDescription: args.parentDescription,
       embeddingId: embeddingId,
       importance: args.importance,

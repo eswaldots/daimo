@@ -22,7 +22,7 @@
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
     "isolatedModules": true,
-    "noEmit": true
+    "noEmit": true,
   },
   "include": ["./**/*", "../index.ts", "../index.js"],
   "exclude": ["./_generated"]

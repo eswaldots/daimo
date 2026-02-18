@@ -7,15 +7,29 @@ import { components, internal } from "./_generated/api";
 
 export const DELETE_BATCH_SIZE = 64;
 
+const excludedTables: Array<TableNames> = [
+  "characters",
+  "characterTags",
+  "embeddingsCache",
+  "tags",
+  "onboardingTags",
+  "apiKeys",
+];
+
 // :)
 export const wipeAllTables = internalMutation({
   handler: async (ctx) => {
     for (const tableName of Object.keys(schema.tables)) {
+      if (excludedTables.includes(tableName as TableNames)) {
+        continue;
+      }
       await ctx.scheduler.runAfter(0, internal.testing.deletePage, {
         tableName,
         cursor: null,
       });
     }
+
+    await ctx.runMutation(components.betterAuth.testing.wipeAllTables);
   },
 });
 

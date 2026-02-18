@@ -2,9 +2,10 @@
 
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
-import { authComponent } from "../auth";
+import { authComponent, createAuth } from "../auth";
 import { api, components, internal } from "../_generated/api";
 import { Doc, Id } from "../_generated/dataModel";
+import { auth } from "../betterAuth/auth";
 
 // TODO: Don't use magic strings
 export const checkOnboardingRedirect = query({
@@ -15,21 +16,20 @@ export const checkOnboardingRedirect = query({
       throw new ConvexError("No autenticado");
     }
 
-    const children = await ctx.runQuery(
-      internal.parental.children.getByFatherId,
-      { fatherId: user._id },
-    );
+    const profiles = await ctx.runQuery(internal.parental.profile.getByUserId, {
+      userId: user._id,
+    });
 
-    if (!children) {
+    if (!profiles || !profiles[0]) {
       return "/onboarding/getting-started";
     }
 
-    const childrenTags: (Doc<"tags"> | null)[] | null = await ctx.runQuery(
-      internal.parental.children.getChildrenTags,
-      { childrenId: children._id },
+    const profileTags: (Doc<"tags"> | null)[] | null = await ctx.runQuery(
+      internal.parental.profile.getProfileTags,
+      { profileId: profiles[0]._id },
     );
 
-    if (!childrenTags || childrenTags?.length === 0) {
+    if (!profileTags || profileTags?.length === 0) {
       return "/onboarding/profile-tags";
     }
 
@@ -66,19 +66,34 @@ export const saveChildrenTags = mutation({
       throw new ConvexError("No autorizado");
     }
 
-    const children = await ctx.runQuery(
-      internal.parental.children.getByFatherId,
-      { fatherId: user._id },
+    // TODO: for now this is ok, but if user wants to edit later profile tags as admin it will be to be modified
+    // @ts-ignore typescript is driving me nuts bro
+    const { auth, headers } = await authComponent.getAuth(createAuth, ctx);
+
+    const data = await auth.api.getSession({ headers });
+
+    if (!data?.session) {
+      throw new ConvexError("There is no active session");
+    }
+
+    // @ts-ignore typescript is driving me nuts bro
+    if (!data?.session.activeProfileId) {
+      throw new ConvexError("There is no active profile ID");
+    }
+
+    const profile = await ctx.db.get(
+      // @ts-ignore typescript is driving me nuts bro
+      data?.session.activeProfileId as Id<"profile">,
     );
 
-    if (!children) {
+    if (!profile) {
       throw new ConvexError("Usuario no tiene hijos");
     }
 
     const promises = args.tags.map(async (name) => {
       try {
         await ctx.runMutation(internal.tags.internal.relateChildrenTag, {
-          childrenId: children._id,
+          profileId: profile._id,
           tagId: name,
         });
       } catch {

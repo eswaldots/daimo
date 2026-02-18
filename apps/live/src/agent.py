@@ -88,15 +88,16 @@ load_dotenv(".env.local")
 CONVEX_URL = os.getenv("CONVEX_URL")
 CONVEX_API_KEY = os.getenv("CONVEX_API_KEY")
 ENVIROMENT = os.getenv("ENVIROMENT")
+SENTRY_DSN = os.getenv("SENTRY_DSN")
 
 client = ConvexClient(CONVEX_URL or "http://127.0.0.1:8000")
 
-if (ENVIROMENT == "production"):
+if (ENVIROMENT == "production" and SENTRY_DSN):
     sentry_sdk.init(
-        dsn="https://49ab3a0d267e3bace957257f2e248968@o4510568326692864.ingest.us.sentry.io/4510858636689408",
-        # Add data like request headers and IP for users,
-        # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
+        dsn=SENTRY_DSN,
         send_default_pii=True,
+        environment=ENVIROMENT,
+        traces_sample_rate=0.1
     )
 
 def format_memories(memories_list):
@@ -117,25 +118,26 @@ async def run_async(func, *args, **kwargs):
     return await loop.run_in_executor(None, p_func)
 
 
-def get_metadata(character_id: str, user_id: str) -> dict:
+def get_metadata(character_id: str, user_id: str, profile_id: str) -> dict:
     # Esta función se mantiene sincrona para ser llamada por run_async
-    return client.query("room:getMetadataRoom", dict(characterId=character_id, userId=user_id, apiKey=CONVEX_API_KEY))
+    return client.query("room:getMetadataRoom", dict(characterId=character_id, userId=user_id, apiKey=CONVEX_API_KEY, profileId=profile_id))
 
-async def retrieve_memories(character_id: str, user_id: str, text: str):
+async def retrieve_memories(character_id: str, user_id: str, text: str, profile_id: str):
     res = await run_async(
         client.action,
         "agent/memory:retrieve",
-        dict(userId=user_id, characterId=character_id, text=text, apiKey=CONVEX_API_KEY)
+        dict(userId=user_id, characterId=character_id, text=text, apiKey=CONVEX_API_KEY, profileId=profile_id)
     )
 
     if res:
         return "\n".join([f"- {m['description']}" for m in res])
     return ""
 
-async def save_memory(character_id: str, user_id: str, conversation_id: str, text: str, last_assistant_message: str):
+async def save_memory(character_id: str, user_id: str, conversation_id: str, text: str, last_assistant_message: str, profile_id: str):
     args = dict(
         conversationId=conversation_id, 
         text=text, 
+        profileId=profile_id,
         userId=user_id, 
         characterId=character_id, 
         apiKey=CONVEX_API_KEY
@@ -164,11 +166,12 @@ async def add_message(conversation_id: str, content: str, role: str):
 
 
 class Assistant(Agent):
-    def __init__(self, instructions, user_id: str, character_id: str) -> None:
+    def __init__(self, instructions, user_id: str, character_id: str, profile_id: str) -> None:
         super().__init__(
             instructions=instructions,
         )
         self.user_id = user_id
+        self.profile_id = profile_id
         self.character_id = character_id
 
     @function_tool()
@@ -180,7 +183,7 @@ class Assistant(Agent):
         """
         logger.info(f"Searching memory about: {search_text}")
 
-        memories = await retrieve_memories(self.character_id, self.user_id, search_text)
+        memories = await retrieve_memories(self.character_id, self.user_id, search_text, self.profile_id)
 
         if not memories:
             return "No hay memorias específicas sobre esto."
@@ -215,6 +218,19 @@ async def my_agent(ctx: JobContext):
     character_id = metadata.get("characterId")
     is_first_time = metadata.get("isFirstTime")
     user_id = metadata.get("userId")
+    profile_id = metadata.get("profileId")
+
+
+    sentry_sdk.set_context("conversation", {
+        "conversation_id": metadata.get("conversationId"),
+        "character_id": metadata.get("characterId"),
+        "is_first_time": metadata.get("isFirstTime"),
+        "room_name": ctx.room.name
+    })
+
+    sentry_sdk.set_tag("character_id", metadata.get("characterId"))
+    sentry_sdk.set_tag("profile_id", metadata.get("profileId"))
+    
 
     if not user_id:
         raise ValueError("Missing userId on metadata")
@@ -241,12 +257,20 @@ async def my_agent(ctx: JobContext):
     logger.info("Getting metadata from the room...")
     try:
         # OPTIMIZACION: Hacemos esta llamada asíncrona para no bloquear el loop del agente
-        metadata_res = await run_async(get_metadata, character_id, user_id)
+        metadata_res = await run_async(get_metadata, character_id, user_id, profile_id)
         # Reemplazamos la variable metadata local con la respuesta de Convex
         metadata.update(metadata_res) 
+
+        sentry_sdk.set_user({
+            "id": metadata_res.get("user")["_id"],
+            "email": metadata_res("user")["email"],
+            "username": metadata_res("user")["name"],
+            "profile_id": metadata.get("profileId")
+        })
     except Exception as e:
         logger.error(f"Error getting metadata from Convex {e}")
         raise
+
 
     logger.info("Metadata obtained!")
 
@@ -264,8 +288,8 @@ async def my_agent(ctx: JobContext):
 
     voice = voice_id.split(":", 1)[1]
 
-    children = metadata.get("children")
-    children_tags = children.get("childrenTags") if children else None
+    children = metadata.get("profile")
+    children_tags = children.get("profileTags") if children else None
 
     instructions = Template(CHILDREN_TEMPLATE).render(
                     backstory=character["prompt"], name=character["name"],
@@ -330,7 +354,7 @@ async def my_agent(ctx: JobContext):
 
     async def inject_memories_to_context(text: str):
         # 1. Recuperamos la memoria de Convex (Asíncrono)
-        memories_text = await retrieve_memories(character_id, user_id, text)
+        memories_text = await retrieve_memories(character_id, user_id, text, profile_id)
         
         if not memories_text:
             return # No ensuciamos el contexto si no hay nada relevante
@@ -377,7 +401,7 @@ async def my_agent(ctx: JobContext):
 
         for coro in (
             add_message(conversation_id, text, "user"),
-            save_memory(character_id, user_id, conversation_id, text, last_assistant_msg),
+            save_memory(character_id, user_id, conversation_id, text, last_assistant_msg, profile_id),
         ):
             task = asyncio.create_task(coro)
             _active_tasks.add(task)
@@ -397,7 +421,8 @@ async def my_agent(ctx: JobContext):
         agent=Assistant(
                 instructions=instructions,
                 user_id=user_id,
-                character_id=character_id
+                character_id=character_id,
+                profile_id=profile_id
         ),
         room=ctx.room,
         room_options=room_io.RoomOptions(
