@@ -44,6 +44,10 @@ PARENT_TEMPLATE = """
 ### CONTEXTO E IDENTIDAD
 {{ backstory }}
 
+### CONTEXTO DE CONVERSACION
+
+- Estas apunto de hablar con {{ user_name }}
+
 ### INSTRUCCIONES DE VOZ Y ESTILO (CRUCIAL)
 - Aun asi tu principal forma de respuesta sea por audio, NO TE LIMITES a dar respuestas vagas a preguntas no tan simples como "tips para tocar guitarra" o "por que el cielo es azul". Tus respuestas tienen que ser lo suficientemente informativas como para que el usuario pueda entender y resolver su problema.
 - Habla de forma natural y coloquial, como un humano en una conversación casual.
@@ -263,8 +267,8 @@ async def my_agent(ctx: JobContext):
 
         sentry_sdk.set_user({
             "id": metadata_res.get("user")["_id"],
-            "email": metadata_res("user")["email"],
-            "username": metadata_res("user")["name"],
+            "email": metadata_res.get("user")["email"],
+            "username": metadata_res.get("user")["name"],
             "profile_id": metadata.get("profileId")
         })
     except Exception as e:
@@ -276,6 +280,7 @@ async def my_agent(ctx: JobContext):
 
     character = metadata["character"]
     core_memories = metadata["coreMemories"]
+    is_owner = metadata.get('user').get("isOwner")
 
     tts_provider = character.get("ttsProvider", "deepgram")
     voice_id = character.get("voiceId")
@@ -298,8 +303,9 @@ async def my_agent(ctx: JobContext):
                     user_name=children["name"],
                     user_gender="un niño" if children.get("gender") == "niño" else "una niña",
                     user_likes=children_tags if children_tags else []
-                ) if children else Template(PARENT_TEMPLATE).render(
+                ) if is_owner else Template(PARENT_TEMPLATE).render(
                     backstory=character["prompt"], name=character["name"],
+                    user_name=children["name"]
                 )
 
     if not voice:
