@@ -1,0 +1,135 @@
+"use client";
+
+import { CardDescription, CardTitle } from "@/components/ui/card";
+import { es } from "date-fns/locale";
+import { format } from "date-fns";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import { useQueryWithStatus } from "@/lib/convex/use-query-with-status";
+import { parseMillisecondsUsage } from "@/lib/date";
+import { api, Id } from "@daimo/backend";
+import { motion } from "motion/react";
+import { useParams } from "next/navigation";
+import { CartesianGrid, Bar, BarChart, XAxis } from "recharts";
+
+const useOverview = () => {
+  const { profileId } = useParams();
+  const methods = useQueryWithStatus(api.parental.dashboard.getOverviewInfo, {
+    profileId: profileId as Id<"profile">,
+  });
+
+  return methods;
+};
+
+export const OverviewView = () => {
+  const { data, isPending } = useOverview();
+
+  if (isPending) {
+    return <h1>cargando</h1>;
+  }
+
+  if (!data && !isPending) {
+    throw new Error("data not found");
+  }
+
+  return (
+    <main className="grid gap-4">
+      <motion.div
+        className="grid grid-cols-3 gap-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <KPICard
+          label="Tiempo de uso semanal"
+          value={parseMillisecondsUsage(data.weeklyUsageTime)}
+        />
+
+        <KPICard
+          label="Número de conversaciones"
+          value={data.weeklyConversationCount}
+        />
+
+        <KPICard
+          label="Promedio por conversación"
+          value={parseMillisecondsUsage(data.weeklyAverageDuration)}
+        />
+      </motion.div>
+
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <UsageChart />
+      </motion.div>
+    </main>
+  );
+};
+
+const chartConfig = {
+  milliseconds: {
+    label: "Uso total",
+    color: "#2563eb",
+  },
+} satisfies ChartConfig;
+
+const UsageChart = () => {
+  const { data, isPending } = useOverview();
+
+  if (isPending) {
+    return <h1>cargando</h1>;
+  }
+
+  return (
+    <div className="border bg-background rounded-md max-h-[100px] space-y-6 h-fit border-border py-4 pb-8 px-4 flex flex-col items-start justify-center">
+      <CardDescription className="text-sm">Uso semanal</CardDescription>
+      <ChartContainer config={chartConfig} className="w-full">
+        <BarChart accessibilityLayer data={data?.usage}>
+          <CartesianGrid vertical={false} />
+          <Bar dataKey="milliseconds" fill="var(--accent)" radius={4} />
+          <XAxis
+            dataKey="day"
+            tickLine={false}
+            className="capitalize"
+            tickMargin={10}
+            tickFormatter={(tick) => {
+              // TODO: refactor this to date.ts
+              return format(new Date(tick), "EEEE", { locale: es });
+            }}
+            axisLine={false}
+          />
+
+          <ChartTooltip
+            content={
+              <ChartTooltipContent
+                formatter={(tick) => (
+                  <span>
+                    <strong>Uso total</strong>:{" "}
+                    {parseMillisecondsUsage(parseInt(tick.toString()))}
+                  </span>
+                )}
+              />
+            }
+          />
+        </BarChart>
+      </ChartContainer>
+    </div>
+  );
+};
+
+const KPICard = ({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number;
+}) => {
+  return (
+    <div className="border bg-background rounded-md space-y-6 h-fit border-border py-4 pb-8 px-4 flex flex-col items-start justify-center">
+      <CardDescription className="text-sm">{label}</CardDescription>
+      <CardTitle className="text-4xl tracking-tighter tabular-nums font-medium mx-auto">
+        {value}
+      </CardTitle>
+    </div>
+  );
+};

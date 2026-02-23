@@ -27,7 +27,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { PinDialog } from "@/components/pin-dialog";
-import { Id } from "@daimo/backend";
+import { api, Id } from "@daimo/backend";
 import {
   Empty,
   EmptyContent,
@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/empty";
 import { useHasPin } from "@/hooks/use-has-pin";
 import { sileo } from "sileo";
+import { useQueryWithStatus } from "@/lib/convex/use-query-with-status";
 
 export const AccountView = () => {
   return (
@@ -146,7 +147,10 @@ const ProfileSelect = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { data: hasPin } = useHasPin();
 
-  if (isPending) {
+  const { data: lastActiveProfileId, isPending: isPendingProfile } =
+    useQueryWithStatus(api.parental.usage.getLastActiveProfileId);
+
+  if (isPending || isPendingProfile) {
     return <ProfileSelectSkeleton />;
   }
 
@@ -303,7 +307,11 @@ const ProfileSelect = () => {
                           await refetch();
 
                           // TODO: when building parental dashboard redirect to parental dashboard
-                          router.push("/home");
+                          // also TODO: check if lastActiveProfileId is null
+                          // also also TODO: doesn't redirect to profile is profile isOwner
+                          router.push(
+                            `/parental/dashboard/${lastActiveProfileId}/`,
+                          );
                         } catch (e) {
                           Sentry.captureException(e);
 

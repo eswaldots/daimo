@@ -1,14 +1,24 @@
 "use client";
 
-import { LogOut, Settings, Sparkles } from "lucide-react";
+import {
+  LockIcon,
+  LogOut,
+  Settings,
+  Sparkles,
+  SunMoonIcon,
+} from "lucide-react";
 
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -27,6 +37,9 @@ import { useQueryWithStatus } from "@/lib/convex/use-query-with-status";
 import { motion } from "motion/react";
 import { ProfileMedia } from "@/components/profile/profile-media";
 import { useProfile } from "@/hooks/use-profile";
+import Link from "next/link";
+import { useTheme } from "next-themes";
+import { ParentalLink } from "@/components/parental-link";
 
 /**
  * Renders a sidebar user button with an avatar and a centered dropdown menu of account actions.
@@ -45,6 +58,9 @@ export function NavUser() {
     api.subscriptions.getCurrentSubscription,
   );
   const router = useRouter();
+  const { data: latestActiveProfileId, isPending: isPendingLastProfile } =
+    useQueryWithStatus(api.parental.usage.getLastActiveProfileId);
+  const { theme, setTheme } = useTheme();
 
   return (
     <SidebarMenu>
@@ -134,13 +150,65 @@ export function NavUser() {
                 <Sparkles className="text-foreground" />
                 Actualizar a pro
               </DropdownMenuItem>
-              {/* TODO: Add a Dialog to include settings*/}
-              <DropdownMenuItem>
-                <Settings className="text-foreground" />
-                Ajustes
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/settings">
+                  <Settings className="text-foreground" />
+                  Ajustes
+                </Link>
               </DropdownMenuItem>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger className="dark:hover:bg-secondary hover:bg-secondary">
+                  <SunMoonIcon className="text-foreground" />
+                  Aspecto
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  <DropdownMenuCheckboxItem
+                    checked={theme === "dark"}
+                    onCheckedChange={() => {
+                      setTheme("dark");
+                    }}
+                  >
+                    Oscuro
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={theme === "light"}
+                    onCheckedChange={() => {
+                      setTheme("light");
+                    }}
+                  >
+                    Claro
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={theme === "system"}
+                    onCheckedChange={() => {
+                      setTheme("system");
+                    }}
+                  >
+                    Sistema
+                  </DropdownMenuCheckboxItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
+            {profile?.isOwner && !isPendingLastProfile && (
+              <ParentalLink
+                href={`/parental/dashboard/${latestActiveProfileId}`}
+              >
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                >
+                  <LockIcon className="text-foreground" />
+                  Modo padre
+                </DropdownMenuItem>
+              </ParentalLink>
+            )}
+
+            <DropdownMenuSeparator />
+
             <DropdownMenuItem
               onSelect={async (e) => {
                 e.preventDefault();
