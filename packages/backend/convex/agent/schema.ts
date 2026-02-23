@@ -5,6 +5,8 @@ import { EMBEDDING_DIMENSION } from "./llm";
 export const conversationFields = {
   // optional because it sets at the end of the conversation
   title: v.optional(v.string()),
+  endedAt: v.optional(v.number()),
+  duration: v.optional(v.number()),
   isLive: v.boolean(),
   characterId: v.id("characters"),
   userId: v.string(),
@@ -48,6 +50,7 @@ export const memoryFields = {
 export const agentSchema = {
   conversations: defineTable(conversationFields)
     .index("userId", ["userId"])
+    .index("userId_isLive", ["userId", "isLive"])
     .index("profileId", ["profileId"])
     .index("isLive", ["isLive"]),
   messages: defineTable(messageFields).index("conversationId", [

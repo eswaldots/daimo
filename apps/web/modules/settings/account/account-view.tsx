@@ -10,16 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { useGetProfiles } from "@/hooks/use-get-profiles";
 import { authClient } from "@/lib/auth/auth-client";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowUpRightIcon,
-  CrownIcon,
-  LockIcon,
-  MinusIcon,
-  PlusIcon,
-  Trash2Icon,
-  TrashIcon,
-  UserIcon,
-} from "lucide-react";
+import { CrownIcon, MinusIcon, PlusIcon, UserIcon } from "lucide-react";
 import { ParentalLink } from "@/components/parental-link";
 import { useSetProfile } from "@/hooks/use-set-profile";
 import { Fragment, useState } from "react";
@@ -27,7 +18,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { PinDialog } from "@/components/pin-dialog";
-import { Id } from "@daimo/backend";
+import { api, Id } from "@daimo/backend";
 import {
   Empty,
   EmptyContent,
@@ -38,6 +29,7 @@ import {
 } from "@/components/ui/empty";
 import { useHasPin } from "@/hooks/use-has-pin";
 import { sileo } from "sileo";
+import { useQueryWithStatus } from "@/lib/convex/use-query-with-status";
 
 export const AccountView = () => {
   return (
@@ -146,7 +138,10 @@ const ProfileSelect = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { data: hasPin } = useHasPin();
 
-  if (isPending) {
+  const { data: lastActiveProfileId, isPending: isPendingProfile } =
+    useQueryWithStatus(api.parental.usage.getLastActiveProfileId);
+
+  if (isPending || isPendingProfile) {
     return <ProfileSelectSkeleton />;
   }
 
@@ -303,7 +298,15 @@ const ProfileSelect = () => {
                           await refetch();
 
                           // TODO: when building parental dashboard redirect to parental dashboard
-                          router.push("/home");
+                          // also TODO: check if lastActiveProfileId is null
+                          // also also TODO: doesn't redirect to profile is profile isOwner
+                          if (lastActiveProfileId) {
+                            router.push(
+                              `/parental/dashboard/${lastActiveProfileId}/`,
+                            );
+                          } else {
+                            router.push("/home");
+                          }
                         } catch (e) {
                           Sentry.captureException(e);
 

@@ -13,6 +13,7 @@ interface ProfileMediaProps {
 const profileMediaVariants = cva("", {
   variants: {
     size: {
+      sm: "size-6",
       default: "size-8",
       lg: " size-24 text-4xl font-medium",
       xl: " size-28 text-5xl font-medium",

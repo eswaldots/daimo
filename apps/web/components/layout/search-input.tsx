@@ -31,7 +31,7 @@ export default function SearchInput({
       {...props}
       defaultValue={searchParams.get("q")?.toString()}
       className={cn(
-        "rounded-full md:w-sm text-sm border-none px-4 bg-secondary dark:bg-border",
+        "rounded-full md:w-sm text-sm px-4 bg-secondary dark:bg-border",
         props.className,
       )}
       onChange={(e) => handleChange(e.target.value)}

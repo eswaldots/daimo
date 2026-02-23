@@ -5,16 +5,26 @@ import { authComponent } from "../auth";
 import { paginationOptsValidator } from "convex/server";
 import { query } from "../_generated/server";
 import { internal } from "../_generated/api";
+import { RISK_PRE_FILTER } from "@daimo/lib/interaction-flags";
 
 export const addMessage = serverMutation({
   args: messageFields,
   handler: async (ctx, args) => {
-    await ctx.db.insert("messages", args);
+    const messageId = await ctx.db.insert("messages", args);
 
     const conversation = await ctx.db.get(args.conversationId);
 
     if (!conversation) {
       return;
+    }
+
+    // if the message is dangeorus, we run an action to a llm check
+    if (RISK_PRE_FILTER.test(args.content)) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.parental.interactionFlags.evaluateRisk,
+        { ...args, _id: messageId },
+      );
     }
 
     if (!conversation.title) {

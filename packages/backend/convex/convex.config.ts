@@ -8,6 +8,7 @@ const app = defineApp();
 app.use(betterAuth);
 app.use(actionCache);
 app.use(aggregate, { name: "aggregateStarsByCharacter" });
+app.use(aggregate, { name: "agreggateUsageTimeByProfile" });
 app.use(migrations);
 
 export default app;

@@ -28,6 +28,7 @@
   "license": "ISC",
   "dependencies": {
     "@ai-sdk/deepseek": "^1.0.31",
+    "@daimo/lib": "workspace:*",
     "@ai-sdk/google": "^3.0.13",
     "@ai-sdk/google-vertex": "^3.0.86",
     "@ai-sdk/groq": "^3.0.22",

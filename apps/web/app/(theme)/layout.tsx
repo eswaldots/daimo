@@ -1,6 +1,6 @@
 import { ThemeProvider } from "@/components/context/theme-provider";
 import { Toaster } from "sileo";
-import { ReactNode, ViewTransition } from "react";
+import { ReactNode } from "react";
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
@@ -9,7 +9,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       defaultTheme="system"
       disableTransitionOnChange
     >
-      <ViewTransition>{children}</ViewTransition>
+      {children}
 
       <Toaster position="bottom-center" />
     </ThemeProvider>

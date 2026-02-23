@@ -11,10 +11,20 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { HomeIcon, User, SettingsIcon } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { SheetIcon, ChevronDown } from "lucide-react";
+import { useParams, usePathname } from "next/navigation";
 import Link from "next/link";
-import { NavUser } from "@/components/layout/home/nav-user";
+import { useGetProfiles } from "@/hooks/use-get-profiles";
+import { useMemo } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ProfileMedia } from "@/components/profile/profile-media";
+import { useRouter } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
 
 /**
  * Render the application's left sidebar with header, primary navigation, and current-user footer.
@@ -27,88 +37,103 @@ import { NavUser } from "@/components/layout/home/nav-user";
  */
 export default function ParentalSidebar() {
   const pathname = usePathname();
+  const params = useParams();
+  const profileId =
+    typeof params.profileId === "string" ? params.profileId : undefined;
 
   return (
-    <Sidebar className="border-none">
-      <SidebarHeader className="pt-4 px-4 bg-background">
+    <Sidebar className="border-border">
+      <SidebarHeader className="bg-background">
         <SidebarMenu>
-          <SidebarMenuButton className="hover:bg-transparent active:bg-transparent">
-            <Link href="/home">
-              <h1 className="font-medium tracking-tight text-2xl text-foreground">
-                daimo{" "}
-                <span className="text-muted-foreground font-normal">
-                  for parents
-                </span>
-              </h1>
-            </Link>
-          </SidebarMenuButton>
+          <SidebarGroup>
+            <SidebarMenuItem>
+              <ProfileSelector />
+            </SidebarMenuItem>
+          </SidebarGroup>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent className="bg-background">
         <SidebarGroup className="px-4">
           <SidebarGroupContent className="flex flex-col gap-1">
-            {/*<CreateCharacter />*/}
             <SidebarMenuItem className="flex items-center gap-2">
               <SidebarMenuButton
-                isActive={pathname === "/home"}
-                className="gap-6 rounded-lg text-sm tracking-wide font-medium py-5 [&>svg]:size-5 data-[active=true]:font-semibold data-[active=true]:[&>svg]:text-primary"
+                isActive={pathname === `/parental/dashboard/${profileId}`}
+                className="data-[active=true]:text-foreground data-[active=false]:text-muted-foreground"
                 asChild
               >
-                <Link href="/home">
-                  {pathname === "/home" ? (
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M11.3861 1.21065C11.7472 0.929784 12.2528 0.929784 12.6139 1.21065L21.6139 8.21065C21.8575 8.4001 22 8.69141 22 9V20C22 20.7957 21.6839 21.5587 21.1213 22.1213C20.5587 22.6839 19.7957 23 19 23H16C15.4477 23 15 22.5523 15 22V14C15 13.4477 14.5523 13 14 13H10C9.44772 13 9 13.4477 9 14V22C9 22.5523 8.55228 23 8 23H5C4.20435 23 3.44129 22.6839 2.87868 22.1213C2.31607 21.5587 2 20.7957 2 20V9C2 8.69141 2.14247 8.4001 2.38606 8.21065L11.3861 1.21065Z"
-                        fill="var(--primary)"
-                      />
-                    </svg>
-                  ) : (
-                    <HomeIcon />
-                  )}
-                  <span>Inicio</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
-            <SidebarMenuItem className="flex items-center gap-2">
-              <SidebarMenuButton
-                isActive={
-                  pathname === "/characters" ||
-                  pathname.startsWith("/characters/")
-                }
-                className="gap-6 rounded-lg text-sm tracking-wide font-medium py-5 [&>svg]:size-5 data-[active=true]:font-semibold data-[active=true]:[&>svg]:fill-primary"
-                asChild
-              >
-                <Link href="/characters">
-                  <User strokeWidth={2} />
-                  <span>Personajes</span>
+                <Link href={`/parental/dashboard/${profileId}`}>
+                  <SheetIcon />
+                  <span>Resumen</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="pb-4 px-4 bg-background ">
-        <SidebarGroupContent>
-          <SidebarMenuButton
-            className="gap-6 rounded-lg text-sm tracking-wide font-medium py-5 [&>svg]:size-5 data-[active=true]:font-semibold data-[active=true]:[&>svg]:text-primary"
-            asChild
-          >
-            <Link href="/settings">
-              <SettingsIcon />
-              Configuración
-            </Link>
-          </SidebarMenuButton>
-        </SidebarGroupContent>
-
-        <NavUser />
-      </SidebarFooter>
+      <SidebarFooter></SidebarFooter>
     </Sidebar>
   );
 }
+
+const ProfileSelector = () => {
+  const { profileId } = useParams();
+  const { data: profiles, isPending } = useGetProfiles();
+  const router = useRouter();
+
+  const actualProfile = useMemo(() => {
+    if (!profiles) return null;
+    return profiles.find((profile) => profile._id === profileId)!!;
+  }, [profiles, profileId]);
+
+  if (isPending) {
+    return (
+      <SidebarMenuButton className="text-base gap-2 h-fit">
+        <Skeleton className="size-8 rounded-full" />
+        <Skeleton className="h-4 w-12" />
+        <ChevronDown className="text-muted-foreground ml-auto" />
+      </SidebarMenuButton>
+    );
+  }
+
+  return (
+    actualProfile && (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <SidebarMenuButton className="text-base gap-2 h-fit">
+            <ProfileMedia
+              fallback={actualProfile.name}
+              size="default"
+              profileId={actualProfile._id}
+              src={actualProfile.media}
+            />
+            {actualProfile.name}
+            <ChevronDown className="text-muted-foreground ml-auto" />
+          </SidebarMenuButton>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-64" align="start">
+          {profiles
+            ?.filter((profile) => profile._id !== profileId)
+            .map((profile) => (
+              <DropdownMenuItem
+                key={profile._id}
+                className="cursor-pointer"
+                onSelect={() => {
+                  router.push(`/parental/dashboard/${profile._id}`);
+                }}
+              >
+                <ProfileMedia
+                  fallback={profile.name}
+                  size="default"
+                  profileId={profile._id}
+                  src={profile.media}
+                />
+                <span className="text-base mx-1 font-medium">
+                  {profile.name}
+                </span>
+              </DropdownMenuItem>
+            ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    )
+  );
+};
