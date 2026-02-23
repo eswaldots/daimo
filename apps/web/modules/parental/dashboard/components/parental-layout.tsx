@@ -23,7 +23,7 @@ export default function ParentalLayout({ children }: { children: ReactNode }) {
     >
       <div className="flex flex-1 bg-background">
         <ParentalSidebar />
-        <SidebarInset className="relative bg-secondary/50 overflow-y-hidden max-h-screen">
+        <SidebarInset className="relative dark:bg-background bg-secondary/50 overflow-y-hidden max-h-screen">
           <ParentalHeader />
           <div className="flex flex-1 flex-col mx-auto w-full overflow-y-auto">
             <div className="@container/main flex flex-1 flex-col gap-2">

@@ -46,9 +46,10 @@ export const parentalSchema = {
   parentalSecurity: defineTable(parentalSecurityFields).index("by_user_id", [
     "userId",
   ]),
-  interactionFlags: defineTable(interactionFlagsFields).index("profileId", [
-    "profileId",
-  ]),
+  interactionFlags: defineTable(interactionFlagsFields).index(
+    "profileId_status",
+    ["profileId", "status"],
+  ),
   parentalToken: defineTable(parentalTokenFields),
   profileTags: defineTable({
     profileId: v.id("profile"),

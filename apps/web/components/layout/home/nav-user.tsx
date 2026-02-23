@@ -58,7 +58,7 @@ export function NavUser() {
     api.subscriptions.getCurrentSubscription,
   );
   const router = useRouter();
-  const { data: latestActiveProfileId, isPending: isPendingLastProfile } =
+  const { data: lastActiveProfileId, isPending: isPendingLastProfile } =
     useQueryWithStatus(api.parental.usage.getLastActiveProfileId);
   const { theme, setTheme } = useTheme();
 
@@ -191,23 +191,27 @@ export function NavUser() {
               </DropdownMenuSub>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            {profile?.isOwner && !isPendingLastProfile && (
-              <ParentalLink
-                href={`/parental/dashboard/${latestActiveProfileId}`}
-              >
-                <DropdownMenuItem
-                  onSelect={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }}
-                >
-                  <LockIcon className="text-foreground" />
-                  Modo padre
-                </DropdownMenuItem>
-              </ParentalLink>
-            )}
+            {profile?.isOwner &&
+              !isPendingLastProfile &&
+              lastActiveProfileId && (
+                <>
+                  <ParentalLink
+                    href={`/parental/dashboard/${lastActiveProfileId}`}
+                  >
+                    <DropdownMenuItem
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                    >
+                      <LockIcon className="text-foreground" />
+                      Modo padre
+                    </DropdownMenuItem>
+                  </ParentalLink>
 
-            <DropdownMenuSeparator />
+                  <DropdownMenuSeparator />
+                </>
+              )}
 
             <DropdownMenuItem
               onSelect={async (e) => {

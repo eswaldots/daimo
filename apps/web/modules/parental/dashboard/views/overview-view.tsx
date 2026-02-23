@@ -1,6 +1,7 @@
 "use client";
 
 import { CardDescription, CardTitle } from "@/components/ui/card";
+import * as Sentry from "@sentry/nextjs";
 import { es } from "date-fns/locale";
 import { format } from "date-fns";
 import {
@@ -12,7 +13,7 @@ import {
 import { useQueryWithStatus } from "@/lib/convex/use-query-with-status";
 import { parseMillisecondsUsage, parseToLocaleString } from "@/lib/date";
 import { api, Doc, Id } from "@daimo/backend";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useParams } from "next/navigation";
 import { CartesianGrid, Bar, BarChart, XAxis } from "recharts";
 import { ProfileMedia } from "@/components/profile/profile-media";
@@ -21,6 +22,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -28,32 +30,43 @@ import {
 import { AlertTriangle, TriangleAlertIcon, XIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { RiskCategory } from "../../../../../../packages/lib";
+import { RiskCategory } from "@daimo/lib";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { ComponentProps, useEffect, useMemo, useState } from "react";
+import { useMutation } from "convex/react";
+import { sileo } from "sileo";
+import { ConvexError } from "convex/values";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const useOverview = () => {
+  const now = useMemo(() => new Date().setHours(0, 0, 0, 0), []);
+
   const { profileId } = useParams();
   const methods = useQueryWithStatus(api.parental.dashboard.getOverviewInfo, {
     profileId: profileId as Id<"profile">,
+    clientTimestamp: now,
   });
 
-  return methods;
+  return { ...methods, now };
 };
 
 export const OverviewView = () => {
-  const { data, isPending } = useOverview();
+  const { data, isPending, isError, error } = useOverview();
 
   if (isPending) {
-    return <h1>cargando</h1>;
+    return <OverviewSkeleton />;
   }
 
-  if (!data && !isPending) {
-    throw new Error("data not found");
+  if (isError) {
+    Sentry.captureException(error);
+
+    // TODO: handle error
+    throw error;
   }
 
   const { profile, lastConversation } = data;
@@ -73,12 +86,21 @@ export const OverviewView = () => {
             fallback={profile.name}
           />
 
-          {lastConversation.isLive && (
-            <div className="animate-pulse rounded-full bg-chart-2 size-6 ring-3 ring-background absolute right-0 bottom-0" />
-          )}
+          <AnimatePresence>
+            {lastConversation?.isLive && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="animate-pulse rounded-full bg-chart-2 size-6 ring-3 ring-background absolute right-0 bottom-0"
+              />
+            )}
+          </AnimatePresence>
         </div>
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-semibold tracking-tight">Aaron Avila</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">
+            {profile.name}
+          </h1>
 
           <div
             className={cn(
@@ -111,97 +133,323 @@ export const OverviewView = () => {
   );
 };
 
+const OverviewSkeleton = () => {
+  return (
+    <main className="grid gap-4">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex items-center gap-6 my-6"
+      >
+        <div className="relative">
+          <Skeleton className="rounded-full size-28" />
+        </div>
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-7 w-24" />
+
+          <Skeleton
+            className={cn("rounded-full px-3 w-fit py-0.5 w-12 h-2 text-sm")}
+          />
+        </div>
+      </motion.div>
+      <motion.div
+        className="grid grid-cols-4 gap-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <KPICardSkeleton label="Tiemp de uso semanal" />
+        <KPICardSkeleton label="Tiemp de uso semanal" />
+        <KPICardSkeleton label="Tiemp de uso semanal" />
+        <KPICardSkeleton label="Tiemp de uso semanal" />
+      </motion.div>
+
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <UsageChartSkeleton />
+      </motion.div>
+    </main>
+  );
+};
+
 const CardsRow = () => {
-  const { data, isPending } = useOverview();
+  const { data, isPending, isError, error } = useOverview();
+  const [isOpen, setIsOpen] = useState();
 
   if (isPending) {
     return <h1>cargando</h1>;
   }
 
-  if (!data && !isPending) {
-    throw new Error("data not found");
+  if (isError) {
+    Sentry.captureException(error);
+
+    // TODO: handle error
+    throw error;
+  }
+
+  const alertNum = data.warnings.length;
+  const { lastConversation } = data;
+
+  return (
+    <>
+      <AlertDialog>
+        <div
+          className={cn(
+            "border dark:bg-secondary/30 bg-background cursor-pointer hover:bg-secondary/50 transition-colors rounded-md space-y-6 h-fit border-border py-4 pb-8 px-4 flex flex-col items-start justify-center",
+            alertNum >= 1 && "text-chart-4",
+            alertNum >= 3 && "text-destructive",
+          )}
+        >
+          <CardDescription
+            className={cn(
+              "text-sm transition-colors flex items-center justify-between w-full text-muted-foreground relative",
+            )}
+          >
+            Número de alertas
+            {alertNum >= 1 && (
+              <div className="-top-1 absolute right-0 rounded-full p-1.5 bg-chart-4/10 text-chart-4">
+                <TriangleAlertIcon className="size-4" />
+              </div>
+            )}
+          </CardDescription>
+          <CardTitle className="text-4xl tracking-tighter tabular-nums font-medium mx-auto flex items-center gap-3">
+            {alertNum} {alertNum === 1 ? "alerta" : "alertas"}
+          </CardTitle>
+        </div>
+      </AlertDialog>
+
+      <WeeklyUsageCard
+        value={data.weeklyUsageTime}
+        isLive={lastConversation.isLive}
+      />
+
+      <KPICard
+        label="Número de conversaciones"
+        value={data.weeklyConversationCount}
+      />
+
+      <KPICard
+        label="Promedio por conversación"
+        value={parseMillisecondsUsage(data.weeklyAverageDuration)}
+      />
+    </>
+  );
+};
+
+const WeeklyUsageCard = ({
+  value,
+  isLive,
+}: {
+  value: number;
+  isLive: boolean;
+}) => {
+  const [time, setTime] = useState(0);
+
+  useEffect(() => {
+    let interval = null;
+
+    if (isLive) {
+      interval = setInterval(() => {
+        setTime((time) => time + 10);
+      }, 10);
+    } else {
+      if (interval) {
+        clearInterval(interval);
+      }
+    }
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [isLive]);
+
+  return (
+    <div className="border dark:bg-secondary/30 bg-background rounded-md space-y-6 h-fit border-border py-4 pb-8 px-4 flex flex-col items-start justify-center">
+      <CardDescription className="text-sm">
+        Tiempo de uso semanal
+      </CardDescription>
+      <div className="text-4xl tracking-tighter font-medium mx-auto">
+        <AnimatePresence initial={false} mode="popLayout">
+          {parseMillisecondsUsage(value + time)
+            .split("")
+            .map((v, i) => (
+              <motion.span
+                className={cn("inline-block tabular-nums", v === " " && "mx-1")}
+                key={i}
+              >
+                <motion.span
+                  className="inline-block tabular-nums"
+                  key={v}
+                  initial={{ y: -12, filter: "blur(5px)", opacity: 0 }}
+                  animate={{ y: 0, filter: "blur(0px)", opacity: 1 }}
+                  exit={{
+                    y: 12,
+                    filter: "blur(5px)",
+                    position: "absolute",
+                    opacity: 0,
+                  }}
+                  transition={{
+                    type: "spring",
+                    bounce: 0.25,
+                    damping: 20,
+                    stiffness: 400,
+                    duration: 0.8,
+                  }}
+                >
+                  {v}
+                </motion.span>
+              </motion.span>
+            ))}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+};
+
+const AnimatedAccordionItem = motion.create(AccordionItem);
+
+const AlertDialog = ({ children, ...props }: ComponentProps<typeof Dialog>) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const { profileId } = useParams<{ profileId: Id<"profile"> }>();
+
+  const { data, isPending, isError, error, now } = useOverview();
+  const resolveIssue = useMutation(
+    api.parental.dashboard.resolveIssue,
+  ).withOptimisticUpdate((localStore, args) => {
+    const { interactionFlagId } = args;
+    const currentValue = localStore.getQuery(
+      api.parental.dashboard.getOverviewInfo,
+      { profileId: profileId, clientTimestamp: now },
+    );
+
+    if (currentValue !== undefined) {
+      const warning = currentValue.warnings.findIndex(
+        (w) => w._id === interactionFlagId,
+      );
+
+      currentValue.warnings.splice(warning, 1);
+
+      localStore.setQuery(
+        api.parental.dashboard.getOverviewInfo,
+        { profileId, clientTimestamp: now },
+        { ...currentValue },
+      );
+    }
+  });
+  if (isPending) {
+    return <h1>cargando</h1>;
+  }
+
+  if (isError) {
+    Sentry.captureException(error);
+
+    // TODO: handle error
+    throw error;
   }
 
   const alertNum = data.warnings.length;
 
   return (
-    <>
-      <Dialog>
-        <DialogTrigger>
-          <div
-            className={cn(
-              "border bg-background transition-colors rounded-md space-y-6 h-fit border-border py-4 pb-8 px-4 flex flex-col items-start justify-center",
-              alertNum >= 1 && "text-chart-4 cursor-pointer",
-              alertNum >= 3 && "text-destructive",
-            )}
-          >
-            <CardDescription
-              className={cn(
-                "text-sm transition-colors flex items-center justify-between w-full text-muted-foreground relative",
-              )}
-            >
-              Número de alertas
-              {alertNum >= 1 && (
-                <div className="-top-1 absolute right-0 rounded-full p-1.5 bg-chart-4/10 text-chart-4">
-                  <TriangleAlertIcon className="size-4" />
-                </div>
-              )}
-            </CardDescription>
-            <CardTitle className="text-4xl tracking-tighter tabular-nums font-medium mx-auto flex items-center gap-3">
-              {alertNum} {alertNum === 1 ? "alerta" : "alertas"}
-            </CardTitle>
-          </div>
-        </DialogTrigger>
-        <DialogContent
-          showCloseButton={false}
-          className="md:h-[80vh] [&::-webkit-scrollbar-thumb]:bg-black overflow-y-auto"
-        >
-          <DialogHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <DialogClose asChild>
-                  <Button variant="secondary" size="icon-sm">
-                    <XIcon className="text-muted-foreground" />
-                  </Button>
-                </DialogClose>
-                <span className="font-semibold tracking-tight">
-                  Alertas de {data.profile.name}
-                </span>
-              </div>
-
+    <Dialog {...props} open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger>{children}</DialogTrigger>
+      <DialogContent
+        showCloseButton={false}
+        className="md:h-[80vh] [&::-webkit-scrollbar-thumb]:bg-black overflow-y-auto no-scrollbar"
+      >
+        <DialogHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
               <DialogClose asChild>
-                <Button size="sm">Listo</Button>
+                <Button variant="secondary" size="icon-sm">
+                  <XIcon className="text-muted-foreground" />
+                </Button>
               </DialogClose>
+              <span className="font-semibold tracking-tight">
+                Alertas de {data.profile.name}
+              </span>
             </div>
-            <Separator className="w-full my-2 bg-secondary" />
-            <div className="grid gap-3">
-              <AlertTriangle className="text-chart-4 size-8 text-background" />
-              <DialogTitle className="font-semibold text-2xl">
-                {alertNum}{" "}
-                {alertNum === 1
-                  ? "alerta fue encontrada"
-                  : "alertas fueron encontradas"}
-              </DialogTitle>
-            </div>
-            <Accordion
-              type="single"
-              collapsible
-              defaultValue={data.warnings[0] ? data.warnings[0]._id : ""}
-            >
+
+            <DialogClose asChild>
+              <Button size="sm">Listo</Button>
+            </DialogClose>
+          </div>
+          <Separator className="w-full my-2 bg-secondary" />
+          <div className="grid gap-3">
+            <AlertTriangle
+              className={cn(
+                "text-muted-foreground/50 size-8 transition-colors",
+                alertNum >= 1 && "text-chart-4",
+              )}
+            />
+            <AnimatePresence mode="wait">
+              {alertNum >= 1 ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <DialogTitle className="font-semibold text-2xl">
+                    {alertNum}{" "}
+                    {alertNum === 1
+                      ? "alerta fue encontrada"
+                      : "alertas fueron encontradas"}
+                  </DialogTitle>
+                </motion.div>
+              ) : (
+                <>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <DialogTitle className="font-semibold text-2xl">
+                      No hay alertas
+                    </DialogTitle>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <DialogDescription className="text-lg leading-[1.25] -mt-1">
+                      El perfil ha tenido una conducta adecuada por los momentos
+                    </DialogDescription>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
+          <Accordion type="single" collapsible>
+            <AnimatePresence mode="wait">
               {data.warnings.map(
                 (
                   warning: Doc<"interactionFlags"> & {
                     message: Doc<"messages"> | null;
                   },
+                  index,
                 ) => {
                   return (
-                    <AccordionItem value={warning._id} key={warning._id}>
+                    <AnimatedAccordionItem
+                      value={warning._id}
+                      key={warning._id}
+                      layout
+                      initial={{ opacity: 0 }}
+                      animate={{
+                        opacity: 1,
+                        transition: { delay: 0.3 * index },
+                      }}
+                      exit={{ opacity: 0 }}
+                    >
                       <AccordionTrigger className="last:border-b-none border-b border-border/50 py-4 flex items-center cursor-pointer gap-3">
                         <div className="flex items-center gap-3">
-                          <div className="bg-destructive rounded-lg text-white p-1.5">
-                            {warning.severity >= 4 && (
-                              <AlertTriangle className="size-5" />
+                          <div
+                            className={cn(
+                              "rounded-lg text-white p-1.5 bg-muted-foreground",
+                              warning.severity >= 4 && "bg-destructive",
+                              warning.severity >= 2 && "bg-chart-4",
                             )}
+                          >
+                            <AlertTriangle className="size-5" />
                           </div>
                           <div className="flex flex-col">
                             <h1 className="tracking-tight">
@@ -293,34 +541,46 @@ const CardsRow = () => {
                             <Button variant="secondary" disabled>
                               Ver conversación completa
                             </Button>
-                            <Button>Marcar como leído</Button>
+                            <Button
+                              onClick={async () => {
+                                try {
+                                  sileo.success({
+                                    title: "Advertencia leída",
+                                    description:
+                                      "La advertencia ha sido marcada como leída",
+                                  });
+
+                                  await resolveIssue({
+                                    interactionFlagId: warning._id,
+                                  });
+                                } catch (error) {
+                                  const errorMessage =
+                                    error instanceof ConvexError
+                                      ? (error.data as { message: string })
+                                          .message
+                                      : "Un error inesperado occurrió";
+
+                                  sileo.error({
+                                    title: "Error",
+                                    description: errorMessage,
+                                  });
+                                }
+                              }}
+                            >
+                              Marcar como leído
+                            </Button>
                           </motion.li>
                         </ul>
                       </AccordionContent>
-                    </AccordionItem>
+                    </AnimatedAccordionItem>
                   );
                 },
               )}
-            </Accordion>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
-
-      <KPICard
-        label="Tiempo de uso semanal"
-        value={parseMillisecondsUsage(data.weeklyUsageTime)}
-      />
-
-      <KPICard
-        label="Número de conversaciones"
-        value={data.weeklyConversationCount}
-      />
-
-      <KPICard
-        label="Promedio por conversación"
-        value={parseMillisecondsUsage(data.weeklyAverageDuration)}
-      />
-    </>
+            </AnimatePresence>
+          </Accordion>
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
   );
 };
 
@@ -332,19 +592,58 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 const UsageChart = () => {
-  const { data, isPending } = useOverview();
+  const { data, isPending, isError, error } = useOverview();
 
   if (isPending) {
     return <h1>cargando</h1>;
   }
 
+  if (isError) {
+    Sentry.captureException(error);
+
+    // TODO: handle error
+    throw error;
+  }
+
   return (
-    <div className="border bg-background rounded-md space-y-6 h-fit border-border py-4 pb-8 px-4 flex flex-col items-start justify-center">
+    <div className="border dark:bg-secondary/30  bg-background rounded-md space-y-6 h-fit border-border py-4 pb-8 px-4 flex flex-col items-start justify-center">
       <CardDescription className="text-sm">Uso semanal</CardDescription>
       <ChartContainer config={chartConfig} className="w-full max-h-[300px]">
         <BarChart accessibilityLayer data={data?.usage}>
           <CartesianGrid vertical={false} />
-          <Bar dataKey="milliseconds" fill="var(--accent)" radius={4} />
+          <ChartTooltip
+            content={
+              <ChartTooltipContent
+                nameKey="day"
+                className="w-fit"
+                formatter={(value) => {
+                  return (
+                    <span className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <div className="bg-accent size-2.5 rounded-xs" />
+                        <span className="text-muted-foreground">
+                          Tiempo de uso:
+                        </span>
+                      </div>
+                      <strong className="font-mono">
+                        {parseMillisecondsUsage(value as number)}
+                      </strong>
+                    </span>
+                  );
+                }}
+                labelClassName="capitalize"
+                labelFormatter={(_, payload) => {
+                  return format(
+                    new Date(payload[0] ? payload[0].payload.day : 0),
+                    "EEEE",
+                    {
+                      locale: es,
+                    },
+                  );
+                }}
+              />
+            }
+          />
           <XAxis
             dataKey="day"
             tickLine={false}
@@ -357,20 +656,18 @@ const UsageChart = () => {
             axisLine={false}
           />
 
-          <ChartTooltip
-            content={
-              <ChartTooltipContent
-                formatter={(tick) => (
-                  <span>
-                    <strong>Uso total</strong>:{" "}
-                    {parseMillisecondsUsage(parseInt(tick.toString()))}
-                  </span>
-                )}
-              />
-            }
-          />
+          <Bar dataKey="milliseconds" fill="var(--accent)" radius={4} />
         </BarChart>
       </ChartContainer>
+    </div>
+  );
+};
+
+const UsageChartSkeleton = () => {
+  return (
+    <div className="border dark:bg-secondary/30 bg-background rounded-md space-y-6 h-fit border-border py-4 pb-8 px-4 flex flex-col items-start justify-center">
+      <CardDescription className="text-sm">Uso semanal</CardDescription>
+      <Skeleton className="w-full min-h-[300px] w-full" />
     </div>
   );
 };
@@ -383,10 +680,21 @@ const KPICard = ({
   value: string | number;
 }) => {
   return (
-    <div className="border bg-background rounded-md space-y-6 h-fit border-border py-4 pb-8 px-4 flex flex-col items-start justify-center">
+    <div className="border dark:bg-secondary/30 bg-background rounded-md space-y-6 h-fit border-border py-4 pb-8 px-4 flex flex-col items-start justify-center">
       <CardDescription className="text-sm">{label}</CardDescription>
       <CardTitle className="text-4xl tracking-tighter tabular-nums font-medium mx-auto">
         {value}
+      </CardTitle>
+    </div>
+  );
+};
+
+const KPICardSkeleton = ({ label }: { label: string }) => {
+  return (
+    <div className="border dark:bg-secondary/30 bg-background rounded-md space-y-6 h-fit border-border py-4 pb-8 px-4 flex flex-col items-start justify-center">
+      <CardDescription className="text-sm">{label}</CardDescription>
+      <CardTitle className="text-4xl tracking-tighter tabular-nums font-medium mx-auto">
+        <Skeleton className="h-10 w-12" />
       </CardTitle>
     </div>
   );

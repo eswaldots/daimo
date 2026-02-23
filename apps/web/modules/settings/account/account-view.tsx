@@ -10,16 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { useGetProfiles } from "@/hooks/use-get-profiles";
 import { authClient } from "@/lib/auth/auth-client";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowUpRightIcon,
-  CrownIcon,
-  LockIcon,
-  MinusIcon,
-  PlusIcon,
-  Trash2Icon,
-  TrashIcon,
-  UserIcon,
-} from "lucide-react";
+import { CrownIcon, MinusIcon, PlusIcon, UserIcon } from "lucide-react";
 import { ParentalLink } from "@/components/parental-link";
 import { useSetProfile } from "@/hooks/use-set-profile";
 import { Fragment, useState } from "react";
@@ -309,9 +300,13 @@ const ProfileSelect = () => {
                           // TODO: when building parental dashboard redirect to parental dashboard
                           // also TODO: check if lastActiveProfileId is null
                           // also also TODO: doesn't redirect to profile is profile isOwner
-                          router.push(
-                            `/parental/dashboard/${lastActiveProfileId}/`,
-                          );
+                          if (lastActiveProfileId) {
+                            router.push(
+                              `/parental/dashboard/${lastActiveProfileId}/`,
+                            );
+                          } else {
+                            router.push("/home");
+                          }
                         } catch (e) {
                           Sentry.captureException(e);
 

@@ -9,7 +9,6 @@ import { authComponent } from "../auth";
 import { conversationFields } from "./schema";
 import { serverMutation } from "../utils";
 import { asyncMap } from "convex-helpers";
-import { api, internal } from "../_generated/api";
 import { agreggateUsageTimeByProfile } from "../parental/dashboard";
 
 const { isLive, userId, ...filteredConversationFields } = conversationFields;
@@ -62,8 +61,6 @@ export const updateConversationState = serverMutation({
         throw new ConvexError("No hay conversacion");
       }
 
-      await agreggateUsageTimeByProfile.insert(ctx, newConversation);
-
       const messages = await ctx.db
         .query("messages")
         .withIndex("conversationId", (q) =>
@@ -73,6 +70,8 @@ export const updateConversationState = serverMutation({
 
       if (messages?.length <= 1) {
         await ctx.db.delete(conversationId);
+      } else {
+        await agreggateUsageTimeByProfile.insert(ctx, newConversation);
       }
     }
   },

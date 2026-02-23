@@ -7,6 +7,8 @@ import { TableAggregate } from "@convex-dev/aggregate";
 import { DataModel, Doc, Id } from "../_generated/dataModel";
 import { api, components } from "../_generated/api";
 import { asyncMap } from "convex-helpers";
+import { mutation } from "../_generated/server";
+import { authComponent } from "../auth";
 
 export const agreggateUsageTimeByProfile = new TableAggregate<{
   Key: [Id<"profile">, number];
@@ -39,18 +41,31 @@ export interface GetOverviewInfoResponse {
 export const getOverviewInfo = profileQuery({
   args: {
     profileId: v.id("profile"),
+    clientTimestamp: v.number(),
   },
-  handler: async (ctx, { profileId }): Promise<GetOverviewInfoResponse> => {
+  handler: async (
+    ctx,
+    { profileId, clientTimestamp },
+  ): Promise<GetOverviewInfoResponse> => {
+    const user = await authComponent.getAuthUser(ctx);
+
     const profile = await ctx.db.get(profileId);
 
     if (!profile) {
       throw new ConvexError({
         code: ErrorCode.NotFound,
-        message: "Profile not found",
+        message: "Perfil no encontrado",
       });
     }
 
-    const { firstday, lastday } = getDaysOfWeek();
+    if (profile.userId !== user._id) {
+      throw new ConvexError({
+        code: ErrorCode.Unauthorized,
+        message: "Este perfil no te pertenece",
+      });
+    }
+
+    const { firstday, lastday } = getDaysOfWeek(clientTimestamp);
 
     const sum = await agreggateUsageTimeByProfile.sum(ctx, {
       namespace: profile._id,
@@ -107,10 +122,13 @@ export const getOverviewInfo = profileQuery({
       },
     );
 
+    // TODO: paginate if is necesary
     const warnings = await ctx.db
       .query("interactionFlags")
-      .withIndex("profileId", (q) => q.eq("profileId", profileId))
-      .collect();
+      .withIndex("profileId_status", (q) =>
+        q.eq("profileId", profileId).eq("status", "active"),
+      )
+      .take(50);
 
     return {
       weeklyUsageTime: sum,
@@ -128,8 +146,8 @@ export const getOverviewInfo = profileQuery({
   },
 });
 
-const getDaysOfWeek = () => {
-  const now = new Date();
+const getDaysOfWeek = (clientTimestamp: number) => {
+  const now = new Date(clientTimestamp);
 
   const start = new Date(now);
 
@@ -148,3 +166,42 @@ const getDaysOfWeek = () => {
     lastday: end.getTime(),
   };
 };
+
+export const resolveIssue = mutation({
+  args: {
+    interactionFlagId: v.id("interactionFlags"),
+  },
+  handler: async (ctx, { interactionFlagId }) => {
+    const user = await authComponent.getAuthUser(ctx);
+
+    const interactionFlag = await ctx.db.get(interactionFlagId);
+
+    if (!interactionFlag) {
+      throw new ConvexError({
+        message: "No se encontro la alerta",
+        code: ErrorCode.NotFound,
+      });
+    }
+
+    const profile = await ctx.db.get(interactionFlag.profileId);
+
+    if (!profile) {
+      throw new ConvexError({
+        message: "El perfil no se pudo encontrar",
+        code: ErrorCode.NotFound,
+      });
+    }
+
+    if (user._id !== profile.userId) {
+      throw new ConvexError({
+        message: "Este perfil no te pertenece",
+        code: ErrorCode.Unauthorized,
+      });
+    }
+
+    return await ctx.db.patch(interactionFlagId, {
+      status: "resolved",
+      reviewedAt: Date.now(),
+    });
+  },
+});
