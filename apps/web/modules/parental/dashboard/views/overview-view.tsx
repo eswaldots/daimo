@@ -119,7 +119,7 @@ export const OverviewView = () => {
         </div>
       </motion.div>
       <motion.div
-        className="grid grid-cols-4 gap-4"
+        className="grid md:grid-cols-4 gap-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
@@ -153,7 +153,7 @@ const OverviewSkeleton = () => {
         </div>
       </motion.div>
       <motion.div
-        className="grid grid-cols-4 gap-4"
+        className="grid md:grid-cols-4 gap-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
@@ -354,7 +354,7 @@ const AlertDialog = ({ children, ...props }: ComponentProps<typeof Dialog>) => {
       <DialogTrigger>{children}</DialogTrigger>
       <DialogContent
         showCloseButton={false}
-        className="md:h-[80vh] [&::-webkit-scrollbar-thumb]:bg-black overflow-y-auto no-scrollbar"
+        className="h-[80vh] md:h-[80vh] [&::-webkit-scrollbar-thumb]:bg-black overflow-y-auto no-scrollbar overflow-x-hidden"
       >
         <DialogHeader>
           <div className="flex items-center justify-between">
@@ -377,7 +377,7 @@ const AlertDialog = ({ children, ...props }: ComponentProps<typeof Dialog>) => {
           <div className="grid gap-3">
             <AlertTriangle
               className={cn(
-                "text-muted-foreground/50 size-8 transition-colors",
+                "text-muted-foreground/50 size-16 md:size-8 transition-colors mx-auto md:mx-none",
                 alertNum >= 1 && "text-chart-4",
               )}
             />
@@ -413,7 +413,7 @@ const AlertDialog = ({ children, ...props }: ComponentProps<typeof Dialog>) => {
                     exit={{ opacity: 0 }}
                   >
                     <DialogDescription className="text-lg leading-[1.25] -mt-1">
-                      El perfil ha tenido una conducta adecuada por los momentos
+                      Este perfil ha tenido una conducta adecuada
                     </DialogDescription>
                   </motion.div>
                 </>
@@ -477,8 +477,8 @@ const AlertDialog = ({ children, ...props }: ComponentProps<typeof Dialog>) => {
                           </div>
                         </div>
                       </AccordionTrigger>
-                      <AccordionContent className="py-3">
-                        <ul>
+                      <AccordionContent className="py-3 max-w-[80vw] text-left">
+                        <ul className="max-w-full">
                           <motion.li
                             className="rounded-md bg-secondary p-3 mb-4"
                             initial={{ opacity: 0 }}
@@ -539,14 +539,12 @@ const AlertDialog = ({ children, ...props }: ComponentProps<typeof Dialog>) => {
                             transition={{ delay: 0.6 }}
                             className="mt-6 flex w-full items-center justify-end gap-2"
                           >
-                            <Button variant="secondary" disabled>
-                              Ver conversación completa
-                            </Button>
                             <Button
                               onClick={async () => {
                                 try {
                                   sileo.success({
                                     title: "Advertencia leída",
+                                    fill: "#171717",
                                     description:
                                       "La advertencia ha sido marcada como leída",
                                   });

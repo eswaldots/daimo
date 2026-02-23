@@ -2,7 +2,7 @@
 
 import { useParams, usePathname, useRouter } from "next/navigation";
 import * as Sentry from "@sentry/nextjs";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PARENTAL_DASHBOARD_ROUTES } from "../../consts";
 import {
   DropdownMenuTrigger,
@@ -30,19 +30,38 @@ import {
   LockIcon,
   LogOut,
   Home,
+  Menu,
 } from "lucide-react";
 import posthog from "posthog-js";
 import { useTheme } from "next-themes";
 import Link from "next/link";
+import { useSidebar } from "@/components/ui/sidebar";
 
 // TODO: use real breadcrumbs here
 
 export const ParentalHeader = () => {
   const { title } = useBreadcrumbs();
 
+  const { isMobile, toggleSidebar, openMobile, setOpenMobile } = useSidebar();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (isMobile && openMobile) {
+      setOpenMobile(false);
+    }
+  }, [pathname, isMobile, setOpenMobile]);
+
   return (
-    <header className="py-3 px-6 border-b border-border flex items-center justify-between bg-background">
-      <h1 className="font-medium tracking-tight">{title}</h1>
+    <header className="py-2 md:py-3 px-6 border-b border-border flex items-center md:justify-end justify-between bg-background relative">
+      {isMobile && (
+        <Button size="icon" variant="ghost" onClick={() => toggleSidebar()}>
+          <Menu className="size-5.5" />
+        </Button>
+      )}
+
+      <h1 className="font-medium absolute left-1/2 -translate-x-1/2 md:left-15  tracking-tight">
+        {title}
+      </h1>
 
       <NavUser />
     </header>
