@@ -1,6 +1,7 @@
 "use client";
 
-import { useParams, usePathname } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
+import * as Sentry from "@sentry/nextjs";
 import { useMemo, useState } from "react";
 import { PARENTAL_DASHBOARD_ROUTES } from "../../consts";
 import {
@@ -30,7 +31,6 @@ import {
   LogOut,
   Home,
 } from "lucide-react";
-import router from "next/router";
 import posthog from "posthog-js";
 import { useTheme } from "next-themes";
 import Link from "next/link";
@@ -53,6 +53,7 @@ const NavUser = () => {
   const { data, isPending, isError } = useProfile();
   const { theme, setTheme } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   if (isPending) {
     return <Skeleton className="rounded-full size-9 m-0.5" />;
@@ -179,6 +180,8 @@ const NavUser = () => {
                 posthog.reset();
 
                 setIsLoading(false);
+
+                router.push("/");
               } catch {
                 // common error doesn't log to sentry
                 router.push("/");
@@ -207,7 +210,7 @@ const useBreadcrumbs = () => {
       (route) =>
         route.path.replace(":profileId", profileId as string) === pathname,
     )?.title;
-  }, [pathname]);
+  }, [pathname, profileId]);
 
   return { title };
 };

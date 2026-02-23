@@ -157,10 +157,10 @@ const OverviewSkeleton = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
-        <KPICardSkeleton label="Tiemp de uso semanal" />
-        <KPICardSkeleton label="Tiemp de uso semanal" />
-        <KPICardSkeleton label="Tiemp de uso semanal" />
-        <KPICardSkeleton label="Tiemp de uso semanal" />
+        <KPICardSkeleton label="Tiempo de uso semanal" />
+        <KPICardSkeleton label="Número de conversaciones" />
+        <KPICardSkeleton label="Promedio por conversación" />
+        <KPICardSkeleton label="Número de alertas" />
       </motion.div>
 
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -172,7 +172,6 @@ const OverviewSkeleton = () => {
 
 const CardsRow = () => {
   const { data, isPending, isError, error } = useOverview();
-  const [isOpen, setIsOpen] = useState();
 
   if (isPending) {
     return <h1>cargando</h1>;
@@ -244,7 +243,7 @@ const WeeklyUsageCard = ({
   const [time, setTime] = useState(0);
 
   useEffect(() => {
-    let interval = null;
+    let interval: ReturnType<typeof setInterval> | null = null;
 
     if (isLive) {
       interval = setInterval(() => {
@@ -326,12 +325,14 @@ const AlertDialog = ({ children, ...props }: ComponentProps<typeof Dialog>) => {
         (w) => w._id === interactionFlagId,
       );
 
-      currentValue.warnings.splice(warning, 1);
+      const newWarnings = currentValue.warnings.filter(
+        (w) => w._id !== interactionFlagId,
+      );
 
       localStore.setQuery(
         api.parental.dashboard.getOverviewInfo,
         { profileId, clientTimestamp: now },
-        { ...currentValue },
+        { ...currentValue, warnings: newWarnings },
       );
     }
   });
@@ -554,6 +555,8 @@ const AlertDialog = ({ children, ...props }: ComponentProps<typeof Dialog>) => {
                                     interactionFlagId: warning._id,
                                   });
                                 } catch (error) {
+                                  Sentry.captureException(error);
+
                                   const errorMessage =
                                     error instanceof ConvexError
                                       ? (error.data as { message: string })

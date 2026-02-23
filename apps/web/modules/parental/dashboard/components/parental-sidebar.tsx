@@ -37,7 +37,9 @@ import { Skeleton } from "@/components/ui/skeleton";
  */
 export default function ParentalSidebar() {
   const pathname = usePathname();
-  const { profileId } = useParams();
+  const params = useParams();
+  const profileId =
+    typeof params.profileId === "string" ? params.profileId : undefined;
 
   return (
     <Sidebar className="border-border">
@@ -125,7 +127,9 @@ const ProfileSelector = () => {
                   profileId={profile._id}
                   src={profile.media}
                 />
-                <h1 className="text-base mx-1 font-medium">{profile.name}</h1>
+                <span className="text-base mx-1 font-medium">
+                  {profile.name}
+                </span>
               </DropdownMenuItem>
             ))}
         </DropdownMenuContent>

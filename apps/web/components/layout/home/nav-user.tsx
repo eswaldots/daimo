@@ -233,6 +233,8 @@ export function NavUser() {
                   posthog.reset();
 
                   setIsLoading(false);
+
+                  router.push("/");
                 } catch {
                   // common error doesn't log to sentry
                   router.push("/");
