@@ -19,13 +19,28 @@ export const agreggateUsageTimeByProfile = new TableAggregate<{
   sumValue: (doc) => doc.duration ?? 0,
 });
 
-// @ts-ignore hahaha i'm typescript look at me i'm stupid
+export interface GetOverviewInfoResponse {
+  weeklyUsageTime: number;
+  warnings: ({
+    message: Doc<"messages"> | null;
+  } & Doc<"interactionFlags">)[];
+  usage: {
+    day: number;
+    milliseconds: number;
+  }[];
+  lastConversation: Doc<"conversations"> & {
+    character: Doc<"characters"> | null;
+  };
+  weeklyConversationCount: number;
+  weeklyAverageDuration: number;
+  profile: Doc<"profile">;
+}
+
 export const getOverviewInfo = profileQuery({
   args: {
     profileId: v.id("profile"),
   },
-  // @ts-ignore hahaha i'm typescript look at me i'm stupid
-  handler: async (ctx, { profileId }) => {
+  handler: async (ctx, { profileId }): Promise<GetOverviewInfoResponse> => {
     const profile = await ctx.db.get(profileId);
 
     if (!profile) {

@@ -43,7 +43,7 @@ export const evaluateRisk = internalAction({
       return;
     }
 
-    const conversation: Doc<"conversations"> = await ctx.runQuery(
+    const conversation: Doc<"conversations"> | null = await ctx.runQuery(
       api.agent.conversation.getConversationById,
       { id: conversationId },
     );

@@ -52,6 +52,7 @@ export const profileQuery = customQuery(
   query,
   customCtx(async (ctx) => {
     // TODO: check if we can get sessionId in the headers and only query, it will be more performant
+    // @ts-ignore typescript please
     const { auth, headers } = await authComponent.getAuth(createAuth, ctx);
 
     const data = await auth.api.getSession({ headers });
@@ -63,6 +64,7 @@ export const profileQuery = customQuery(
       });
     }
 
+    // @ts-ignore typescript please
     if (!data.session.activeProfileId) {
       throw new ConvexError({
         code: ErrorCode.NoProfileSelected,
@@ -71,6 +73,7 @@ export const profileQuery = customQuery(
     }
 
     return {
+      // @ts-ignore typescript please
       activeProfileId: data.session.activeProfileId as Id<"profile">,
     };
   }),

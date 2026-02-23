@@ -21,7 +21,6 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -36,8 +35,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Message, MessageContent } from "@/components/ai-elements/message";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 const useOverview = () => {
   const { profileId } = useParams();
@@ -189,12 +186,12 @@ const CardsRow = () => {
             <Accordion
               type="single"
               collapsible
-              defaultValue={data.warnings[0]._id}
+              defaultValue={data.warnings[0] ? data.warnings[0]._id : ""}
             >
               {data.warnings.map(
                 (
                   warning: Doc<"interactionFlags"> & {
-                    message: Doc<"messages">;
+                    message: Doc<"messages"> | null;
                   },
                 ) => {
                   return (
@@ -245,7 +242,7 @@ const CardsRow = () => {
                               transition={{ delay: 0.1 }}
                               className="ml-auto bg-background py-1 text-base px-4 rounded-full w-fit"
                             >
-                              {warning.message.content}
+                              {warning?.message?.content}
                             </motion.div>
                           </motion.li>
                           <li className="space-y-2 mb-4">
