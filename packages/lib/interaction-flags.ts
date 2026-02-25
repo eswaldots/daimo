@@ -1,5 +1,92 @@
-export const RISK_PRE_FILTER =
-  /(?<!\p{L})(suicid|matarme|matar|morir|quiero\s+morir|cortarme|corté|cortar|odio\s+mi\s+vida|abuso|abusar|tocó|tocaron|secreto\s+entre\s+nosotros|no\s+le\s+diga?s?\s+a\s+nadie|drogas?|coca(ína)?|marihuana|pastillas|violar|violencia|golpear|pegar|desnudo|foto\s+íntima|envíame\s+foto)(?!\p{L})/iu;
+const RISK_PATTERNS = [
+  // Autolesión y Suicidio (variaciones y métodos)
+  "suicid\\w*",
+  "matarme",
+  "quitarme la vida",
+  "morir",
+  "cortar(?:me|se)",
+  "hacer(?:me|se) daño",
+  "pastillas",
+  "veneno",
+  "ahorcar",
+  "saltar",
+  "puente",
+  "despedida",
+  "no quiero vivir",
+
+  // Abuso y Grooming (Aislamiento y secretos)
+  "secreto",
+  "nuestro secreto",
+  "no (?:le )?digas",
+  "nadie lo sepa",
+  "borra el chat",
+  "tus padres no",
+  "papis?",
+  "mamá y papá",
+  "shhh",
+  "confía en mí",
+  "cámara",
+  "webcam",
+  "skype",
+  "discord",
+  "telegram",
+  "pásame tu",
+  "dónde vives",
+  "estás sol[oa]",
+
+  // Contenido Sexual y Explotación
+  "desnud[oa]",
+  "sin ropa",
+  "foto(?:s)? íntima(?:s)?",
+  "pack",
+  "violar",
+  "abuso",
+  "tocar(?:te|me)?",
+  "mis partes",
+  "tus partes",
+  "pene",
+  "vagina",
+  "sexo",
+  "xxx",
+  "morbo",
+  "excit(?:ado|ada|ar)",
+  "prostitu\\w*",
+
+  // Drogas y Sustancias
+  "drogas?",
+  "coca(?:ína)?",
+  "mari(?:h|j)uana",
+  "mota",
+  "hierba",
+  "cristal",
+  "tacha",
+  "pastis",
+  "mona",
+  "inhalar",
+  "inyectar",
+
+  // Violencia y Amenazas
+  "matar",
+  "asesin\\w*",
+  "sangre",
+  "arma",
+  "pistola",
+  "cuchillo",
+  "navaja",
+  "bomba",
+  "golpear",
+  "golpe",
+  "peleé",
+  "pelee",
+  "pegar",
+  "terrorista",
+  "secuestro",
+];
+
+export const RISK_PRE_FILTER = new RegExp(
+  `(?<!\\p{L})(?:${RISK_PATTERNS.join("|")})(?!\\p{L})`,
+  "iu",
+);
 
 export enum RiskCategory {
   SELF_HARM = "self_harm",
